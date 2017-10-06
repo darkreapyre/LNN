@@ -6,6 +6,7 @@ This repository comtains various branches that depict leveraging AWS Lambda Func
 Each version is mean to enhance the functionality of the implementation to start from a basic Perceptron and evolve into more compleicated funcitonality that includes Regularization, Optmization and Gradient Checking techniques as well as deeper network architectures. The version branches are as follows:
 
 - Version 1.0: Single Neuron Logistic Regression
+- Version 1.1: Leveraging other sources for numpy array storage
 - Version 2.0: Single Hidden Layer Logistic Regression
 - Version 3.0: Deep Neural Network
 - Version 4.0: Optimization
