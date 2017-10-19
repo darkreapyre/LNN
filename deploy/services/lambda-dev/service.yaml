@@ -1,0 +1,204 @@
+Description: >
+    This is an example of a long running ECS service for Lambda development, using Jupyter.
+
+Parameters: 
+
+    VPC:
+        Description: The VPC that the ECS cluster is deployed to
+        Type: AWS::EC2::VPC::Id
+        
+    Cluster:
+        Description: Please provide the ECS Cluster ID that this service should run on
+        Type: String
+
+    DesiredCount: 
+        Description: How many instances of this task should we run across our cluster?
+        Type: Number
+        Default: 1
+
+    EnvironmentName:
+        Description: An environment name that will be prefixed to resource names
+        Type: String
+
+    Subnets:
+        Description: Choose which subnets the Applicaion Load Balancer should be deployed to
+        Type: List<AWS::EC2::Subnet::Id>
+
+    SecurityGroup:
+        Description: Select the Security Group to apply to the Applicaion Load Balancer
+        Type: AWS::EC2::SecurityGroup::Id
+
+    ECRRepository:
+        Description: Container repository for mxnet development containers
+        Type: String
+        Default: deeplearning.ai
+
+Resources:
+
+    Service: 
+        Type: AWS::ECS::Service
+        DependsOn: lambdaListenerRule
+        Properties: 
+            Cluster: !Ref Cluster
+            Role: !Ref ServiceRole
+            DesiredCount: !Ref DesiredCount
+            TaskDefinition: !Ref TaskDefinition
+            LoadBalancers: 
+                - ContainerName: lambda
+                  ContainerPort: 8888
+                  TargetGroupArn: !Ref lambdaTargetGroup
+
+    TaskDefinition:
+        Type: AWS::ECS::TaskDefinition
+        Properties:
+            Family: lambda
+            TaskRoleArn: !GetAtt TaskRole.Arn
+            ContainerDefinitions:
+                - Name: lambda
+                  Essential: true
+                  Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}:lambda
+                  Memory: 2048
+                  PortMappings:
+                    - ContainerPort: 8888
+                  LogConfiguration:
+                    LogDriver: awslogs
+                    Options:
+                        awslogs-group: !Ref AWS::StackName
+                        awslogs-region: !Ref AWS::Region
+
+    CloudWatchLogsGroup:
+        Type: AWS::Logs::LogGroup
+        Properties: 
+            LogGroupName: !Ref AWS::StackName
+            RetentionInDays: 7
+
+    lambdaLoadBalancer:
+        Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+        Properties:
+            Name: !Sub ${EnvironmentName}-lambda
+            Subnets: !Ref Subnets
+            SecurityGroups: 
+                - !Ref SecurityGroup
+            Tags: 
+                - Key: Name
+                  Value: !Sub ${EnvironmentName}-lambda
+
+    lambdaTargetGroup:
+        Type: AWS::ElasticLoadBalancingV2::TargetGroup
+        Properties:
+            VpcId: !Ref VPC
+            Port: 8888
+            Protocol: HTTP
+            Matcher: 
+                HttpCode: 200-299
+            HealthCheckIntervalSeconds: 60
+            HealthCheckPath: /login?next=%2Ftree%3F
+            HealthCheckProtocol: HTTP
+            HealthCheckTimeoutSeconds: 5
+            HealthyThresholdCount: 2
+
+    lambdaListener:
+        Type: AWS::ElasticLoadBalancingV2::Listener
+        Properties:
+            LoadBalancerArn: !Ref lambdaLoadBalancer
+            Port: 8888
+            Protocol: HTTP 
+            DefaultActions: 
+                - Type: forward
+                  TargetGroupArn: !Ref lambdaTargetGroup
+
+    lambdaListenerRule:
+        Type: AWS::ElasticLoadBalancingV2::ListenerRule
+        Properties:
+            ListenerArn: !Ref lambdaListener
+            Priority: 1
+            Conditions:
+                - Field: path-pattern
+                  Values: 
+                    - /
+            Actions:
+                - TargetGroupArn: !Ref lambdaTargetGroup
+                  Type: forward
+
+    # This IAM Role grants the service access to register/unregister with the 
+    # Application Load Balancer (ALB). It is based on the default documented here:
+    # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+    
+    ServiceRole: 
+        Type: AWS::IAM::Role
+        Properties: 
+            RoleName: !Sub ecs-service-lambda
+            Path: /
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                        "Action": [ "sts:AssumeRole" ]
+                    }]
+                }
+            Policies: 
+                - PolicyName: !Sub ecs-service-lambda
+                  PolicyDocument: 
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "ec2:AuthorizeSecurityGroupIngress",
+                                    "ec2:Describe*",
+                                    "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                                    "elasticloadbalancing:Describe*",
+                                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                                    "elasticloadbalancing:DeregisterTargets",
+                                    "elasticloadbalancing:DescribeTargetGroups",
+                                    "elasticloadbalancing:DescribeTargetHealth",
+                                    "elasticloadbalancing:RegisterTargets",
+                                    "elasticloadbalancing:CreateTargetGroup",
+                                    "elasticloadbalancing:DeleteTargetGroup"
+                                ],
+                                "Resource": "*"
+                        }]
+                    }
+
+    # This IAM Role grants the ECS task access to the various services that a Lambda
+    # funciton may require access to. It is based on the default documented here:
+    # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-iam-roles.html
+
+    TaskRole: 
+        Type: AWS::IAM::Role
+        Properties: 
+            RoleName: !Sub ecs-task-lambda
+            Path: /
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                        "Action": [ "sts:AssumeRole" ]
+                    }]
+                }
+            Policies: 
+                - PolicyName: !Sub ecs-task-lambda
+                  PolicyDocument: 
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "s3:*",
+                                    "ec2:*",
+                                    "dynamodb:*",
+                                    "lambda:*",
+                                    "ecr:*",
+                                    "codecommit:*"
+                                ],
+                                "Resource": "*"
+                        }]
+                    }
+
+Outputs:
+
+    ServiceUrl:
+        Description: The URL of the ALB for MXNet
+        Value: !GetAtt lambdaLoadBalancer.DNSName
