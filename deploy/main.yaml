@@ -83,14 +83,6 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 Subnets: !GetAtt VPC.Outputs.PrivateSubnets
-    
-    ElastiCache:
-        Type: AWS::CloudFormation::Stack
-        Properties:
-            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/cache.yaml
-            Parameters:
-                ClusterNodeType: !Ref ClusterNodeType
-                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostsSecurityGroup
 
     lambdaService:
         Type: AWS::CloudFormation::Stack
@@ -117,6 +109,15 @@ Resources:
                 ECRRepository: !Ref ECRRepository
                 Subnets: !GetAtt VPC.Outputs.PublicSubnets
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+            DependsOn: ECS
+
+    ElastiCache:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/cache.yaml
+            Parameters:
+                ClusterNodeType: !Ref ClusterNodeType
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostsSecurityGroup
 
 Outputs:
 
