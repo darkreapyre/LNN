@@ -109,7 +109,6 @@ Resources:
                 ECRRepository: !Ref ECRRepository
                 Subnets: !GetAtt VPC.Outputs.PublicSubnets
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
-            DependsOn: ECS
 
     ElastiCache:
         Type: AWS::CloudFormation::Stack
@@ -118,6 +117,7 @@ Resources:
             Parameters:
                 ClusterNodeType: !Ref ClusterNodeType
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostsSecurityGroup
+                DependsOn: ECS
 
 Outputs:
 
