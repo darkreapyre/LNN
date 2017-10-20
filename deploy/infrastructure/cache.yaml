@@ -1,4 +1,6 @@
-AWSTemplateFormatVersion: 2010-09-09
+Description: >
+    This template deploys a single node Elasticache (Redis).
+
 Parameters:
   ClusterNodeType:
     Description: The compute and memory capacity of the nodes in the Redis Cluster
