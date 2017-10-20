@@ -1,2 +1,1 @@
-# Lambda Neural Network V1.0
-## Overview
+# Lambda Neural Network Version 0.0 (DynamoDB)
