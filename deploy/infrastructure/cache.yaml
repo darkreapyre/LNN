@@ -8,9 +8,13 @@ Parameters:
       - cache.t2.small
       - cache.t2.medium
   
-  SecurityGroup:
-    Description: Select the Security Group to apply to the Applicaion Load Balancer
+  ECSSecurityGroup:
+    Description: Security Group containing ECS Host
     Type: AWS::EC2::SecurityGroup::Id
+
+  #LambdaSecurityGroup:
+  #  Description: Security Group Contianing Lambda Function
+  #  Type: AWS::EC2::SecurityGroup::Id
 
 Resources:
   RedisCluster:
@@ -18,18 +22,25 @@ Resources:
     Properties:
       CacheNodeType: !Ref ClusterNodeType
       VpcSecurityGroupIds:
-        - !GetAtt CacheSecurityGroup.GroupId
+        - !Ref CacheSecurityGroup
       Engine: redis
       NumCacheNodes: 1
   CacheSecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: Cache security group
+      GroupDescription: ElastiCache security group
   CacheSecurityGroupIngress:
     Type: 'AWS::EC2::SecurityGroupIngress'
     Properties:
+      Description: 
       GroupId: !GetAtt CacheSecurityGroup.GroupId
       IpProtocol: tcp
       FromPort: !GetAtt RedisCluster.RedisEndpoint.Port
       ToPort: !GetAtt RedisCluster.RedisEndpoint.Port
-      SourceSecurityGroupId: !Ref SecurityGroup
+      SourceSecurityGroupId: !Ref ECSSecurityGroup
+      # Might need to address also adding the Lambdas
+      # and creating an additional security group
+      #IpProtocol: tcp
+      #FromPort: !GetAtt RedisCluster.RedisEndpoint.Port
+      #ToPort: !GetAtt RedisCluster.RedisEndpoint.Port
+      #SourceSecurityGroupId: !Ref LambdaSecurityGroup
