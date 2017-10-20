@@ -29,6 +29,11 @@ Parameters:
     SecurityGroup:
         Description: Select the Security Group to use for the ECS cluster hosts
         Type: AWS::EC2::SecurityGroup::Id
+    
+    ClusterNodeType:
+        Description: The compute and memory capacity of the nodes in the Redis Cluster
+        Type: String
+        Default: cache.t2.small
 
 Mappings:
 
@@ -70,6 +75,25 @@ Mappings:
             AMI: ami-9b54edff
 
 Resources:
+
+    RedisCluster: 
+        Type: AWS::ElastiCache::CacheCluster
+        Properties:
+            CacheNodeType: !Ref ClusterNodeType
+            CacheSecurityGroupNames: !Ref RedisClusterSecurityGroup
+            Engine: redis
+            NumCacheNodes: 1
+
+    RedisClusterSecurityGroup:
+        Type: AWS::ElastiCache::SecurityGroup
+        Properties:
+            Description: Elasticache Security Group
+    
+    RedisClusterSecurityGroupIngress:
+        Type: AWS::ElastiCache::SecurityGroupIngress
+        Properties:
+        CacheSecurityGroupName: !Ref RedisClusterSecurityGroup
+        EC2SecurityGroupName: !Ref SecurityGroup
 
     ECSCluster:
         Type: AWS::ECS::Cluster
