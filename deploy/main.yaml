@@ -117,7 +117,7 @@ Resources:
             Parameters:
                 ClusterNodeType: !Ref ClusterNodeType
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostsSecurityGroup
-                DependsOn: ECS
+                DependsOn: lambdaService
 
 Outputs:
 
