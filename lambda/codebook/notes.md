@@ -2,12 +2,13 @@
 1. Add the SNS Topic Arn to the Environmental variables to that the `finish()` function can use it.
 2. Add the necessary SNS permissions to the CloudFormation Template.
 3. Add necessary permissions for Elasticache to CloudFormation template.
-4. Push the security group name to the `LaunchLambda` Cloudformation template to ensure that the Redis cluster is deployed to the correct secirity group.
->**NOte**: This may mean that the Lamabda functions need to run in the VPX and therfore the CloudFormation template needs to reflect this.
+4. Push the security group name to the `LaunchLambda` Cloudformation template to ensure that the Redis cluster is deployed to the correct security group.
+>**Note**: This may mean that the Lamabda functions need to run in the VPX and therfore the CloudFormation template needs to reflect this.
+5. May need to create  a *Subnet Group* in the CloudFormation template.
+5. Ensure that the correct port (**6379**) is open on the security group and access from the within the VPC is allowed.
 5. Make sure to set Lambda loggin for a maximum of 7 days so as to not have lagacy Lambda Logs from previouys runs.
 6. Make sure to add the ARNs of the various Lambda Functions to the environmental variables in the CloudFormation Template.
-7
-. Ensure to always include the `state` in the `event` every time the `TrainerLambda` is invoked.
+7. Ensure to always include the `state` in the `event` every time the `TrainerLambda` is invoked.
 
 ---
 
