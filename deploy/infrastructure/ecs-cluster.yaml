@@ -92,8 +92,8 @@ Resources:
     RedisClusterSecurityGroupIngress:
         Type: AWS::ElastiCache::SecurityGroupIngress
         Properties:
-        CacheSecurityGroupName: !Ref RedisClusterSecurityGroup
-        EC2SecurityGroupName: !Ref SecurityGroup
+            CacheSecurityGroupName: !Ref RedisClusterSecurityGroup
+            EC2SecurityGroupName: !Ref SecurityGroup
 
     ECSCluster:
         Type: AWS::ECS::Cluster
