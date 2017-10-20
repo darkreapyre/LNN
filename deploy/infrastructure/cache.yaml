@@ -23,8 +23,7 @@ Resources:
     Type: 'AWS::ElastiCache::CacheCluster'
     Properties:
       CacheNodeType: !Ref ClusterNodeType
-      VpcSecurityGroupIds:
-        - !Ref CacheSecurityGroup
+      VpcSecurityGroupIds: !GetAtt CacheSecurityGroup.GroupId
       Engine: redis
       NumCacheNodes: 1
   CacheSecurityGroup:
