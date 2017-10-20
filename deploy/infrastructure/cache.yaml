@@ -10,9 +10,9 @@ Parameters:
       - cache.t2.small
       - cache.t2.medium
   
-  ECSSecurityGroup:
-    Description: Security Group containing ECS Host
-    Type: AWS::EC2::SecurityGroup::Id
+  #ECSSecurityGroup:
+  #  Description: Security Group containing ECS Host
+  #  Type: AWS::EC2::SecurityGroup::Id
 
   #LambdaSecurityGroup:
   #  Description: Security Group Contianing Lambda Function
@@ -20,7 +20,7 @@ Parameters:
 
 Resources:
   RedisCluster:
-    Type: 'AWS::ElastiCache::CacheCluster'
+    Type: AWS::ElastiCache::CacheCluster
     Properties:
       CacheNodeType: !Ref ClusterNodeType
       VpcSecurityGroupIds: !GetAtt CacheSecurityGroup.GroupId
@@ -30,15 +30,23 @@ Resources:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
       GroupDescription: ElastiCache security group
-  CacheSecurityGroupIngress:
-    Type: 'AWS::EC2::SecurityGroupIngress'
-    Properties:
-      Description: Allow access from ECS Containers
-      GroupId: !GetAtt CacheSecurityGroup.GroupId
-      IpProtocol: tcp
-      FromPort: !GetAtt RedisCluster.RedisEndpoint.Port
-      ToPort: !GetAtt RedisCluster.RedisEndpoint.Port
-      SourceSecurityGroupId: !Ref ECSSecurityGroup
+      SecurityGroupIngress:
+        IpProtocol: tcp
+        FromPort: 6379
+        ToPort: 6379
+        CidrIp: 1.0.0.0/16
+
+
+#################################################################
+#  CacheSecurityGroupIngress:
+#    Type: 'AWS::EC2::SecurityGroupIngress'
+#    Properties:
+#      Description: Allow access from ECS Containers
+#      GroupId: !GetAtt CacheSecurityGroup.GroupId
+#      IpProtocol: tcp
+#      FromPort: !GetAtt RedisCluster.RedisEndpoint.Port
+#      ToPort: !GetAtt RedisCluster.RedisEndpoint.Port
+#      SourceSecurityGroupId: !Ref ECSSecurityGroup
       # Might need to address also adding the Lambdas
       # and creating an additional security group
       #IpProtocol: tcp
