@@ -83,6 +83,7 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+                ClusterNodeType: !Ref ClusterNodeType
 
     lambdaService:
         Type: AWS::CloudFormation::Stack
