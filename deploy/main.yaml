@@ -22,6 +22,14 @@ Parameters:
         Type: String
         Description: Container repository for mxnet development containers
         Default: deeplearning.ai
+    
+    ClusterNodeType:
+        Type: String
+        Description: Elasticache Cluster Node Types
+        Default: cache.t2.small
+        AllowedValues:
+            - cache.t2.small
+            - cache.t2.medium
 
 Metadata:
 
@@ -75,6 +83,14 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+    
+    ElastiCache:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/cache.yaml
+            Parameters:
+                ClusterNodeType: !Ref ClusterNodeType
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostsSecurityGroup
 
     lambdaService:
         Type: AWS::CloudFormation::Stack

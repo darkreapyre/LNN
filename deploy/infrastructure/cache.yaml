@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  ClusterNodeType:
+    Description: The compute and memory capacity of the nodes in the Redis Cluster
+    Type: String
+    Default: cache.t2.small
+    AllowedValues:
+      - cache.t2.small
+      - cache.t2.medium
+  
+  SecurityGroup:
+    Description: Select the Security Group to apply to the Applicaion Load Balancer
+    Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+  RedisCluster:
+    Type: 'AWS::ElastiCache::CacheCluster'
+    Properties:
+      CacheNodeType: !Ref ClusterNodeType
+      VpcSecurityGroupIds:
+        - !GetAtt CacheSecurityGroup.GroupId
+      Engine: redis
+      NumCacheNodes: 1
+  CacheSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Cache security group
+  CacheSecurityGroupIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      GroupId: !GetAtt CacheSecurityGroup.GroupId
+      IpProtocol: tcp
+      FromPort: !GetAtt RedisCluster.RedisEndpoint.Port
+      ToPort: !GetAtt RedisCluster.RedisEndpoint.Port
+      SourceSecurityGroupId: !Ref SecurityGroup
