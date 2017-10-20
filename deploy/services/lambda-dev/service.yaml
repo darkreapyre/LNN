@@ -191,7 +191,8 @@ Resources:
                                     "dynamodb:*",
                                     "lambda:*",
                                     "ecr:*",
-                                    "codecommit:*"
+                                    "codecommit:*",
+                                    "elasticache:*"
                                 ],
                                 "Resource": "*"
                         }]
