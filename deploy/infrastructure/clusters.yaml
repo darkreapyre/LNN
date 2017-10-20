@@ -85,15 +85,14 @@ Resources:
             NumCacheNodes: 1
 
     RedisClusterSecurityGroup:
-        Type: AWS::ElastiCache::SecurityGroup
+        Type: AWS::EC2::SecurityGroup
         Properties:
-            Description: Elasticache Security Group
-    
-    RedisClusterSecurityGroupIngress:
-        Type: AWS::ElastiCache::SecurityGroupIngress
-        Properties:
-            CacheSecurityGroupName: !Ref RedisClusterSecurityGroup
-            EC2SecurityGroupName: !Ref SecurityGroup
+            GroupDescription: Elasticache Security Group
+            VpcId: !Ref VPC
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 6379
+                ToPort: 6379
 
     ECSCluster:
         Type: AWS::ECS::Cluster
