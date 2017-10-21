@@ -23,7 +23,7 @@ Parameters:
 Resources:
 
     RedisClusterSubnetGroup:
-      Type: AWS::ElastiCache:SubnetGroup
+      Type: AWS::ElastiCache::SubnetGroup
       Properties:
         Description: ElastiCache Subnet Group
         SubnetIds:
