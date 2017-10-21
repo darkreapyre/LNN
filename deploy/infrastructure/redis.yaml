@@ -37,7 +37,7 @@ Resources:
             #CacheSecurityGroupNames: !Ref RedisClusterSecurityGroup
             Engine: redis
             NumCacheNodes: 1
-            VpcSecurityGroupIds: !Ref RedisClusterSecurityGroup
+            SecurityGroupIds: !Ref RedisClusterSecurityGroup
             CacheSubnetGroupName: !Ref RedisClusterSubnetGroup
 
     RedisClusterSecurityGroup:
