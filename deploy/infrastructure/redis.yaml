@@ -9,11 +9,11 @@ Parameters:
   
     PrivateSubnet1:
       Description: Private Subnet 1
-      Type: AWS::EC2::Subnet
+      Type: AWS::EC2::Subnet::Id
     
     PrivateSubnet2:
       Description: Private Subnet 2
-      Type: AWS::EC2::Subnet
+      Type: AWS::EC2::Subnet::Id
     
     VPC:
       Type: AWS::EC2::VPC
