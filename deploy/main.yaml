@@ -116,6 +116,7 @@ Resources:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/redis.yaml
             Parameters:
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+                PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
                 VPC: !GetAtt VPC.Outputs.VPC
                 ClusterNodeType: !Ref ClusterNodeType
 

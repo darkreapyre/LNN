@@ -7,16 +7,17 @@ Parameters:
     Type: String
     Default: cache.t2.small
   
-    PrivateSubnet1:
-      Description: Private Subnet 1
-      Type: AWS::EC2::Subnet::Id
+  PrivateSubnet1:
+    Description: Private Subnet 1
+    Type: AWS::EC2::Subnet::Id
     
-    PrivateSubnet2:
-      Description: Private Subnet 2
-      Type: AWS::EC2::Subnet::Id
+  PrivateSubnet2:
+    Description: Private Subnet 2
+    Type: AWS::EC2::Subnet::Id
     
-    VPC:
-      Type: AWS::EC2::VPC::Id
+  VPC:
+    Description: VPC for the CLludFormation Stack
+    Type: AWS::EC2::VPC::Id
 
 
 Resources:
