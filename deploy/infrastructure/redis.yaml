@@ -16,7 +16,7 @@ Parameters:
       Type: AWS::EC2::Subnet::Id
     
     VPC:
-      Type: AWS::EC2::VPC
+      Type: AWS::EC2::VPC::Id
 
 
 Resources:
