@@ -1,5 +1,5 @@
 Description: >
-    This template deploys aa single instance ElastiCache (Redis).
+    This template deploys aa single instance ElastiCache using the Redis engine.
 
 Parameters:
   ClusterNodeType:
