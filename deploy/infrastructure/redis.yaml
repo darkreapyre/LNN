@@ -59,3 +59,9 @@ Resources:
             Tags:
               - Key: Name
                 Value: !Sub ${EnvironmentName}-Redis
+
+Outputs:
+
+    RedisSecurityGroup: 
+        Description: A reference to the security group for the Redis Security Group
+        Value: !Ref RedisClusterSecurityGroup
