@@ -1,0 +1,50 @@
+Description: >
+    This template deploys aa single instance ElastiCache (Redis).
+
+Parameters:
+  ClusterNodeType:
+    Description: ElastiCache Node type
+    Type: String
+    Default: cache.t2.small
+  
+    PrivateSubnet1:
+      Description: Private Subnet 1
+      Type: AWS::EC2::Subnet
+    
+    PrivateSubnet2:
+      Description: Private Subnet 2
+      Type: AWS::EC2::Subnet
+    
+    VPC:
+      Type: AWS::EC2::VPC
+
+
+Resources:
+
+    RedisClusterSubnetGroup:
+      Type: AWS::ElastiCache:SubnetGroup
+      Properties:
+        Description: ElastiCache Subnet Group
+        SubnetIds:
+          - !Ref PrivateSubnet1
+          - !Ref PrivateSubnet2
+
+    RedisCluster: 
+        Type: AWS::ElastiCache::CacheCluster
+        Properties:
+            CacheNodeType: !Ref ClusterNodeType
+            #CacheSecurityGroupNames: !Ref RedisClusterSecurityGroup
+            Engine: redis
+            NumCacheNodes: 1
+            VpcSecurityGroupIds: !Ref RedisClusterSecurityGroup
+            CacheSubnetGroupName: !Ref RedisClusterSubnetGroup
+
+    RedisClusterSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: Elasticache Security Group
+            VpcId: !Ref VPC
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 6379
+                ToPort: 6379
