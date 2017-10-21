@@ -48,7 +48,7 @@ Resources:
     RedisClusterSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
-        GroupName: !Sub ${EnvironmentName}-Redis
+            GroupName: !Sub ${EnvironmentName}-Redis
             GroupDescription: Elasticache Security Group
             VpcId: !Ref VPC
             SecurityGroupIngress:
