@@ -22,6 +22,14 @@ Parameters:
         Type: String
         Description: Container repository for mxnet development containers
         Default: deeplearning.ai
+    
+    ClusterNodeType:
+        Description: ElastiCache Node type
+        Type: String
+        Default: cache.t2.small
+        AllowedValues:
+            - cache.t2.small
+            - cache.t2.medium
 
 Metadata:
 
@@ -109,6 +117,7 @@ Resources:
             Parameters:
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
                 VPC: !GetAtt VPC.Outputs.VPC
+                ClusterNodeType: !Ref ClusterNodeType
 
 
 Outputs:
