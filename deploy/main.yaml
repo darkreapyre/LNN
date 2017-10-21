@@ -107,8 +107,8 @@ Resources:
         Properties:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/redis.yaml
             Parameters:
-            PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-            VPC: !GetAtt VPC.Outputs.VPC
+                PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+                VPC: !GetAtt VPC.Outputs.VPC
 
 
 Outputs:
