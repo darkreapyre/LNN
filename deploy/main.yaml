@@ -115,6 +115,7 @@ Resources:
         Properties:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/redis.yaml
             Parameters:
+                EnvironmentName: !Ref AWS::StackName
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
                 PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
                 VPC: !GetAtt VPC.Outputs.VPC

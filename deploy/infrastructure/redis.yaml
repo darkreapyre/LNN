@@ -18,6 +18,10 @@ Parameters:
   VPC:
     Description: VPC for the CLludFormation Stack
     Type: AWS::EC2::VPC::Id
+  
+  EnvironmentName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
 
 
 Resources:
@@ -44,9 +48,11 @@ Resources:
     RedisClusterSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
+        GroupName: !Sub ${EnvironmentName}-Redis
             GroupDescription: Elasticache Security Group
             VpcId: !Ref VPC
             SecurityGroupIngress:
               - IpProtocol: tcp
                 FromPort: 6379
                 ToPort: 6379
+                CidrIp: 0.0.0.0/0
