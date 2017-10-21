@@ -35,7 +35,8 @@ RUN pip --no-cache-dir install \
         tornado \
         ptvsd==3.0.0 \
         h5py \
-        Pillow
+        Pillow \
+        redis
 
 ENV LD_LIBRARY_PATH /usr/local/lib
 
