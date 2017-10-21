@@ -4,9 +4,9 @@ REGION = us-west-2
 
 deploy:
 	@[ -d tmp ] || mkdir tmp
-	zip tmp/templates.zip main.yaml infrastructure/* services/*
+	zip tmp/templates.zip master.yaml infrastructure/* services/*
 	aws s3 cp tmp/templates.zip s3://$(BUCKET)/$(FOLDER)/ --region $(REGION)
-	aws s3 cp main.yaml s3://$(BUCKET)/$(FOLDER)/ --region $(REGION)
+	aws s3 cp master.yaml s3://$(BUCKET)/$(FOLDER)/ --region $(REGION)
 	aws s3 cp --recursive infrastructure/ s3://$(BUCKET)/$(FOLDER)/infrastructure --region $(REGION)
 	aws s3 cp --recursive services/ s3://$(BUCKET)/$(FOLDER)/services --region $(REGION)
 

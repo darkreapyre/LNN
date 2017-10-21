@@ -22,14 +22,6 @@ Parameters:
         Type: String
         Description: Container repository for mxnet development containers
         Default: deeplearning.ai
-    
-    ClusterNodeType:
-        Type: String
-        Description: Elasticache Cluster Node Types
-        Default: cache.t2.small
-        AllowedValues:
-            - cache.t2.small
-            - cache.t2.medium
 
 Metadata:
 
@@ -72,10 +64,10 @@ Resources:
                 EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
 
-    Clusters:
+    ECS:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/clusters.yaml
+            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/ecs-cluster.yaml
             Parameters:
                 EnvironmentName: !Ref AWS::StackName
                 InstanceType: !Ref InstanceType
@@ -83,7 +75,6 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 Subnets: !GetAtt VPC.Outputs.PrivateSubnets
-                ClusterNodeType: !Ref ClusterNodeType
 
     lambdaService:
         Type: AWS::CloudFormation::Stack
@@ -91,7 +82,7 @@ Resources:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/lambda-dev/service.yaml
             Parameters:
                 VPC: !GetAtt VPC.Outputs.VPC
-                Cluster: !GetAtt Clusters.Outputs.Cluster
+                Cluster: !GetAtt ECS.Outputs.Cluster
                 DesiredCount: 1
                 EnvironmentName: !Ref AWS::StackName
                 ECRRepository: !Ref ECRRepository
@@ -104,21 +95,12 @@ Resources:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/gluon-dev/service.yaml
             Parameters:
                 VPC: !GetAtt VPC.Outputs.VPC
-                Cluster: !GetAtt Clusters.Outputs.Cluster
+                Cluster: !GetAtt ECS.Outputs.Cluster
                 DesiredCount: 1
                 EnvironmentName: !Ref AWS::StackName
                 ECRRepository: !Ref ECRRepository
                 Subnets: !GetAtt VPC.Outputs.PublicSubnets
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
-
-#    ElastiCache:
-#        Type: AWS::CloudFormation::Stack
-#        Properties:
-#            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/cache.yaml
-#            Parameters:
-#                ClusterNodeType: !Ref ClusterNodeType
-#                ECSSecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
-#                DependsOn: lambdaService
 
 Outputs:
 
