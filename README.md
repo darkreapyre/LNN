@@ -91,7 +91,6 @@
 ---
 
 ## Notes on Building the Lambda Deployment Package
-
 ### Overview
 This document outlinnes the proceedure to create the Lambda deployment packagew ith the intent to leverage the proceedures for other LNN Versions.
 
