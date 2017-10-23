@@ -22,6 +22,9 @@ from redis import StrictRedis as redis
 s3_client = client('s3', region_name='us-west-2') # S3 access
 s3_resource = resource('s3')
 redis_client = client('elasticache', region_name='us-west-2')
+#Retrieve the Elasticache Cluster endpoint
+cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
+endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 lambda_client = client('lambda', region_name='us-west-2') # Lambda invocations
 
 # Helper Functions
@@ -183,6 +186,9 @@ def initialize_data(endpoint, w, b):
         pass
     else:
         data_keys['bias'] = dump2cache(endpoint, dump=str(b), name='bias')
+    
+    # Initialize the results tracking object
+    
         
     return data_keys, [j for i in a_names for j in i], dims
 
@@ -199,10 +205,6 @@ def lambda_handler(event, context):
             print("Error downloading input data from S3, S3 object does not exist")
         else:
             raise
-    
-    #Retrieve the Elasticache Cluster endpoint
-    cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
-    endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
     
     # Extract the neural network parameters
     with open('/tmp/parameters.json') as parameters_file:
@@ -225,7 +227,7 @@ def lambda_handler(event, context):
     payload['state'] = 'start'
     # Dump the parameters to ElastiCache
     payload['parameter_key'] = dump2cache(endpoint, dump=dumps(parameters), name='parameters')
-    payload['endpoint'] = endpoint
+    #payload['endpoint'] = endpoint
     # Prepare the payload for `TrainerLambda`
     payloadbytes = dumps(payload)
     

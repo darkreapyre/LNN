@@ -16,30 +16,30 @@ from boto3 import client, resource, Session
 import botocore
 import uuid
 import io
-from decimal import Decimal, Inexact, Rounded
-from boto3.dynamodb.types import DYNAMODB_CONTEXT
+from redis import StrictRedis as redis
 
 # Global Variables
 s3_client = client('s3', region_name='us-west-2') # S3 access
 s3_resource = resource('s3')
-dynamo_client = client('dynamodb', region_name='us-west-2') # DynamoDB access
-dynamodb = resource('dynamodb', region_name='us-west-2')
-DYNAMODB_CONTEXT.traps[Inexact] = 0
-DYNAMODB_CONTEXT.traps[Rounded] = 0
+redis_client = client('elasticache', region_name='us-west-2')
+# Retrieve the Elasticache Cluster endpoint
+cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
+endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 lambda_client = client('lambda', region_name='us-west-2') # Lambda invocations
 
+
+
+# Initialize state tracking object, as the event payload
+payload = {}
+
+
 # Helper Functions
-def start():
+def start_epoch():
     """
 
     """
 
-def finish():
-    """
-
-    """
-
-def initialize_with_zeros(dim):
+def finish_epoch():
     """
 
     """
@@ -49,17 +49,12 @@ def propogate(direction):
 
     """
 
-def initialize_weights():
+def sgd():
     """
 
     """
 
-def optimize():
-    """
-
-    """
-
-def calc_loss():
+def loss():
     """
 
     """
@@ -69,10 +64,18 @@ def update_state():
 
     """
 
+def end():
+    """
+    
+    """
+
 def lambda_handler(event, context):
     """
 
     """
+    
+    # Get the Neural Netowkr paramaters from Elasticache
+    gobal parameters = event.get('parameters_key')
 
 
 # Add code to clean up if this is `epochs + 1`
