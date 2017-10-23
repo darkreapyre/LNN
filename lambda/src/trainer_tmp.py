@@ -163,9 +163,9 @@ def lambda_handler(event, context):
     elif current_state == 'start':
         # Start of a new run of the process
         # Get important event variables from event triggerd from `LaunchLambda`
-        S3_bucket = event['s3_bucket']
-        state_table = event['state_table']
-        learning_rate = event['learning_rate']
+        #S3_bucket = event['s3_bucket']
+        #state_table = event['state_table']
+        #learning_rate = event['learning_rate']
         #weights = event['w']
         #bias = event['b']
         epochs = event['epochs']
