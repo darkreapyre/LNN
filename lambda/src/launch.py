@@ -188,7 +188,7 @@ def initialize_data(endpoint, w, b):
         data_keys['bias'] = dump2cache(endpoint, dump=str(b), name='bias')
     
     # Initialize the results tracking object
-    
+    dump2cache(endpoint, dump='', name='results')
         
     return data_keys, [j for i in a_names for j in i], dims
 
