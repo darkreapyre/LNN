@@ -112,117 +112,78 @@ def lambda_handler(event, context):
             results['epoch' + str(epoch)]['loss'] = loss
             
             # Start backprop
+            #propogate(direction='backward', layer=layer-1)
             
+            pass
             
-            \n",
-    "        #propogate(direction='backward', layer=layer-1)\n",
-    "        \n",
-    "        pass\n",
-    "\n",
-    "    else:\n",
-    "        # Move to the next hidden layer\n",
-    "        #propogate(direction='forward', layer=layer+1, activations=activations)\n",
-    "        \n",
-    "        pass\n",
-    "\n",
-    "elif current_state == 'backward':\n",
-    "    # Get important state variables\n",
-    "    \n",
-    "    # Determine the location within backprop\n",
-    "    if epoch == epochs and layer == 0:\n",
-    "        # Location is at the end of the final epoch\n",
-    "        \n",
-    "        # Caculate derivative?????????????????????????\n",
-    "        \n",
-    "        # Caclulate the absolute final weight\n",
-    "        \n",
-    "        # Update the final weights and results (cost) to DynamoDB\n",
-    "        \n",
-    "        # Finalize the the process and clean up\n",
-    "        #finish()\n",
-    "        \n",
-    "        pass\n",
-    "    \n",
-    "    elif epoch < epochs and layer == 0:\n",
-    "        # Location is at the end of the current epoch and backprop is finished\n",
-    "        # Calculate the derivative?????????????????????????\n",
-    "        \n",
-    "        # Calculate the weights for this epoch\n",
-    "        \n",
-    "        # Update the weights and results (cost) to DynamoDB\n",
-    "        \n",
-    "        # Start the next epoch\n",
-    "        #epoch = epoch + 1\n",
-    "        #start(epoch)\n",
-    "        \n",
-    "        pass\n",
-    "        \n",
-    "    else:\n",
-    "        # Move to the next hidden layer\n",
-    "        #propogate(direction='backward', layer=layer-1)\n",
-    "        \n",
-    "        pass\n",
-    "    \n",
-    "elif current_state == 'start':\n",
-    "    # Start of a new run of the process\n",
-    "    # Get important event variables from event triggerd from `LaunchLambda`\n",
-    "    s3_bucket = event['s3_bucket']\n",
-    "    state_table = event['state_table']\n",
-    "    learning_rate = event['learning_rate']\n",
-    "    #weights = event['w']\n",
-    "    #bias = event['b']\n",
-    "    epochs = event['epochs']\n",
-    "    epoch = event['epoch']\n",
-    "    layers = event['layers']\n",
-    "    layer = event['layer']\n",
-    "    activations = event['activations']\n",
-    "    #neurons = event.get('neurons')['layer' + str(layer)]\n",
-    "    #current_activation = event.get('activations')['layer' + str(current_layer)]\n",
-    "    \n",
-    "    # Initialize Weights\n",
-    "    #if weights == 0: # Initial weights to dimensions of input data\n",
-    "    #    dims = event.get('dimensions')['train_set_x'][0]\n",
-    "    #    w = np.zeros((dims, 1))\n",
-    "    #    # Store the initial Weights data to S3 for Neurons\n",
-    "    #    numpy2s3(w, name='weights', bucket=s3_bucket)\n",
-    "        \n",
-    "    #else:\n",
-    "    #    #placeholder for random initialization of weights\n",
-    "    #    pass\n",
-    "    \n",
-    "    # Initialize Bias\n",
-    "    #if bias != 0:\n",
-    "    #    #placeholder for other bias initialization\n",
-    "    #    pass\n",
-    "    #else:\n",
-    "    #    b = bias\n",
-    "    #    # Store the initial Bias data to S3 for Neurons\n",
-    "    #    numpy2s3(b, name='bias', bucket=s3_bucket)\n",
-    "    \n",
-    "    # Create a epoch 1 in DynamoDB with ALL initial parameters\n",
-    "    table = dynamodb.Table('state')\n",
-    "    table.put_item(\n",
-    "        Item = {\n",
-    "            'epoch': epoch,\n",
-    "            'epochs': epochs,\n",
-    "            'layer': layer+1,\n",
-    "            'learning_rate': Decimal(learning_rate),\n",
-    "            'activations': activations,\n",
-    "            'state_table': state_table,\n",
-    "            's3_bucket': s3_bucket,\n",
-    "            'params': event['params']\n",
-    "        }\n",
-    "    )\n",
-    "    \n",
-    "    # Start forwardprop\n",
-    "    #layer = layer + 1 # Shuould equate to 0+1\n",
-    "    #propogate(direction='forward', layer=layer+1, activations=activations)\n",
-    "\n",
-    "else:\n",
-    "    print(\"No state informaiton has been provided.\")\n",
-    "    raise"
+        else:
+            # Move to the next hidden layer
+            #propogate(direction='forward', layer=layer+1, activations=activations)
+            
+            pass
+        
+    elif current_state == 'backward':
+        # Get important state variables
+        
+        # Determine the location within backprop
+        if epoch == epochs and layer == 0:
+            # Location is at the end of the final epoch
+            
+            # Caculate derivative?????????????????????????\
+            
+            # Caclulate the absolute final weight
+            
+            # Update the final weights and results (cost) to DynamoDB
+            
+            # Finalize the the process and clean up\n",
+            #finish_epoch()
+            
+            pass
+            
+        elif epoch < epochs and layer == 0:
+            # Location is at the end of the current epoch and backprop is finished
+            # Calculate the derivative?????????????????????????
+            
+            # Calculate the weights for this epoch
+            
+            # Update the weights and results (cost) to DynamoDB
+            
+            # Start the next epoch
+            #epoch = epoch + 1
+            #start_epoch(epoch)
+            
+            pass
+            
+        else:
+            # Move to the next hidden layer
+            #propogate(direction='backward', layer=layer-1)
+            
+            pass
+            
+    elif current_state == 'start':
+        # Start of a new run of the process
+        # Get important event variables from event triggerd from `LaunchLambda`
+        S3_bucket = event['s3_bucket']
+        state_table = event['state_table']
+        learning_rate = event['learning_rate']
+        #weights = event['w']
+        #bias = event['b']
+        epochs = event['epochs']
+        epoch = event['epoch']
+        ayers = event['layers']
+        layer = event['layer']
+        activations = event['activations']
+        #neurons = event.get('neurons')['layer' + str(layer)]
+        #current_activation = event.get('activations')['layer' + str(current_layer)]
 
-
-
+        # Create a epoch 1 in DynamoDB with ALL initial parameters
+        
+        # Start forwardprop
+        #layer = layer + 1 # Shuould equate to 0+1
+        #propogate(direction='forward', layer=layer+1, activations=activations)
+        
+    else:
+        print("No state informaiton has been provided.")
+        raise
 
 ###### Add code to clean up if this is `epochs + 1`
