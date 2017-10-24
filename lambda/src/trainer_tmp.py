@@ -27,8 +27,6 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-# Initialize state tracking object, as the event payload
-payload = {}
 
 
 # Helper Functions
@@ -142,20 +140,18 @@ def start_epoch(epoch, layer):
 
     """
     
-    # Update the results onbject for the new epoch
-    exec('epoch' + str(epoch)) = {}
-    
+    # Initialize the results onbject for the new epoch
+    results['epoch' + str(epoch)] = {}
     
     # Start forwardprop
-    #layer = layer + 1 # Shuould equate to 0+1
-    #propogate(direction='forward', layer=layer+1, activations=activations)
+    propogate(direction='forward', epoch=epoch, layer=layer)
 
-def finish_epoch():
+def finish_epoch(direction, epoch, layer):
     """
 
     """
 
-def propogate(direction):
+def propogate(direction, layer, ):
     """
 
     """
@@ -201,16 +197,8 @@ def lambda_handler(event, context):
     global parameters 
     parameters = cache.get(parameter_key)
     
-#    # Get the results object from ElastiCache
-#    # Since this might have
-#    global results
-#    results = cache.get('results')
-    
     # Get the current state from the invoking lambda
     state = event.get('state')
-   
-    # Start tracking state
-    payload['parameter_key'] = parameter_key
     
     # Execute appropriate action based on the the current state
     if state == 'forward'
@@ -238,7 +226,7 @@ def lambda_handler(event, context):
             
             pass
         
-    elif current_state == 'backward':
+    elif state == 'backward':
         # Get important state variables
         
         # Determine the location within backprop
@@ -276,11 +264,11 @@ def lambda_handler(event, context):
             
             pass
             
-    elif current_state == 'start':
+    elif state == 'start':
         # Start of a new run of the process
-        # Create the results object and initialize the correct structure
-        # in order to get the correct key naming structure.
-        template = {'epoch': 1, }
+        # Initialize the results tracking object
+        global results
+        results = {}
         
         # Create initial parameters
         epoch = 1
