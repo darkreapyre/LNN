@@ -11,7 +11,7 @@ import scipy
 import os
 from os import environ
 import json
-from json import dumps
+from json import dumps, loads
 from boto3 import client, resource, Session
 import botocore
 import uuid
@@ -36,13 +36,13 @@ def to_cache(endpoint, obj, name):
     the Key.
     
     Arguments:
-    endpoint -- The ElastiCache endpoint
+    endpoint -- The ElastiCache endpoint.
     obj -- the object to srialize. Can be of type:
-            - Numpy Array
-            - Python Dictionary
-            - String
-            - Integer
-    name -- Name of the Key
+            - Numpy Array.
+            - Python Dictionary.
+            - String.
+            - Integer.
+    name -- Name of the Key.
     
     Returns:
     key -- For each type the key is made up of {name}|{type} and for
@@ -79,7 +79,7 @@ def to_cache(endpoint, obj, name):
         cache.set(key, val)
         return key
     # Test if the object to serialize is a dictionary
-    elif type(obj) is dict
+    elif type(obj) is dict:
         # Convert the dictionary to a String
         val = json.dumps(obj)
         key = '{0}|{1}'.format(name, 'json')
@@ -91,14 +91,14 @@ def from_cache(endpoint, key):
     """
     De-serializes binary object from ElastiCache by reading
     the type of object from the name and converting it to
-    the appropriate data type
+    the appropriate data type.
     
     Arguments:
-    endpoint -- ElastiCacheendpoint
-    key -- Name of the Key to retrieve the object
+    endpoint -- ElastiCache endpoint.
+    key -- Name of the Key to retrieve the object.
     
     Returns:
-    obj -- The object converted to specifed data type
+    obj -- The object converted to specifed data type.
     """
     
     # Check if the Key is for a Numpy array containing
@@ -137,23 +137,45 @@ def from_cache(endpoint, key):
 
 def start_epoch(epoch, layer):
     """
-
+    Starts a new epoch and configures the necessary state tracking objcts.
+    
+    Arguments:
+    epoch -- Integer representing the "current" epoch.
+    layer -- Integer representing the current hidden layer.
     """
     
+    #TBD
+    pass
+
     # Initialize the results onbject for the new epoch
-    results['epoch' + str(epoch)] = {}
+    #results['epoch' + str(epoch)] = {}
     
     # Start forwardprop
-    propogate(direction='forward', epoch=epoch, layer=layer)
+    #propogate(direction='forward', epoch=epoch)
 
 def finish_epoch(direction, epoch, layer):
     """
+    Closes out the current epoch and updates the necessary information to the results object.
 
+    Arguments:
+    direction -- The current direction of the propogation, either `forward` or `backward`.
+    epoch -- Integer representing the "current" epoch to close out.
     """
 
-def propogate(direction, layer, ):
-    """
+    #TBD
+    pass
 
+def propogate(direction, epoch, layer):
+    """
+    Determines the amount of "hidden" units based on the layer and loops
+    through launching the necessary `NeuronLambda` functions with the 
+    appropriate state. Each `NeuronLambda` implements the cost function 
+    OR the gradients depending on the direction.
+
+    Arguments:
+    direction -- The current direction of the propogation, either `forward` or `backward`.
+    epoch -- Integer representing the "current" epoch to close out.
+    layer -- Integer representing the current hidden layer.
     """
     
     ###########################################################
@@ -165,27 +187,73 @@ def propogate(direction, layer, ):
     # 4. layer.                                               #
     # 5. final. (Is it the last neuron? True|False).          #
     ###########################################################
+
+    # Build the NeuronLambda payload
+    #payload = {}
+
+    # Add the parameters to the payload
+    #payload['state'] = direction
+    #payload['parameter_key] = parameter_key
+    #payload['epoch'] = epoch
+    #payload['layer'] = layer
+
+
+    #TBD
+    if direction == 'forward':
+        # Launch Lambdas to propogate forward
+        pass
+    elif direction == 'backward':
+        # Launch Lambdas to propogate backward
+        pass
+
+    """
+    Note:
+    When launching NeuronLambda with multiple hidden unit,
+    remember to assign an ID
+    """
+
+def optimize(epoch, layer, params, grads):
+    """
+    Optimizes `w` and `b` by running Gradient Descent to get the `cost`.
+
+    Arguments:
+    epoch -- Integer representing the "current" epoch to close out.
+    layer -- Integer representing the current hidden layer.
+    params -- Dictionary containing the gradients of the weights and 
+                bias.
+    grads -- Dictionary containing the gardients of the wights and
+                bias with respect to the cost function.
     
-
-def optimize():
+    Returns:
+    TBD
     """
 
-    """
-
-def calc_loss():
-    """
-
-    """
-
-def update_state():
-    """
+    #TBD
+    #Get the learning rate
+    #learning_rate = parameters['learning_rate']
 
     """
+    Note:
+    Probably have to get the cost from the output of the NeuronLambdas
+    OR
+    Get data from the NeuronLambdas and calculate the cost here
+    """
+
+    # Get the grads and params
+    
+    # Perform the update rule
+    #w = w - learning_rate * grads['dw']
+    #b = b - learning_rate * grads['db']
+
+    pass
 
 def end():
     """
-    
+    Finishes out the epoch and starts the next epoch.
     """
+
+    #TBD
+    pass
 
 def lambda_handler(event, context):
     """
@@ -193,7 +261,8 @@ def lambda_handler(event, context):
     """
        
     # Get the Neural Network paramaters from Elasticache
-    parameter_key = event.get('parameter_key')
+    global parameter_key
+    parameter_key = event.get('parameters')
     global parameters 
     parameters = from_cache(parameter_key)
     
@@ -239,8 +308,8 @@ def lambda_handler(event, context):
             
             # Update the final weights and results (cost) to DynamoDB
             
-            # Finalize the the process and clean up\n",
-            #finish_epoch()
+            # Finalize the the process and clean up
+            #end()
             
             pass
             
