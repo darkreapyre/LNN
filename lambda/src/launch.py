@@ -28,6 +28,66 @@ endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 lambda_client = client('lambda', region_name='us-west-2') # Lambda invocations
 
 # Helper Functions
+def to_cache(endpoint, obj, name):
+    """
+    Serializes multiple data type to ElastiCache and returns
+    the Key.
+    
+    Arguments:
+    endpoint -- The ElastiCache endpoint
+    obj -- the object to srialize. Can be of type:
+            - Numpy Array
+            - Python Dictionary
+            - String
+            - Integer
+    name -- Name of the Key
+    
+    Returns:
+    key -- For each type the key is made up of {name}|{type} and for
+           the case of Numpy Arrays, the Length and Widtch of the 
+           array are added to the Key.
+    """
+    
+    # Test if the object to Serialize is a Numpy Array
+    if 'numpy' in str(type(obj)):
+        array_dtype = str(obj.dtype)
+        length, width = obj.shape
+        # Convert the array to string
+        val = obj.ravel().tostring()
+        # Create a key from the name and necessary parameters from the array
+        # i.e. {name}|{type}#{length}#{width}
+        key = '{0}|{1}#{2}#{3}'.format(name, array_dtype, length, width)
+        # Store the binary string to Redis
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is a string
+    elif type(obj) is str:
+        key = '{0}|{1}'.format(name, 'string')
+        val = obj
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is an integer
+    elif type(obj) is int:
+        key = '{0}|{1}'.format(name, 'int')
+        # Convert to a string
+        val = str(obj)
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is a dictionary
+    elif type(obj) is dict
+        # Convert the dictionary to a String
+        val = json.dumps(obj)
+        key = '{0}|{1}'.format(name, 'json')
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key"
+
+
+
+
 def dump2cache(endpoint, dump, name):
     """
     Serializes a string or JSON to a binary string and stores it in ElastiCache
