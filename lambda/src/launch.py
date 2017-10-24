@@ -11,7 +11,7 @@ import scipy
 import os
 from os import environ
 import json
-from json import dumps
+from json import dumps, loads
 from boto3 import client, resource, Session
 import botocore
 import uuid
@@ -133,74 +133,6 @@ def from_cache(endpoint, key):
         obj = cache.get(key)
         return obj
 
-
-
-
-def dump2cache(endpoint, dump, name):
-    """
-    Serializes a string or JSON to a binary string and stores it in ElastiCache
-    
-    Arguments:
-    endpoint -- ElastiCache endpoint
-    dump -- JSON dump or string to be stored in ElastiCache
-    name -- name used as the hash key of the data
-    
-    Return:
-    Hash key for the data
-    """
-    
-    key = str(name)
-    cache = redis(host=endpoint, port=6379, db=0)
-    val = dump
-    cache.set(key, val)
-    return key
-
-def cache2numpy(endpoint, key):
-    """
-    De-serializes binary string from Elasticache to a Numpy array
-    
-    Arguments:
-    endpoint -- ElastiCache endpoint
-    key -- name of te hash key of the data to be retrieved
-    
-    Return:
-    Numpy array
-    """
-    
-    # Get array from Redis
-    cache = redis(host=endpoint, port=6379, db=0)
-    data = cache.get(key)
-    # De-serialize the value
-    array_dtype, length, width = key.split('|')[1].split('#')
-    array = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
-    return array
-
-def numpy2cache(endpoint, array, name):
-    """
-    Seializes a Numpy array to a binary string and stores it in the Redis cache
-    
-    Arguments:
-    endpoint -- ElastiCache endpoint
-    array -- Numpy array to stored in ElastiCache
-    name -- name used as the hash key of the data
-    
-    Return:
-    Hash key for the array
-    """
-    
-    # Get parameters for the key
-    array_dtype = str(array.dtype)
-    length, width = array.shape
-    # Convert the array to string
-    val = array.ravel().tostring()
-    # Create a key from the name and necessary parameters from the array
-    # i.e. {name}|{type}#{length}#{width} 
-    key = '{0}|{1}#{2}#{3}'.format(name, array_dtype, length, width)
-    # Store the binary string to Redis
-    cache = redis(host=endpoint, port=6379, db=0)
-    cache.set(key, val)
-    return key
-
 def name2str(obj, namespace):
     """
     Converts the name of the numpy array to string
@@ -273,7 +205,7 @@ def initialize_data(endpoint, w, b):
         a_names.append(name2str(a_list[i], locals()))
     for j in range(len(a_list)):
         # Dump the numpy arrays to ElastiCache
-        data_keys[str(a_names[j][0])] = numpy2cache(endpoint, array=a_list[j], name=a_names[j][0])
+        data_keys[str(a_names[j][0])] = to_cache(endpoint, obj=a_list[j], name=a_names[j][0])
         # Append the array dimensions to the list
         dims[str(a_names[j][0])] = a_list[j].shape
     
@@ -282,7 +214,7 @@ def initialize_data(endpoint, w, b):
         dim = dims.get('train_set_x')[0]
         weights = np.zeros((dim, 1))
         # Store the initial weights as a column vector on S3
-        data_keys['weights'] = numpy2cache(endpoint, array=weights, name='weights')
+        data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
     else:
         #placeholder for random weight initialization
         pass
@@ -290,13 +222,13 @@ def initialize_data(endpoint, w, b):
     # Initialize Bias
     if b != 0:
         #placeholder for random bias initialization
-        #data_keys['bias'] = numpy2cache(endpoint, array=bias, name='bias')
+        #data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
         pass
     else:
-        data_keys['bias'] = dump2cache(endpoint, dump=str(b), name='bias')
+        data_keys['bias'] = to_cache(endpoint, dump=b, name='bias')
     
     # Initialize the results tracking object
-    dump2cache(endpoint, dump='', name='results')
+    to_cache(endpoint, dump='', name='results')
         
     return data_keys, [j for i in a_names for j in i], dims
 
@@ -334,7 +266,7 @@ def lambda_handler(event, context):
     # Initialize the overall state
     payload['state'] = 'start'
     # Dump the parameters to ElastiCache
-    payload['parameter_key'] = dump2cache(endpoint, dump=dumps(parameters), name='parameters')
+    payload['parameter_key'] = to_cache(endpoint, obj=parameters, name='parameters')
     #payload['endpoint'] = endpoint
     # Prepare the payload for `TrainerLambda`
     payloadbytes = dumps(payload)
