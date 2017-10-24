@@ -10,6 +10,7 @@
 5. Make sure to set Lambda loggin for a maximum of 7 days so as to not have lagacy Lambda Logs from previouys runs.
 6. Make sure to add the ARNs of the various Lambda Functions to the environmental variables in the CloudFormation Template.
 7. Ensure to always include the `state` in the `event` every time the `TrainerLambda` is invoked.
+8. The `results` object must be initialized as far as possible in the TrainerLambda, because it will start off as a string and end up being a binary string of a Python dictionary, once the Loss, Gradients etc. are calculated.
 
 ---
 

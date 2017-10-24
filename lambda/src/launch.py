@@ -227,8 +227,8 @@ def initialize_data(endpoint, w, b):
     else:
         data_keys['bias'] = to_cache(endpoint, dump=b, name='bias')
     
-    # Initialize the results tracking object
-    to_cache(endpoint, dump='', name='results')
+#    # Initialize the results tracking object
+#    to_cache(endpoint, dump='', name='results')
         
     return data_keys, [j for i in a_names for j in i], dims
 

@@ -27,17 +27,128 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-# Get the results object from ElastiCache
-results = cache.get('results')
 # Initialize state tracking object, as the event payload
 payload = {}
 
 
 # Helper Functions
-def start_epoch():
+def to_cache(endpoint, obj, name):
+    """
+    Serializes multiple data type to ElastiCache and returns
+    the Key.
+    
+    Arguments:
+    endpoint -- The ElastiCache endpoint
+    obj -- the object to srialize. Can be of type:
+            - Numpy Array
+            - Python Dictionary
+            - String
+            - Integer
+    name -- Name of the Key
+    
+    Returns:
+    key -- For each type the key is made up of {name}|{type} and for
+           the case of Numpy Arrays, the Length and Widtch of the 
+           array are added to the Key.
+    """
+    
+    # Test if the object to Serialize is a Numpy Array
+    if 'numpy' in str(type(obj)):
+        array_dtype = str(obj.dtype)
+        length, width = obj.shape
+        # Convert the array to string
+        val = obj.ravel().tostring()
+        # Create a key from the name and necessary parameters from the array
+        # i.e. {name}|{type}#{length}#{width}
+        key = '{0}|{1}#{2}#{3}'.format(name, array_dtype, length, width)
+        # Store the binary string to Redis
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is a string
+    elif type(obj) is str:
+        key = '{0}|{1}'.format(name, 'string')
+        val = obj
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is an integer
+    elif type(obj) is int:
+        key = '{0}|{1}'.format(name, 'int')
+        # Convert to a string
+        val = str(obj)
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is a dictionary
+    elif type(obj) is dict
+        # Convert the dictionary to a String
+        val = json.dumps(obj)
+        key = '{0}|{1}'.format(name, 'json')
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+
+def from_cache(endpoint, key):
+    """
+    De-serializes binary object from ElastiCache by reading
+    the type of object from the name and converting it to
+    the appropriate data type
+    
+    Arguments:
+    endpoint -- ElastiCacheendpoint
+    key -- Name of the Key to retrieve the object
+    
+    Returns:
+    obj -- The object converted to specifed data type
+    """
+    
+    # Check if the Key is for a Numpy array containing
+    # `float64` data types
+    if 'float64' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        val = cache.get(key)
+        # De-serialize the value
+        array_dtype, length, width = key.split('|')[1].split('#')
+        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        return obj
+    # Check if the Key is for a Numpy array containing
+    # `int64` data types
+    elif 'int64' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        data = cache.get(key)
+        # De-serialize the value
+        array_dtype, length, width = key.split('|')[1].split('#')
+        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        return obj
+    # Check if the Key is for a json type
+    elif 'json' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return json.loads(obj)
+    # Chec if the Key is an integer
+    elif 'int' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return int(obj)
+    # Check if the Key is a string
+    elif 'string' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return obj
+
+def start_epoch(epoch, layer):
     """
 
     """
+    
+    # Update the results onbject for the new epoch
+    exec('epoch' + str(epoch)) = {}
+    
+    
+    # Start forwardprop
+    #layer = layer + 1 # Shuould equate to 0+1
+    #propogate(direction='forward', layer=layer+1, activations=activations)
 
 def finish_epoch():
     """
@@ -87,9 +198,15 @@ def lambda_handler(event, context):
        
     # Get the Neural Network paramaters from Elasticache
     parameter_key = event.get('parameter_key')
-    global parameters = cache.get(parameters_key)
+    global parameters 
+    parameters = cache.get(parameter_key)
     
-    # Get the current state
+#    # Get the results object from ElastiCache
+#    # Since this might have
+#    global results
+#    results = cache.get('results')
+    
+    # Get the current state from the invoking lambda
     state = event.get('state')
    
     # Start tracking state
@@ -100,7 +217,6 @@ def lambda_handler(event, context):
         # Get important state variables
         epoch = event.get('epoch')
         layer = event.get('layer')
-        
         
         # Determine the location within forwardprop
         if layer > layers:
@@ -162,26 +278,15 @@ def lambda_handler(event, context):
             
     elif current_state == 'start':
         # Start of a new run of the process
-        # Get important event variables from event triggerd from `LaunchLambda`
-        #S3_bucket = event['s3_bucket']
-        #state_table = event['state_table']
-        #learning_rate = event['learning_rate']
-        #weights = event['w']
-        #bias = event['b']
-        epochs = event['epochs']
-        epoch = event['epoch']
-        ayers = event['layers']
-        layer = event['layer']
-        activations = event['activations']
-        #neurons = event.get('neurons')['layer' + str(layer)]
-        #current_activation = event.get('activations')['layer' + str(current_layer)]
-
-        # Create a epoch 1 in DynamoDB with ALL initial parameters
+        # Create the results object and initialize the correct structure
+        # in order to get the correct key naming structure.
+        template = {'epoch': 1, }
         
-        # Start forwardprop
-        #layer = layer + 1 # Shuould equate to 0+1
-        #propogate(direction='forward', layer=layer+1, activations=activations)
-        
+        # Create initial parameters
+        epoch = 1
+        layer = 1
+        start_epoch(epoch=epoch, layer=layer)
+       
     else:
         print("No state informaiton has been provided.")
         raise
