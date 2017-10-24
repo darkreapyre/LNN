@@ -316,10 +316,12 @@ def lambda_handler(event, context):
         elif epoch < epochs and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
             # Calculate the derivative?????????????????????????
+
+            # Get the Cost and store it to the results object
             
             # Calculate the weights for this epoch
             
-            # Update the weights and results (cost) to DynamoDB
+            # Update/get the weights and bias from the results object
             
             # Start the next epoch
             #epoch = epoch + 1

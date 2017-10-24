@@ -11,6 +11,7 @@
 6. Make sure to add the ARNs of the various Lambda Functions to the environmental variables in the CloudFormation Template.
 7. Ensure to always include the `state` in the `event` every time the `TrainerLambda` is invoked.
 8. The `results` object must be initialized as far as possible in the TrainerLambda, because it will start off as a string and end up being a binary string of a Python dictionary, once the Loss, Gradients etc. are calculated.
+9. Since this test is for a single Perceptron, and thus a single output Neuron, it should be up to the `NeuronLambda` to calculate the cost and supply it back to the `TrainerLambda`. In the case of multiple Logistic Regression or more complicated networks, there may be multiple output Neurons. How to address these situation will need to thought through later.
 
 ---
 
