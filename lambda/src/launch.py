@@ -83,7 +83,55 @@ def to_cache(endpoint, obj, name):
         key = '{0}|{1}'.format(name, 'json')
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
-        return key"
+        return key
+
+def from_cache(endpoint, key):
+    """
+    De-serializes binary object from ElastiCache by reading
+    the type of object from the name and converting it to
+    the appropriate data type
+    
+    Arguments:
+    endpoint -- ElastiCacheendpoint
+    key -- Name of the Key to retrieve the object
+    
+    Returns:
+    obj -- The object converted to specifed data type
+    """
+    
+    # Check if the Key is for a Numpy array containing
+    # `float64` data types
+    if 'float64' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        val = cache.get(key)
+        # De-serialize the value
+        array_dtype, length, width = key.split('|')[1].split('#')
+        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        return obj
+    # Check if the Key is for a Numpy array containing
+    # `int64` data types
+    elif 'int64' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        data = cache.get(key)
+        # De-serialize the value
+        array_dtype, length, width = key.split('|')[1].split('#')
+        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        return obj
+    # Check if the Key is for a json type
+    elif 'json' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return json.loads(obj)
+    # Chec if the Key is an integer
+    elif 'int' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return int(obj)
+    # Check if the Key is a string
+    elif 'string' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return obj
 
 
 
