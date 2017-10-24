@@ -249,7 +249,7 @@ def optimize(epoch, layer, params, grads):
 
 def end():
     """
-    Finishes out the epoch and starts the next epoch.
+    Finishes out the process and launches the next state mechanisms for prediction.
     """
 
     #TBD
