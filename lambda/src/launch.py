@@ -77,7 +77,7 @@ def to_cache(endpoint, obj, name):
         cache.set(key, val)
         return key
     # Test if the object to serialize is a dictionary
-    elif type(obj) is dict
+    elif type(obj) is dict:
         # Convert the dictionary to a String
         val = json.dumps(obj)
         key = '{0}|{1}'.format(name, 'json')
@@ -225,7 +225,7 @@ def initialize_data(endpoint, w, b):
         #data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
         pass
     else:
-        data_keys['bias'] = to_cache(endpoint, dump=b, name='bias')
+        data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
     
 #    # Initialize the results tracking object
 #    to_cache(endpoint, dump='', name='results')

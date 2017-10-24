@@ -195,7 +195,7 @@ def lambda_handler(event, context):
     # Get the Neural Network paramaters from Elasticache
     parameter_key = event.get('parameter_key')
     global parameters 
-    parameters = cache.get(parameter_key)
+    parameters = from_cache(parameter_key)
     
     # Get the current state from the invoking lambda
     state = event.get('state')
