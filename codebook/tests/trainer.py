@@ -354,7 +354,7 @@ def lambda_handler(event, context):
                 A = np.squeeze(A)
             
             # Add `A` to input data for backprop
-            # Note: MAy need to rething this for multiple hidden units
+            # Note: May need to rethink this for multiple hidden units
             parameters['data_keys']['A'] = to_cache(endpoint=endpoint, obj=A, name='A')
             
             # Get the training examples data
@@ -380,6 +380,9 @@ def lambda_handler(event, context):
         
     elif state == 'backward':
         # Get important state variables
+        # Get important state variables
+        epoch = event.get('epoch')
+        layer = event.get('layer')
         
         # Determine the location within backprop
         if epoch == parameters['epochs'] and layer == 0:
@@ -396,7 +399,7 @@ def lambda_handler(event, context):
             
             pass
             
-        elif epoch < epochs and layer == 0:
+        elif epoch < parameters['epochs'] and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
             # Calculate the derivative?????????????????????????
 
