@@ -20,6 +20,10 @@
 8. The `results` object must be initialized as far as possible in the `NeuronLambda`. This will not only set it as a `global` variable, but, because it will start off as a string and end up being a binary string of a Python dictionary, once the Loss, Gradients etc. are calculated.
 9. Since this test is for a single Perceptron, and thus a single output Neuron, it should be up to the `NeuronLambda` to calculate the cost and supply it back to the `TrainerLambda`. In the case of multiple Logistic Regression or more complicated networks, there may be multiple output Neurons. How to address these situation will need to thought through later.
 
+
+10. **Talk about handeling results and string vs. json**
+11. **Talk about only updaing the layer number (plus | minus) on `NeuronLambda`**
+
 # Issues with wether the last perceptron will claculate the COST or that is done by TrainerLambda!!!!!!!!!!!!!!!!
 - Tricks
 - Andrew Ng "cache" 

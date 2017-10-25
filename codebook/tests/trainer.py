@@ -145,7 +145,9 @@ def start_epoch(epoch, layer):
     """
 
     # Initialize the results object for the new epoch
+    # Note: k = 'results|json'
     results['epoch' + str(epoch)] = {}
+    to_cache(endpoint=endpoint, obj=results, name='results')
     
     # Start forwardprop
     propogate(direction='forward', epoch=epoch, layer=layer)
@@ -231,6 +233,21 @@ def propogate(direction, epoch, layer):
     elif direction == 'backward':
         # Launch Lambdas to propogate backward
         # Prepare the payload for `NeuronLambda`
+
+
+######################################################################################################            
+#            # Invoke NeuronLambdas for next layer
+#            try:
+#                response = lambda_client.invoke(
+#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+#                    InvocationType='Event',
+#                    Payload=payloadbytes
+#                )
+#            except botocore.exceptions.ClientError as e:
+#                print(e)
+#                raise
+#            print(response)
+######################################################################################################
         
         #TBD
         pass
@@ -314,53 +331,46 @@ def lambda_handler(event, context):
         layer = event.get('layer')
         
         # Determine the location within forwardprop
-        if layer > layers:
-            # Location is at the end of forwardprop
-"""
-##################################################################################################################
-#            # Create a placeholder numpy array for vectorized activations
-#            blank = np.array([])
-#
-#            # Get the output from a NeuronLambdas
-#            a = []
-#            count = 0
-#            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True) # Returns string
-#            for key in r.scan_iter(match='a_*'):
-#                count = count + 1
-#                a.append(key)
-#            
-#            # Determine if there are more than one activation
-#            if count > 0:
-#                #TBD on how to deal with multiple activations
-#                pass
-#            else:
-#                a = from_cache(endpoint, key= a[0])
-#
-#                # Calculate Cost
-###################################################################################################################
-"""
-                pass
+        if layer > parameters['layers']:
+            # Location is at the end of forwardprop, therefore calculate Cost
+            # Get the activations from the NeuronLambda by using this redis
+            # command to ensure that a pure string is returned for the key
+            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
+            key_list = []
+            for key in r.scan_iter(match='a_*'):
+                key_list.append(key)
+            # Create a dictionat of numpy arrays
+            A_dict = {}
+            for i in key_list:
+                A_dict[i] = from_cache(endpoint=endpoint, key=i)
+            # Create the numpy array of activations, depending on the 
+            # number of hidden units
+            num_activations = len(key_list)
+            A = np.array([arr.tolist() for arr in A_dict.values()])
+            if num_activations == 1:
+                dims = (key_list[0].split('|')[1].split('#')[1:])
+                A = A.reshape(int(dims[0]), int(dims[1]))
+            else:
+                A = np.squeeze(A)
+            
+            # Add `A` to input data for backprop
+            # Note: MAy need to rething this for multiple hidden units
+            parameters['data_keys']['A'] = to_cache(endpoint=endpoint, obj=A, name='A')
+            
+            # Get the training examples data
+            Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
+            m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
+            
+            # Calculate the Cost
+            cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
 
-
-
-            #TBD
-
-            ################################################################################
-            # Get the Activation results from NeuronLambda if there are multiple layers    #
-            #results = from_cache(endpoint=endpointy, key='results')                       #
-            #A = results.get('epoch' + str(epoch))['A']                                    #
-            #m = parameters.get('data_dimensions')['train_set_x'][1]                       #
-            #                                                                              #            
-            # Update the Cost function to the results object if there are multiple layers  #
-            #cost = (-1 / m) * np.sum()                                                    #
-            #results['epoch' + str(epoch)]['loss'] = loss                                  #
-            ################################################################################
-
+            # Update results with the Cost
+            results = from_cache(endpoint=endpoint, key='results|json')
+            results['epoch' + str(epoch)]['cost'] = cost
+            to_cache(endpoint=endpoint, obj=results, name='results')
 
             # Start backprop
-            #propogate(direction='backward', layer=layer-1)
-            
-            pass
+            propogate(direction='backward', epoch=epoch, layer=layer)
             
         else:
             # Move to the next hidden layer
@@ -372,7 +382,7 @@ def lambda_handler(event, context):
         # Get important state variables
         
         # Determine the location within backprop
-        if epoch == epochs and layer == 0:
+        if epoch == parameters['epochs'] and layer == 0:
             # Location is at the end of the final epoch
             
             # Caculate derivative?????????????????????????\

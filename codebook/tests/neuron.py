@@ -238,26 +238,6 @@ def lambda_handler(event, context):
         # Compute the Cost on TrainerLambda by caching it
         to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
 
-        """
-        ###################################################################################
-        #                             ISSUES!!!!!                                         #
-        #                                                                                 #
-        #   Backprop need A, therefore it somehow has to be stored in order to use it.    #
-        #                                                                                 #
-        #               SOOOOO I need to think about this!!!!!                            #
-        #                                                                                 #
-        #                                                                                 #
-        #cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))            #
-        #results['epoch' + str(epoch)]['cost'] = cost                                     #
-        #                                                                                 #
-        # Update results in Elasticache                                                   #
-        #to_cache(endpoint=endpoint, obj=results, name='results')                         #
-        ###################################################################################        
-        """
-
-        # Add some Assertion statements
-        #TBD
-
         if last:
             # Build the state payload
             payload = {}
