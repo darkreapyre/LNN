@@ -61,11 +61,12 @@ import scipy
 import os
 from os import environ
 import json
-from json import dumps
+from json import dumps, loads
 from boto3 import client, resource, Session
 import botocore
 import uuid
 import io
+import redis
 from redis import StrictRedis as redis
 
 # Global Variables
@@ -80,30 +81,136 @@ cache = redis(host=endpoint, port=6379, db=0)
 results = from_cache(endpoint=endpoint, key='results')
 
 # Helper Functions
+def sigmoid(z):
+    """
+    Computes the sigmoid of z
+
+    Arguments:
+    z -- A scalar or numpy array of any size
+
+    Return:
+    s -- sigmoid(z)
+    """
+
+    s = 1 / (1 + np.exp(-z))
+
+    return s
+
+def to_cache(endpoint, obj, name):
+    """
+    Serializes multiple data type to ElastiCache and returns
+    the Key.
+    
+    Arguments:
+    endpoint -- The ElastiCache endpoint.
+    obj -- the object to srialize. Can be of type:
+            - Numpy Array.
+            - Python Dictionary.
+            - String.
+            - Integer.
+    name -- Name of the Key.
+    
+    Returns:
+    key -- For each type the key is made up of {name}|{type} and for
+           the case of Numpy Arrays, the Length and Widtch of the 
+           array are added to the Key.
+    """
+    
+    # Test if the object to Serialize is a Numpy Array
+    if 'numpy' in str(type(obj)):
+        array_dtype = str(obj.dtype)
+        length, width = obj.shape
+        # Convert the array to string
+        val = obj.ravel().tostring()
+        # Create a key from the name and necessary parameters from the array
+        # i.e. {name}|{type}#{length}#{width}
+        key = '{0}|{1}#{2}#{3}'.format(name, array_dtype, length, width)
+        # Store the binary string to Redis
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is a string
+    elif type(obj) is str:
+        key = '{0}|{1}'.format(name, 'string')
+        val = obj
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is an integer
+    elif type(obj) is int:
+        key = '{0}|{1}'.format(name, 'int')
+        # Convert to a string
+        val = str(obj)
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+    # Test if the object to serialize is a dictionary
+    elif type(obj) is dict:
+        # Convert the dictionary to a String
+        val = json.dumps(obj)
+        key = '{0}|{1}'.format(name, 'json')
+        cache = redis(host=endpoint, port=6379, db=0)
+        cache.set(key, val)
+        return key
+
+def from_cache(endpoint, key):
+    """
+    De-serializes binary object from ElastiCache by reading
+    the type of object from the name and converting it to
+    the appropriate data type.
+    
+    Arguments:
+    endpoint -- ElastiCache endpoint.
+    key -- Name of the Key to retrieve the object.
+    
+    Returns:
+    obj -- The object converted to specifed data type.
+    """
+    
+    # Check if the Key is for a Numpy array containing
+    # `float64` data types
+    if 'float64' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        val = cache.get(key)
+        # De-serialize the value
+        array_dtype, length, width = key.split('|')[1].split('#')
+        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
+        return obj
+    # Check if the Key is for a Numpy array containing
+    # `int64` data types
+    elif 'int64' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        val = cache.get(key)
+        # De-serialize the value
+        array_dtype, length, width = key.split('|')[1].split('#')
+        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
+        return obj
+    # Check if the Key is for a json type
+    elif 'json' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return json.loads(obj)
+    # Chec if the Key is an integer
+    elif 'int' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return int(obj)
+    # Check if the Key is a string
+    elif 'string' in key:
+        cache = redis(host=endpoint, port=6379, db=0)
+        obj = cache.get(key)
+        return obj
 
 def lambda_handler(event, context):
     """
 
     """
     
-    #############################################
-    # Must have the following event variables:  #
-    # 1. parameter_key.                         #
-    # 2. state/direction.                       #
-    # 3. Epoch.                                 #
-    # 4. layer.                                 #
-    # 5. Is it the final neuron?                #
-    #############################################
-    
-    #TBD
-
-   
-    
     # Get the Neural Network paramaters from Elasticache
     parameter_key = event.get('parameters')
     global parameters 
-    parameters = from_cache(endpoint, parameters_key)
-    num_hidden_units = parameters['neurons']['layer' + str(layer)]
+    parameters = from_cache(endpoint, parameter_key)
+    #num_hidden_units = parameters['neurons']['layer' + str(layer)]
        
     # Get the current state
     state = event.get('state')
@@ -119,17 +226,18 @@ def lambda_handler(event, context):
     b = from_cache(endpoint=endpoint, key=parameters['data_keys']['bias'])
     X = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
     Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
-    m = X.shape[1] 
+    m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
 
     if state == 'forward':
         # Forward propogation from X to Cost
-        # Note: Cost is calculate because this is the last "layer", and only layer
         if activation == 'sigmoind':
-            A = sigmoid(np.dot(w.T, X) + b)
-        else: #Some opther function to be test later
+            a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
+        else: # Some other function to be test later like tanh or ReLU
             pass
         
-        # Compute the Cost
+        # Compute the Cost on TrainerLambda by caching it
+        to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
+
         """
         ###################################################################################
         #                             ISSUES!!!!!                                         #
@@ -151,27 +259,29 @@ def lambda_handler(event, context):
         #TBD
 
         if last:
-            
-            ###################################################
-            # Launch TrainerLambda with last payload, which   #
-            # includes the following:                         #
-            # 1. parameter_key.                               #
-            # 2. state/direction.                             #
-            # 3. epoch.                                       #
-            # 4. layer.                                       #
-            # 5. TBD                                          #
-            ###################################################
-            
-            # build the state payload
+            # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key
             payload['state'] = 'forward'
             payload['epoch'] = epoch
             payload['layer'] = layer + 1
+            payloadbytes = dumps(payload)
 
-            # Invoke TrainerLambda
+######################################################################################################            
+#            # Invoke NeuronLambdas for next layer
+#            try:
+#                response = lambda_client.invoke(
+#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+#                    InvocationType='Event',
+#                    Payload=payloadbytes
+#                )
+#            except botocore.exceptions.ClientError as e:
+#                print(e)
+#                raise
+#            print(response)
+######################################################################################################
 
-            #return
+        return
 
     elif state == 'backward':
 

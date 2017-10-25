@@ -16,6 +16,7 @@ from boto3 import client, resource, Session
 import botocore
 import uuid
 import io
+import redis
 from redis import StrictRedis as redis
 
 # Global Variables
@@ -107,16 +108,16 @@ def from_cache(endpoint, key):
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a Numpy array containing
     # `int64` data types
     elif 'int64' in key:
         cache = redis(host=endpoint, port=6379, db=0)
-        data = cache.get(key)
+        val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a json type
     elif 'json' in key:
@@ -142,15 +143,12 @@ def start_epoch(epoch, layer):
     epoch -- Integer representing the "current" epoch.
     layer -- Integer representing the current hidden layer.
     """
-    
-    #TBD
-    pass
 
-    # Initialize the results onbject for the new epoch
+    # Initialize the results object for the new epoch
     results['epoch' + str(epoch)] = {}
     
     # Start forwardprop
-    propogate(direction='forward', epoch=epoch)
+    propogate(direction='forward', epoch=epoch, layer=layer)
 
 def finish_epoch(direction, epoch, layer):
     """
@@ -192,7 +190,6 @@ def propogate(direction, epoch, layer):
     
     # Build the NeuronLambda payload
     payload = {}
-
     # Add the parameters to the payload
     payload['state'] = direction
     payload['parameter_key] = parameter_key
@@ -214,19 +211,22 @@ def propogate(direction, epoch, layer):
             payload['activation'] = parameters['activations']['layer' + str(layer)]
             payloadbytes = dumps(payload)
             print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
-            
-            # Invoke NeuronLambdas for next layer
-            try:
-                response = lambda_client.invoke(
-                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
-                    InvocationType='Event',
-                    Payload=payloadbytes
-                )
-            except botocore.exceptions.ClientError as e:
-                print(e)
-                raise
-            print(response)
-            return
+
+######################################################################################################            
+#            # Invoke NeuronLambdas for next layer
+#            try:
+#                response = lambda_client.invoke(
+#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+#                    InvocationType='Event',
+#                    Payload=payloadbytes
+#                )
+#            except botocore.exceptions.ClientError as e:
+#                print(e)
+#                raise
+#            print(response)
+######################################################################################################
+        
+        return
     
     elif direction == 'backward':
         # Launch Lambdas to propogate backward
@@ -300,9 +300,9 @@ def lambda_handler(event, context):
        
     # Get the Neural Network paramaters from Elasticache
     global parameter_key
-    parameter_key = event.get('parameters')
+    parameter_key = event.get('parameter_key')
     global parameters 
-    parameters = from_cache(parameter_key)
+    parameters = from_cache(endpoint, parameter_key)
     
     # Get the current state from the invoking lambda
     state = event.get('state')
@@ -316,6 +316,29 @@ def lambda_handler(event, context):
         # Determine the location within forwardprop
         if layer > layers:
             # Location is at the end of forwardprop
+            # Create a placeholder numpy array for vectorized activations
+            blank = np.array([])
+
+            # Get the output from a NeuronLambdas
+            a = []
+            count = 0
+            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True) # Returns string
+            for key in r.scan_iter(match='a_*'):
+                count = count + 1
+                a.append(key)
+            
+            # Determine if there are more than one activation
+            if count > 0:
+                #TBD on how to deal with multiple activations
+                pass
+            else:
+                a = from_cache(endpoint, key= a[0])
+
+                # Calculate Cost
+
+                pass
+
+
 
             #TBD
 

@@ -16,6 +16,7 @@ from boto3 import client, resource, Session
 import botocore
 import uuid
 import io
+import redis
 from redis import StrictRedis as redis
 
 # Global Variables
@@ -226,6 +227,10 @@ def initialize_data(endpoint, w, b):
         pass
     else:
         data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
+    
+    # Initialize training example size
+    m = train_set_x.shape[1]
+    data_keys['m'] = to_cache(endpoint, obj=m, name='m')
     
 #    # Initialize the results tracking object
 #    to_cache(endpoint, dump='', name='results')
