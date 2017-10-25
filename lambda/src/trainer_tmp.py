@@ -28,7 +28,6 @@ cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
 
-
 # Helper Functions
 def to_cache(endpoint, obj, name):
     """
@@ -148,10 +147,10 @@ def start_epoch(epoch, layer):
     pass
 
     # Initialize the results onbject for the new epoch
-    #results['epoch' + str(epoch)] = {}
+    results['epoch' + str(epoch)] = {}
     
     # Start forwardprop
-    #propogate(direction='forward', epoch=epoch)
+    propogate(direction='forward', epoch=epoch)
 
 def finish_epoch(direction, epoch, layer):
     """
@@ -188,28 +187,65 @@ def propogate(direction, epoch, layer):
     # 5. final. (Is it the last neuron? True|False).          #
     ###########################################################
 
+    # Get the parameters for the layer
+    num_hidden_units = parameters['neurons']['layer' + str(layer)]
+    
     # Build the NeuronLambda payload
-    #payload = {}
+    payload = {}
 
     # Add the parameters to the payload
-    #payload['state'] = direction
-    #payload['parameter_key] = parameter_key
-    #payload['epoch'] = epoch
-    #payload['layer'] = layer
+    payload['state'] = direction
+    payload['parameter_key] = parameter_key
+    payload['epoch'] = epoch
+    payload['layer'] = layer
 
-
-    #TBD
+    # Determine process based on direction
     if direction == 'forward':
         # Launch Lambdas to propogate forward
-        pass
+        # Remember to start the count from 1 as hidden unit indexing
+        # starts at 1
+        for i in range(1, num_hidden_units + 1):
+            # Prepare the payload for `NeuronLambda`
+            payload['id'] = i
+            if i == num_hidden_units:
+                payload['last'] = True
+            else:
+                payload['last'] = False
+            payload['activation'] = parameters['activations']['layer' + str(layer)]
+            payloadbytes = dumps(payload)
+            print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+            
+            # Invoke NeuronLambdas for next layer
+            try:
+                response = lambda_client.invoke(
+                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+                    InvocationType='Event',
+                    Payload=payloadbytes
+                )
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                raise
+            print(response)
+            return
+    
     elif direction == 'backward':
         # Launch Lambdas to propogate backward
+        # Prepare the payload for `NeuronLambda`
+        
+        #TBD
         pass
+
+    else:
+        raise
 
     """
     Note:
     When launching NeuronLambda with multiple hidden unit,
-    remember to assign an ID
+    remember to assign an ID, also remember to start at 1
+    and not 0. 
+    i.e num_hidden_units = 5
+        for i in range(1, num_hidden_units + 1):
+        # Do stuff
     """
 
 def optimize(epoch, layer, params, grads):
@@ -257,7 +293,9 @@ def end():
 
 def lambda_handler(event, context):
     """
-
+    Processes the `event` vaiables from the various Lambda functions that call it, 
+    i.e. `TrainerLambda` and `NeuronLambda`. Determines the "current" state and
+    then directs the next steps.
     """
        
     # Get the Neural Network paramaters from Elasticache
@@ -278,12 +316,21 @@ def lambda_handler(event, context):
         # Determine the location within forwardprop
         if layer > layers:
             # Location is at the end of forwardprop
-            # Caculate the Loss function
-            
-            # Update the Loss function to the results object
-            loss = cacl_loss()
-            results['epoch' + str(epoch)]['loss'] = loss
-            
+
+            #TBD
+
+            ################################################################################
+            # Get the Activation results from NeuronLambda if there are multiple layers    #
+            #results = from_cache(endpoint=endpointy, key='results')                       #
+            #A = results.get('epoch' + str(epoch))['A']                                    #
+            #m = parameters.get('data_dimensions')['train_set_x'][1]                       #
+            #                                                                              #            
+            # Update the Cost function to the results object if there are multiple layers  #
+            #cost = (-1 / m) * np.sum()                                                    #
+            #results['epoch' + str(epoch)]['loss'] = loss                                  #
+            ################################################################################
+
+
             # Start backprop
             #propogate(direction='backward', layer=layer-1)
             

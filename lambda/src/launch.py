@@ -273,8 +273,7 @@ def lambda_handler(event, context):
     
     print("Complete Neural Network Settings: \n")
     print(dumps(parameters, indent=4, sort_keys=True))
-    print("\n" + "Payload to be sent to TrainerLambda")
-    print(dumps(payload, indent=4, sort_keys=True))
+    print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
     
     # Invoke TrainerLambda for next layer
     try:
