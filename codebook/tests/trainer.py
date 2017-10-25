@@ -316,25 +316,28 @@ def lambda_handler(event, context):
         # Determine the location within forwardprop
         if layer > layers:
             # Location is at the end of forwardprop
-            # Create a placeholder numpy array for vectorized activations
-            blank = np.array([])
 
-            # Get the output from a NeuronLambdas
-            a = []
-            count = 0
-            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True) # Returns string
-            for key in r.scan_iter(match='a_*'):
-                count = count + 1
-                a.append(key)
-            
-            # Determine if there are more than one activation
-            if count > 0:
-                #TBD on how to deal with multiple activations
-                pass
-            else:
-                a = from_cache(endpoint, key= a[0])
-
-                # Calculate Cost
+##################################################################################################################
+#            # Create a placeholder numpy array for vectorized activations
+#            blank = np.array([])
+#
+#            # Get the output from a NeuronLambdas
+#            a = []
+#            count = 0
+#            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True) # Returns string
+#            for key in r.scan_iter(match='a_*'):
+#                count = count + 1
+#                a.append(key)
+#            
+#            # Determine if there are more than one activation
+#            if count > 0:
+#                #TBD on how to deal with multiple activations
+#                pass
+#            else:
+#                a = from_cache(endpoint, key= a[0])
+#
+#                # Calculate Cost
+###################################################################################################################
 
                 pass
 
