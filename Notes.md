@@ -1,19 +1,28 @@
-# General Notes
+# To-do
 1. Add the SNS Topic Arn to the Environmental variables to that the `finish()` function can use it.
 2. Add the necessary SNS permissions to the CloudFormation Template.
 3. Add necessary permissions for Elasticache to CloudFormation template.
 4. Push the security group name to the `LaunchLambda` Cloudformation template to ensure that the Redis cluster is deployed to the correct security group.
->**Note**: This may mean that the Lamabda functions need to run in the VPX and therfore the CloudFormation template needs to reflect this.
-5. May need to create  a *Subnet Group* in the CloudFormation template.
-5. Ensure that the correct port (**6379**) is open on the security group and access from the within the VPC is allowed.
+>**Note**: This may mean that the Lamabda functions need to run in the VPC and therfore the CloudFormation template needs to reflect this.
 5. Make sure to set Lambda loggin for a maximum of 7 days so as to not have lagacy Lambda Logs from previouys runs.
 6. Make sure to add the ARNs of the various Lambda Functions to the environmental variables in the CloudFormation Template.
-7. Ensure to always include the `state` in the `event` every time the `TrainerLambda` is invoked.
-8. The `results` object must be initialized as far as possible in the TrainerLambda, because it will start off as a string and end up being a binary string of a Python dictionary, once the Loss, Gradients etc. are calculated.
+
+# General Notes
+
+1. Ensure to always include the `state` *and* the Network parameters in the `event` every time the `TrainerLambda` and `NeuronLambda` are invoked.
+2. Always ensure to set the `parameters` and `parameters_key` to retrieve the Network parameters in the `lambda_handler()` of both the `TrainerLambda` and `NeuronLambda` as `global` variables, as follows:
+```python
+    global parameter_key
+    parameter_key = event.get('parameter_key')
+    global parameters 
+    parameters = from_cache(endpoint, parameter_key)
+```
+8. The `results` object must be initialized as far as possible in the `NeuronLambda`. This will not only set it as a `global` variable, but, because it will start off as a string and end up being a binary string of a Python dictionary, once the Loss, Gradients etc. are calculated.
 9. Since this test is for a single Perceptron, and thus a single output Neuron, it should be up to the `NeuronLambda` to calculate the cost and supply it back to the `TrainerLambda`. In the case of multiple Logistic Regression or more complicated networks, there may be multiple output Neurons. How to address these situation will need to thought through later.
 
 # Issues with wether the last perceptron will claculate the COST or that is done by TrainerLambda!!!!!!!!!!!!!!!!
-
+- Tricks
+- Andrew Ng "cache" 
 ---
 
 # Notes on Elasticache

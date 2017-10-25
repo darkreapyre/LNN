@@ -316,7 +316,7 @@ def lambda_handler(event, context):
         # Determine the location within forwardprop
         if layer > layers:
             # Location is at the end of forwardprop
-
+"""
 ##################################################################################################################
 #            # Create a placeholder numpy array for vectorized activations
 #            blank = np.array([])
@@ -338,7 +338,7 @@ def lambda_handler(event, context):
 #
 #                # Calculate Cost
 ###################################################################################################################
-
+"""
                 pass
 
 
