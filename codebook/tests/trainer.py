@@ -418,7 +418,6 @@ def lambda_handler(event, context):
         
     elif state == 'backward':
         # Get important state variables
-        # Get important state variables
         epoch = event.get('epoch')
         layer = event.get('layer')
         
@@ -471,10 +470,12 @@ def lambda_handler(event, context):
             parameters['data_keys'][db_name] = to_cache(endpoint=endpoint, obj=db, name=db_name)
 
             # Run Gadient Descent
+            """
             # Note: Need to determine the exact location as SGD only runs at the end of 
             # the epoch and I need to ensure that we truly are and not just calculating
             # Weights and Bias for a hidden layer -> Work through flow and detmine if 
             # this is the right place
+            """
 
             
             # Finalize the the process and clean up
