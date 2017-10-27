@@ -377,14 +377,16 @@ def lambda_handler(event, context):
             key_list = []
             for key in r.scan_iter(match='a_*'):
                 key_list.append(key)
-            # Create a dictionat of numpy arrays
+            # Create a dictionary of numpy arrays
             A_dict = {}
             for i in key_list:
                 A_dict[i] = from_cache(endpoint=endpoint, key=i)
             # Create the numpy array of activations, depending on the 
             # number of hidden units
             num_activations = len(key_list)
+            # Create the matrix of Activations
             A = np.array([arr.tolist() for arr in A_dict.values()])
+            # Format the shape depending on the number of activations
             if num_activations == 1:
                 dims = (key_list[0].split('|')[1].split('#')[1:])
                 A = A.reshape(int(dims[0]), int(dims[1]))
@@ -423,8 +425,57 @@ def lambda_handler(event, context):
         # Determine the location within backprop
         if epoch == parameters['epochs'] and layer == 0:
             # Location is at the end of the final epoch
+            # First pre-process the Weights
+            # Note: Get the activations from the NeuronLambda by using this redis
+            # command to ensure that a pure string is returned for the key
+            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
+            key_list = []
+            for key in r.scan_iter(match='dw_*'):
+                key_list.append(key)
+            # Create a dictionary of the numpy arrays
+            dW_dict = {}
+            for i in key_list:
+                dW_dict[i] = from_cache(endpoint=endpoint, key=i)
+            # Create a numpy array of all the Weights, depending on
+            # the number of hidden units
+            num_weights = len(key_list)
+            # Create the matrix of Weights
+            dW = np.arra([arr.tolist() for arr in dW_dict.values()])
+            # Format the shape depending onthe number of Weights
+            if num_weights == 1:
+                dims = (key_list[0].split('|')[1].split('#')[1:])
+                dW = dW.reshape(int(dims[0]), int(dims1))
+            else:
+                dW = np.squeeze(dW)
+            # Concatenate into matrix of column vectors
+            dW = dW.T
+            # Add `W{layer}` to input for Gradient Descent
+            dW_name = 'dW' + str(layer+1)
+            parameters['data_keys'][dW_name] = to_cache(endpoint=endpoint, obj=dW, name=dW_name)
+
+            # Repeat teh above process for the Bias
+            key_list = []
+            for key in r.scan_iter(match="db_*"):
+                key_list.append(key)
+            db_dict = {}
+            for i in key_list:
+                db_dict[i] = from_cache(endpoint=endpoint, key=i)
+            num_bias = len(key_list)
+            db = np.array([arr.tolist() for arr in db_dict.value()])
+            if num_bias ==1:
+                db = np.float64(db)
+            else:
+                db = np.squeeze(db)
+            db = db.T
+            dB_name = 'db' + str(layer+1)
+            parameters['data_keys'][db_name] = to_cache(endpoint=endpoint, obj=db, name=db_name)
 
             # Run Gadient Descent
+            # Note: Need to determine the exact location as SGD only runs at the end of 
+            # the epoch and I need to ensure that we truly are and not just calculating
+            # Weights and Bias for a hidden layer -> Work through flow and detmine if 
+            # this is the right place
+
             
             # Finalize the the process and clean up
             #end()
