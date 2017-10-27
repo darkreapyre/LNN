@@ -247,8 +247,19 @@ def lambda_handler(event, context):
         else: # Some other function to be test later like tanh or ReLU
             pass
         
+        # Capture activations
+        A_key = parameters['data_keys']['A']
+        # Load the activation object
+        A = from_cache(endpoint=endpoint, key=A_key) # Should be empty dictionary
+        # Update the activation object
+        A['layer' + str(layer)]['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
+        # Update loacal parameter
+        parameters['data_keys']['A'] = A
+        # Upload to ElastiCache
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        
         # Compute the Cost on TrainerLambda by caching it
-        to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
+        #to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
 
         if last:
             # Build the state payload
@@ -278,12 +289,13 @@ def lambda_handler(event, context):
 
     elif state == 'backward':
         # Get the results of the forwardprop activation
-        # Determine the correct notation for the layer
+        # Determine the correct notation for the layer and get the Matrix
+        # of activations calculated at the end of forward propogation
         A_name = 'A'+str(layer)
         A_key = parameters.get('data_keys')[A_name]
         A = from_cache(endpoint=endpoint, key=A_key)
 
-        # Backward propogation to determine gradients
+        # Backward propogation to determine gradients of current layer
         dw = (1 / m) * np.dot(X, (A - Y).T)
         print("Partial Derivatives - Weights for Neuron" + str(ID) + ":\n" + dw)
         db = (1 / m) * np.sum(A - Y)

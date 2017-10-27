@@ -213,6 +213,16 @@ def propogate(direction, epoch, layer):
     # Determine process based on direction
     if direction == 'forward':
         # Launch Lambdas to propogate forward
+        # Create the Activation tracking object
+        A = {}
+        A['layer' + str(layer)] = {}
+        # Cache the object
+        A_key = to_cache(endpoint=endpoint, obj=A, name='A')
+        parameters['data_keys']['A'] = A
+        # Update ElastiCache with the latest parameters
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        # Prepare the payload for `NeuronLambda`
+        payload['parameter_key'] = parameter_key
         # Remember to start the count from 1 as hidden unit indexing
         # starts at 1
         for i in range(1, num_hidden_units + 1):
@@ -371,7 +381,58 @@ def lambda_handler(event, context):
         if layer > parameters['layers']:
             # Location is at the end of forwardprop, therefore calculate Cost
             # First pre-process the Activations
-            # Note: Get the activations from the NeuronLambda by using this redis
+            """
+            # Note: May not need to use `scan_iter()` anymore since the exact 
+            #keys are available in `data_keys`, so a scan of all keys pertaining
+            # to `a_*` may not be necessary as the keys pertaining to the 
+            # layer are there. Just need to look through the layers.
+            #
+            # Try the following for each individual layer:
+
+            num_layers = parameters['layers']
+            A_key = parameters['data_keys']['A']
+            A = from_cache(endpoint=endpoint, key=A_key)
+            
+            for l in range(1, num_layers + 1):
+               Do the following for the layer without using `scan_iter()`
+               key_list = list(A.get('layer' + str(l)).keys()) #<- hope this works
+               tmp_dict = {}
+               for i in key_list:
+                   tmp_dict[i] = from_cache(endpoint=endpoint, key=i)
+               num_activations = len(key_list)
+               tmp_array = np.array([arr.tolist() for arr in tmp_dict.values()])
+            ########   key_list[l] = np.array([arr.tolist() for arr in tmp_dict.values()]) #<- hope this works
+               if num_activations == 1:
+                   dims = (key_list[0].split('|')[1].split('#')[1:])
+                   tmp_array = tmp_array.reshape(int(dims[0]), int(dims[1]))
+               else:
+                   tmp_array = np.squeeze(tmp_array)
+               A_name = 'A' + str(l)
+               parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=tmp_array, name=A_name)
+            
+            # Note: See if this can be built into a function, for example:
+            A_list = build_matrix(m_type=(activations | weights | bias), num_layers)
+            if len(A_list) == 1:
+                cost = (-1 / m) * np.sum(Y * (np.log(A_list[0])) + ((1 - Y) * np.log(1 - A_list[0])))
+            else:
+                # Multiple layers
+                logprobs = np.multiply(np.log(A_list[1]), Y) + np.multiply((1 - Y), np.log(1 - A_list[1]))
+                cost = - np.sum(logprobs) / m
+            ####################################################################################################
+            ###               FFFFFFFFFFFFFFFUUUUUUUUUUUUUCCCCCCCCCCKKKKKKKKKK!!!!!!!!!!!!!!!                ###
+            ###                                                                                              ###
+            ### Need to think about this, as the cost may only need to be computed on the last activation    ###
+            ### and hence the only requirement is to compute the last layer.                                 ###
+            ###                                                                                              ###
+            ###                                      BUT                                                     ###
+            ###                                                                                              ###
+            ### I think that the derivative calculations still need A1 as well as A2, so this may still be   ###
+            ### usable!                                                                                      ###
+            ####################################################################################################
+
+            """
+
+            # Get the activations from the NeuronLambda by using this redis
             # command to ensure that a pure string is returned for the key
             r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
             key_list = []
