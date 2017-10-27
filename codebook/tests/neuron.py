@@ -78,37 +78,21 @@ lambda_client = client('lambda', region_name='us-west-2') # Lambda invocations
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-results = from_cache(endpoint=endpoint, key='results')
 
 # Helper Functions
-def sigmoid(z):
-    """
-    Computes the sigmoid of z
-
-    Arguments:
-    z -- A scalar or numpy array of any size
-
-    Return:
-    s -- sigmoid(z)
-    """
-
-    s = 1 / (1 + np.exp(-z))
-
-    return s
-
 def to_cache(endpoint, obj, name):
     """
     Serializes multiple data type to ElastiCache and returns
     the Key.
     
     Arguments:
-    endpoint -- The ElastiCache endpoint.
+    endpoint -- The ElastiCache endpoint
     obj -- the object to srialize. Can be of type:
-            - Numpy Array.
-            - Python Dictionary.
-            - String.
-            - Integer.
-    name -- Name of the Key.
+            - Numpy Array
+            - Python Dictionary
+            - String
+            - Integer
+    name -- Name of the Key
     
     Returns:
     key -- For each type the key is made up of {name}|{type} and for
@@ -119,7 +103,11 @@ def to_cache(endpoint, obj, name):
     # Test if the object to Serialize is a Numpy Array
     if 'numpy' in str(type(obj)):
         array_dtype = str(obj.dtype)
-        length, width = obj.shape
+        if len(obj.shape) == 0:
+            length = 0
+            width = 0
+        else:
+            length, width = obj.shape
         # Convert the array to string
         val = obj.ravel().tostring()
         # Create a key from the name and necessary parameters from the array
@@ -152,19 +140,21 @@ def to_cache(endpoint, obj, name):
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
         return key
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
     De-serializes binary object from ElastiCache by reading
     the type of object from the name and converting it to
-    the appropriate data type.
+    the appropriate data type
     
     Arguments:
-    endpoint -- ElastiCache endpoint.
-    key -- Name of the Key to retrieve the object.
+    endpoint -- ElastiCacheendpoint
+    key -- Name of the Key to retrieve the object
     
     Returns:
-    obj -- The object converted to specifed data type.
+    obj -- The object converted to specifed data type
     """
     
     # Check if the Key is for a Numpy array containing
@@ -174,7 +164,10 @@ def from_cache(endpoint, key):
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
+        if int(length) == 0:
+            obj = np.float64(np.fromstring(val))
+        else:
+            obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a Numpy array containing
     # `int64` data types
@@ -200,6 +193,23 @@ def from_cache(endpoint, key):
         cache = redis(host=endpoint, port=6379, db=0)
         obj = cache.get(key)
         return obj
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
+
+def sigmoid(z):
+    """
+    Computes the sigmoid of z
+
+    Arguments:
+    z -- A scalar or numpy array of any size
+
+    Return:
+    s -- sigmoid(z)
+    """
+
+    s = 1 / (1 + np.exp(-z))
+
+    return s
 
 def lambda_handler(event, context):
     """
@@ -207,17 +217,18 @@ def lambda_handler(event, context):
     """
     
     # Get the Neural Network paramaters from Elasticache
-    parameter_key = event.get('parameters')
+    parameter_key = event.get('parameter_key')
     global parameters 
-    parameters = from_cache(endpoint, parameter_key)
-    #num_hidden_units = parameters['neurons']['layer' + str(layer)]
+    parameters = from_cache(endpoint, key=parameter_key)
+    #global results_key
+    results_key = event.get("results_key")
+    #results = from_cache(endpoint=endpoint, key=results_key)
        
     # Get the current state
     state = event.get('state')
     epoch = event.get('epoch')
     layer = event.get('layer')
     ID = event.get('id') # To be used when multiple activations
-    activation = event.get('activation')
     # Determine is this is the last Neuron in the layer
     last = event.get('last')
 
@@ -230,6 +241,7 @@ def lambda_handler(event, context):
 
     if state == 'forward':
         # Forward propogation from X to Cost
+        activation = event.get('activation')
         if activation == 'sigmoind':
             a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
         else: # Some other function to be test later like tanh or ReLU
@@ -242,6 +254,7 @@ def lambda_handler(event, context):
             # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key
+            payload['results_key'] = results_key
             payload['state'] = 'forward'
             payload['epoch'] = epoch
             payload['layer'] = layer + 1
@@ -264,12 +277,52 @@ def lambda_handler(event, context):
         return
 
     elif state == 'backward':
-
-        """
-        Note: Need to get the A from the `TrainerLambda` 
-        """
-        A = event.get('A')
+        # Get the results of the forwardprop activation
+        A = parameters.get('Data_Keys')['A']
 
         # Backward propogation to determine gradients
         dw = (1 / m) * np.dot(X, (A - Y).T)
+        print("Partial Derivatives - Weights for Neuron" + str(ID) + ":\n" + dw)
         db = (1 / m) * np.sum(A - Y)
+        print("Partial Derivatives - Bias for Neuron" + str(ID) + ":\n" + dw)
+
+        # Capture gradients
+        grads_key = parameters['data_keys']['grads']
+        # Load the grads object
+        grads = from_cache(endpoint, key=grads_key) # Should be empty dictionary
+        # Update the grads object with the calculated derivatives
+        grads['layer' + str(layer)]['dw_' + str(ID)] = to_cache(endpoint, obj=dw, name='dw_'+str(ID))
+        grads['layer' + str(layer)]['db_' + str(ID)] = to_cache(endpoint, obj=db, name='db_'+str(ID))
+        # Update the pramaters (local)
+        parameters['data_keys']['grads'] = grads
+        # Upload to ElastiCache
+        parameters_key = to_cache(endpoint, obj=parameters, name='parameters')
+
+        if last:
+            # Build the state payload
+            payload = {}
+            payload['parameter_key'] = parameter_key
+            payload['results_key'] = results_key
+            payload['state'] = 'backward'
+            payload['epoch'] = epoch
+            payload['layer'] = layer - 1
+            payloadbytes = dumps(payload)
+
+######################################################################################################            
+#            # Invoke NeuronLambdas for next layer
+#            try:
+#                response = lambda_client.invoke(
+#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+#                    InvocationType='Event',
+#                    Payload=payloadbytes
+#                )
+#            except botocore.exceptions.ClientError as e:
+#                print(e)
+#                raise
+#            print(response)
+######################################################################################################
+
+        return
+
+    else:
+        raise

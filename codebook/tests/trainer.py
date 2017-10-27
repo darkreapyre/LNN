@@ -36,13 +36,13 @@ def to_cache(endpoint, obj, name):
     the Key.
     
     Arguments:
-    endpoint -- The ElastiCache endpoint.
+    endpoint -- The ElastiCache endpoint
     obj -- the object to srialize. Can be of type:
-            - Numpy Array.
-            - Python Dictionary.
-            - String.
-            - Integer.
-    name -- Name of the Key.
+            - Numpy Array
+            - Python Dictionary
+            - String
+            - Integer
+    name -- Name of the Key
     
     Returns:
     key -- For each type the key is made up of {name}|{type} and for
@@ -53,7 +53,11 @@ def to_cache(endpoint, obj, name):
     # Test if the object to Serialize is a Numpy Array
     if 'numpy' in str(type(obj)):
         array_dtype = str(obj.dtype)
-        length, width = obj.shape
+        if len(obj.shape) == 0:
+            length = 0
+            width = 0
+        else:
+            length, width = obj.shape
         # Convert the array to string
         val = obj.ravel().tostring()
         # Create a key from the name and necessary parameters from the array
@@ -86,19 +90,21 @@ def to_cache(endpoint, obj, name):
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
         return key
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
     De-serializes binary object from ElastiCache by reading
     the type of object from the name and converting it to
-    the appropriate data type.
+    the appropriate data type
     
     Arguments:
-    endpoint -- ElastiCache endpoint.
-    key -- Name of the Key to retrieve the object.
+    endpoint -- ElastiCacheendpoint
+    key -- Name of the Key to retrieve the object
     
     Returns:
-    obj -- The object converted to specifed data type.
+    obj -- The object converted to specifed data type
     """
     
     # Check if the Key is for a Numpy array containing
@@ -108,7 +114,10 @@ def from_cache(endpoint, key):
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
+        if int(length) == 0:
+            obj = np.float64(np.fromstring(val))
+        else:
+            obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a Numpy array containing
     # `int64` data types
@@ -134,6 +143,8 @@ def from_cache(endpoint, key):
         cache = redis(host=endpoint, port=6379, db=0)
         obj = cache.get(key)
         return obj
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def start_epoch(epoch, layer):
     """
@@ -145,9 +156,9 @@ def start_epoch(epoch, layer):
     """
 
     # Initialize the results object for the new epoch
-    # Note: k = 'results|json'
+    # Note: key = 'results|json'
     results['epoch' + str(epoch)] = {}
-    to_cache(endpoint=endpoint, obj=results, name='results')
+    results_key = to_cache(endpoint=endpoint, obj=results, name='results')
     
     # Start forwardprop
     propogate(direction='forward', epoch=epoch, layer=layer)
@@ -195,6 +206,7 @@ def propogate(direction, epoch, layer):
     # Add the parameters to the payload
     payload['state'] = direction
     payload['parameter_key] = parameter_key
+    payload['results_key'] = results_key
     payload['epoch'] = epoch
     payload['layer'] = layer
 
@@ -232,8 +244,26 @@ def propogate(direction, epoch, layer):
     
     elif direction == 'backward':
         # Launch Lambdas to propogate backward
+        # Create the gradient tracking object
+        grads = {}
+        grads['layer' + str(layer)] = {}
+        # Cache the object
+        grads = to_cache(endpoint=endpoint, obj=grads, name='grads')
+        parameters['data_keys']['grads'] = grads
+        # Update ElastiCache with the latest parameters
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         # Prepare the payload for `NeuronLambda`
+        payload['parameter_key'] = parameter_key
 
+        for i in range(1, num_hidden_units + 1):
+            # Prepare the payload for `NeuronLambda`
+            payload['id'] = i
+            if i == num_hidden_units:
+                payload['last'] = True
+            else:
+                payload['last'] = False
+            payloadbytes = dumps(payload)
+            print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
 ######################################################################################################            
 #            # Invoke NeuronLambdas for next layer
@@ -248,9 +278,8 @@ def propogate(direction, epoch, layer):
 #                raise
 #            print(response)
 ######################################################################################################
-        
-        #TBD
-        pass
+
+            return
 
     else:
         raise
@@ -320,6 +349,14 @@ def lambda_handler(event, context):
     parameter_key = event.get('parameter_key')
     global parameters 
     parameters = from_cache(endpoint, parameter_key)
+    global results_key
+    # Will fail if this is the first time `TrainerLambda` is called since
+    # there is no results object
+    try:
+        results_key = event.get('results_key')
+        results = from_cache(endpoint=endpoint, key=results_key)
+    except Exception:
+        pass
     
     # Get the current state from the invoking lambda
     state = event.get('state')
@@ -365,9 +402,8 @@ def lambda_handler(event, context):
             cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
 
             # Update results with the Cost
-            results = from_cache(endpoint=endpoint, key='results|json')
             results['epoch' + str(epoch)]['cost'] = cost
-            to_cache(endpoint=endpoint, obj=results, name='results')
+            results_key = to_cache(endpoint=endpoint, obj=results, name='results')
 
             # Start backprop
             propogate(direction='backward', epoch=epoch, layer=layer)
@@ -388,11 +424,7 @@ def lambda_handler(event, context):
         if epoch == parameters['epochs'] and layer == 0:
             # Location is at the end of the final epoch
             
-            # Caculate derivative?????????????????????????\
-            
-            # Caclulate the absolute final weight
-            
-            # Update the final weights and results (cost) to DynamoDB
+            # Run Gadient Descent
             
             # Finalize the the process and clean up
             #end()
@@ -401,9 +433,8 @@ def lambda_handler(event, context):
             
         elif epoch < parameters['epochs'] and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
-            # Calculate the derivative?????????????????????????
 
-            # Get the Cost and store it to the results object
+            # Run Gradient Descent
             
             # Calculate the weights for this epoch
             

@@ -52,7 +52,11 @@ def to_cache(endpoint, obj, name):
     # Test if the object to Serialize is a Numpy Array
     if 'numpy' in str(type(obj)):
         array_dtype = str(obj.dtype)
-        length, width = obj.shape
+        if len(obj.shape) == 0:
+            length = 0
+            width = 0
+        else:
+            length, width = obj.shape
         # Convert the array to string
         val = obj.ravel().tostring()
         # Create a key from the name and necessary parameters from the array
@@ -85,6 +89,8 @@ def to_cache(endpoint, obj, name):
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
         return key
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
@@ -107,16 +113,19 @@ def from_cache(endpoint, key):
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        if int(length) == 0:
+            obj = np.float64(np.fromstring(val))
+        else:
+            obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a Numpy array containing
     # `int64` data types
     elif 'int64' in key:
         cache = redis(host=endpoint, port=6379, db=0)
-        data = cache.get(key)
+        val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a json type
     elif 'json' in key:
@@ -133,6 +142,8 @@ def from_cache(endpoint, key):
         cache = redis(host=endpoint, port=6379, db=0)
         obj = cache.get(key)
         return obj
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def name2str(obj, namespace):
     """

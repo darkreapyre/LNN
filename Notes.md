@@ -7,7 +7,7 @@
 5. Make sure to set Lambda loggin for a maximum of 7 days so as to not have lagacy Lambda Logs from previouys runs.
 6. Make sure to add the ARNs of the various Lambda Functions to the environmental variables in the CloudFormation Template.
 
-# General Notes
+# Conslusions
 
 1. Ensure to always include the `state` *and* the Network parameters in the `event` every time the `TrainerLambda` and `NeuronLambda` are invoked.
 2. Always ensure to set the `parameters` and `parameters_key` to retrieve the Network parameters in the `lambda_handler()` of both the `TrainerLambda` and `NeuronLambda` as `global` variables, as follows:
@@ -102,6 +102,7 @@
     current_layer = int(payload.get('layer')) + 1
     current_activation = payload.get('activations')['layer' + str(current_layer)] # Get activations
     num_hidden_units = payload.get('neurons')['layer' + str(current_layer)] # Get hidden units
+    ```
 
 
 ---
