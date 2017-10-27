@@ -278,7 +278,10 @@ def lambda_handler(event, context):
 
     elif state == 'backward':
         # Get the results of the forwardprop activation
-        A = parameters.get('Data_Keys')['A']
+        # Determine the correct notation for the layer
+        A_name = 'A'+str(layer)
+        A_key = parameters.get('data_keys')[A_name]
+        A = from_cache(endpoint=endpoint, key=A_key)
 
         # Backward propogation to determine gradients
         dw = (1 / m) * np.dot(X, (A - Y).T)
@@ -296,7 +299,7 @@ def lambda_handler(event, context):
         # Update the pramaters (local)
         parameters['data_keys']['grads'] = grads
         # Upload to ElastiCache
-        parameters_key = to_cache(endpoint, obj=parameters, name='parameters')
+        parameter_key = to_cache(endpoint, obj=parameters, name='parameters')
 
         if last:
             # Build the state payload

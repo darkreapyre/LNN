@@ -161,7 +161,7 @@ def start_epoch(epoch, layer):
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
     
     # Start forwardprop
-    propogate(direction='forward', epoch=epoch, layer=layer)
+    propogate(direction='forward', epoch=epoch, layer=layer+1)
 
 def finish_epoch(direction, epoch, layer):
     """
@@ -246,10 +246,10 @@ def propogate(direction, epoch, layer):
         # Launch Lambdas to propogate backward
         # Create the gradient tracking object
         grads = {}
-        grads['layer' + str(layer)] = {}
+        grads['layer' + str(layer-1)] = {}
         # Cache the object
-        grads = to_cache(endpoint=endpoint, obj=grads, name='grads')
-        parameters['data_keys']['grads'] = grads
+        grads_key = to_cache(endpoint=endpoint, obj=grads, name='grads')
+        parameters['data_keys']['grads'] = grads_key
         # Update ElastiCache with the latest parameters
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         # Prepare the payload for `NeuronLambda`
@@ -370,7 +370,8 @@ def lambda_handler(event, context):
         # Determine the location within forwardprop
         if layer > parameters['layers']:
             # Location is at the end of forwardprop, therefore calculate Cost
-            # Get the activations from the NeuronLambda by using this redis
+            # First pre-process the Activations
+            # Note: Get the activations from the NeuronLambda by using this redis
             # command to ensure that a pure string is returned for the key
             r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
             key_list = []
@@ -389,15 +390,14 @@ def lambda_handler(event, context):
                 A = A.reshape(int(dims[0]), int(dims[1]))
             else:
                 A = np.squeeze(A)
+            # Add `A{Layer}` to input data for backprop
+            A_name = 'A' + str(layer-1)
+            parameters['data_keys']['A'] = to_cache(endpoint=endpoint, obj=A, name=A_name)
             
-            # Add `A` to input data for backprop
-            # Note: May need to rethink this for multiple hidden units
-            parameters['data_keys']['A'] = to_cache(endpoint=endpoint, obj=A, name='A')
-            
+            # Calculate the Cost
             # Get the training examples data
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
             m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
-            
             # Calculate the Cost
             cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
 
@@ -406,11 +406,11 @@ def lambda_handler(event, context):
             results_key = to_cache(endpoint=endpoint, obj=results, name='results')
 
             # Start backprop
-            propogate(direction='backward', epoch=epoch, layer=layer)
+            propogate(direction='backward', epoch=epoch, layer=layer-1)
             
         else:
             # Move to the next hidden layer
-            #propogate(direction='forward', layer=layer+1, activations=activations)
+            #propogate(direction='forward', layer=layer, activations=activations)
             
             pass
         
@@ -423,7 +423,7 @@ def lambda_handler(event, context):
         # Determine the location within backprop
         if epoch == parameters['epochs'] and layer == 0:
             # Location is at the end of the final epoch
-            
+
             # Run Gadient Descent
             
             # Finalize the the process and clean up
@@ -460,7 +460,7 @@ def lambda_handler(event, context):
         
         # Create initial parameters
         epoch = 1
-        layer = 1
+        layer = 0
         start_epoch(epoch=epoch, layer=layer)
        
     else:
