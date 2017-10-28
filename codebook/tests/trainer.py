@@ -28,9 +28,9 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-global parameter_key
-global parameters 
-global results_key
+#global parameter_key
+#global parameters 
+#global results_key
 #global results
 
 # Helper Functions
@@ -369,6 +369,10 @@ def lambda_handler(event, context):
     
     # Get the current state from the invoking lambda
     state = event.get('state')
+    global parameters
+    global parameter_key
+    parameter_key = event.get('parameter_key')
+    parameters = from_cache(endpoint=endpoint, key=parameter_key)
     
     # Execute appropriate action based on the the current state
     if state == 'forward':
