@@ -205,7 +205,7 @@ def propogate(direction, epoch, layer):
     payload = {}
     # Add the parameters to the payload
     payload['state'] = direction
-    payload['parameter_key] = parameter_key
+    payload['parameter_key'] = parameter_key
     payload['results_key'] = results_key
     payload['epoch'] = epoch
     payload['layer'] = layer
