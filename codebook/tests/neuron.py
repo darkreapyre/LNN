@@ -270,6 +270,7 @@ def lambda_handler(event, context):
             payload['epoch'] = epoch
             payload['layer'] = layer + 1
             payloadbytes = dumps(payload)
+            print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
 ######################################################################################################            
 #            # Invoke NeuronLambdas for next layer
@@ -322,6 +323,7 @@ def lambda_handler(event, context):
             payload['epoch'] = epoch
             payload['layer'] = layer - 1
             payloadbytes = dumps(payload)
+            print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
 ######################################################################################################            
 #            # Invoke NeuronLambdas for next layer
