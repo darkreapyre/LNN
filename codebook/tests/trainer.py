@@ -567,6 +567,7 @@ def lambda_handler(event, context):
     elif state == 'start':
         # Start of a new run of the process
         # Initialize the results tracking object
+        global results
         results = {}
         
         # Create initial parameters
