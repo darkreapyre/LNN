@@ -309,7 +309,7 @@ def lambda_handler(event, context):
         # Upload to ElastiCache
         parameter_key = to_cache(endpoint, obj=parameters, name='parameters')
 
-        if last == "True:
+        if last == "True":
             # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key
