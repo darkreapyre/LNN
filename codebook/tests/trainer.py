@@ -31,7 +31,7 @@ cache = redis(host=endpoint, port=6379, db=0)
 global parameter_key
 global parameters 
 global results_key
-global results
+#global results
 
 # Helper Functions
 def to_cache(endpoint, obj, name):
