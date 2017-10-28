@@ -360,6 +360,7 @@ def lambda_handler(event, context):
     global parameters 
     parameters = from_cache(endpoint, parameter_key)
     global results_key
+    global results
     # Will fail if this is the first time `TrainerLambda` is called since
     # there is no results object
     try:
@@ -568,7 +569,6 @@ def lambda_handler(event, context):
     elif state == 'start':
         # Start of a new run of the process
         # Initialize the results tracking object
-        global results
         results = {}
         
         # Create initial parameters
