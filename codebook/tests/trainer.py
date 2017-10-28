@@ -166,8 +166,10 @@ def start_epoch(epoch, layer, parameter_key):
     # Update results for the new epoch
     results['epoch' + str(epoch)] = {}
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
-    # Update paramaters
+    # Update paramaters with this functions data
     parameters['data_keys']['results'] = results_key
+    parameters['epoch'] = epoch
+    parameters['layer'] = layer
     parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
     
     # Start forwardprop
@@ -265,11 +267,12 @@ def propogate(direction, epoch, layer, parameter_key):
 
     # Determine process based on direction
     if direction == 'forward':
-        """
-        The following is code starting 10/28
-        """
         # Launch Lambdas to propogate forward
         # Prepare the payload for `NeuronLambda`
+        # Update parameters with this function's updates
+        parameters['epoch'] = epoch
+        parameters['layer'] = layer
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         payload['parameter_key'] = parameter_key
         # Remember to start the count from 1 as hidden unit indexing
         # starts at 1
@@ -407,8 +410,8 @@ def lambda_handler(event, context):
         A_key = to_cache(endpoint=endpoint, obj=A, name=A_name)
         parameters['data_keys'][A_name] = A_key
 
-        # Update ElastiCache for posterity
-        #parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        # Update ElastiCache with this funciton's data
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
         # Determine the location within forwardprop
         if layer > parameters['layers']:
