@@ -235,14 +235,14 @@ def lambda_handler(event, context):
     Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
     m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
 
+    # Forward propogation from X to Cost
+    activation = event.get('activation')
+    if activation == 'sigmoind':
+        a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
+    else: # Some other function to be test later like tanh or ReLU
+        pass
+
     if state == 'forward':
-        # Forward propogation from X to Cost
-        activation = event.get('activation')
-        if activation == 'sigmoind':
-            a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
-        else: # Some other function to be test later like tanh or ReLU
-            pass
-        
         # Capture activations
         A_key = parameters['data_keys']['A']
         # Load the activation object
