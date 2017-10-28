@@ -218,7 +218,6 @@ def lambda_handler(event, context):
     
     # Get the Neural Network paramaters from Elasticache
     parameter_key = event.get('parameter_key')
-    global parameters 
     parameters = from_cache(endpoint, key=parameter_key)
        
     # Get the current state
@@ -248,7 +247,7 @@ def lambda_handler(event, context):
         A_key = parameters['data_keys']['A']
         # Load the activation object
         A = from_cache(endpoint=endpoint, key=A_key) # Should be empty dictionary
-        # Update the activation object
+        # Update the activation object for this Neuron at this layer
         A['layer' + str(layer)]['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
         # Update loacal parameter
         parameters['data_keys']['A'] = A
@@ -269,10 +268,10 @@ def lambda_handler(event, context):
             print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
 ######################################################################################################            
-#            # Invoke NeuronLambdas for next layer
+#            # Invoke TrainerLambda to process activations
 #            try:
 #                response = lambda_client.invoke(
-#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+#                    FunctionName=environ['TrainerLambda'], #ENSURE ARN POPULATED BY CFN
 #                    InvocationType='Event',
 #                    Payload=payloadbytes
 #                )

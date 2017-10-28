@@ -266,7 +266,7 @@ def propogate(direction, epoch, layer, parameter_key):
     # Determine process based on direction
     if direction == 'forward':
         # Launch Lambdas to propogate forward
-        # Create the Activation tracking object
+        # Create the Activation tracking object for the current layer
         A = {}
         A['layer' + str(layer)] = {}
         # Cache the object
