@@ -28,6 +28,10 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
+global parameter_key
+global parameters 
+global results_key
+global results
 
 # Helper Functions
 def to_cache(endpoint, obj, name):
@@ -355,13 +359,7 @@ def lambda_handler(event, context):
     """
        
     # Get the Neural Network paramaters from Elasticache
-    global parameter_key
-    parameter_key = event.get('parameter_key')
-    global parameters 
-    parameters = from_cache(endpoint, parameter_key)
-    global results_key
-    global results
-    # Will fail if this is the first time `TrainerLambda` is called since
+    # This Will fail if this is the first time `TrainerLambda` is called since
     # there is no results object
     try:
         results_key = event.get('results_key')
