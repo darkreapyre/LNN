@@ -380,91 +380,39 @@ def lambda_handler(event, context):
         # Get important state variables
         epoch = event.get('epoch')
         layer = event.get('layer')
+
+        # First pre-process the Activations from the "previous" layer
+        # Use the Folling Redis command to ensure a pure string is return for the key
+        r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
+        key_list = []
+        # Compile a list of activations
+        for key in r.scan_iter(match='layer'+str(layer-1)+'_a_*'):
+            key_list.append(key)
+        # Create a dictionary of activation results
+        A_dict = {}
+        for i in key_list:
+            A_dict[i] = from_cache(endpoint=endpoint, key=i)
+        # Number of Neuron Activations
+        num_activations = len(key_list)
+        # Create a numpy array of the results, depending on the no. of
+        # hidden units
+        A = np.array([arr.tolist() for arr in A_dict.values()])
+        if num_activations == 1:
+            dims = (key_list[0].split('|')[1].split('#')[:1:])
+            A = A.reshape(int(dims[0]), int(dims[1]))
+        else:
+            A = np.squeeze(A)
+        # Add the `A` Matrix to `data_keys` for later use
+        A_name = 'A' + str(layer-1)
+        A_key = to_cache(endpoint=endpoint, obj=A, name=A_name)
+        parameters['data_keys'][A_name] = A_key
+
+        # Update ElastiCache for posterity
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
         # Determine the location within forwardprop
         if layer > parameters['layers']:
             # Location is at the end of forwardprop, therefore calculate Cost
-            # First pre-process the Activations
-            """
-            # Note: May not need to use `scan_iter()` anymore since the exact 
-            #keys are available in `data_keys`, so a scan of all keys pertaining
-            # to `a_*` may not be necessary as the keys pertaining to the 
-            # layer are there. Just need to look through the layers.
-            #
-            # Try the following for each individual layer:
-
-            num_layers = parameters['layers']
-            A_key = parameters['data_keys']['A']
-            A = from_cache(endpoint=endpoint, key=A_key)
-            
-            for l in range(1, num_layers + 1):
-               Do the following for the layer without using `scan_iter()`
-               key_list = list(A.get('layer' + str(l)).keys()) #<- hope this works
-               tmp_dict = {}
-               for i in key_list:
-                   tmp_dict[i] = from_cache(endpoint=endpoint, key=i)
-               num_activations = len(key_list)
-               tmp_array = np.array([arr.tolist() for arr in tmp_dict.values()])
-            ########   key_list[l] = np.array([arr.tolist() for arr in tmp_dict.values()]) #<- hope this works
-               if num_activations == 1:
-                   dims = (key_list[0].split('|')[1].split('#')[1:])
-                   tmp_array = tmp_array.reshape(int(dims[0]), int(dims[1]))
-               else:
-                   tmp_array = np.squeeze(tmp_array)
-               A_name = 'A' + str(l)
-               parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=tmp_array, name=A_name)
-            
-            # Note: See if this can be built into a function, for example:
-            A_list = build_matrix(m_type=(activations | weights | bias), num_layers)
-            if len(A_list) == 1:
-                cost = (-1 / m) * np.sum(Y * (np.log(A_list[0])) + ((1 - Y) * np.log(1 - A_list[0])))
-            else:
-                # Multiple layers
-                logprobs = np.multiply(np.log(A_list[1]), Y) + np.multiply((1 - Y), np.log(1 - A_list[1]))
-                cost = - np.sum(logprobs) / m
-            ####################################################################################################
-            ###               FFFFFFFFFFFFFFFUUUUUUUUUUUUUCCCCCCCCCCKKKKKKKKKK!!!!!!!!!!!!!!!                ###
-            ###                                                                                              ###
-            ### Need to think about this, as the cost may only need to be computed on the last activation    ###
-            ### and hence the only requirement is to compute the last layer.                                 ###
-            ###                                                                                              ###
-            ###                                      BUT                                                     ###
-            ###                                                                                              ###
-            ### I think that the derivative calculations still need A1 as well as A2, so this may still be   ###
-            ### usable!                                                                                      ###
-            ####################################################################################################
-
-            """
-
-            # Get the activations from the NeuronLambda by using this redis
-            # command to ensure that a pure string is returned for the key
-            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
-            key_list = []
-            for key in r.scan_iter(match='a_*'):
-                key_list.append(key)
-            # Create a dictionary of numpy arrays
-            A_dict = {}
-            for i in key_list:
-                A_dict[i] = from_cache(endpoint=endpoint, key=i)
-            # Create the numpy array of activations, depending on the 
-            # number of hidden units
-            num_activations = len(key_list)
-            # Create the matrix of Activations
-            A = np.array([arr.tolist() for arr in A_dict.values()])
-            # Format the shape depending on the number of activations
-            """
-            Note: Need to confirm if this `if` statement is still necessary
-            """
-            if num_activations == 1:
-                dims = (key_list[0].split('|')[1].split('#')[1:])
-                A = A.reshape(int(dims[0]), int(dims[1]))
-            else:
-                A = np.squeeze(A)
-            # Add `A{Layer}` to input data for backprop
-            A_name = 'A' + str(layer-1)
-            parameters['data_keys']['A'] = to_cache(endpoint=endpoint, obj=A, name=A_name)
-            
-            # Calculate the Cost
             # Get the training examples data
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
             m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
@@ -481,9 +429,9 @@ def lambda_handler(event, context):
             
         else:
             # Move to the next hidden layer
-            #propogate(direction='forward', layer=layer, activations=activations)
+            propogate(direction='forward', epoch=epoch, layer=layer, parameter_key=parameter_key)
             
-            pass
+            #pass
         
     elif state == 'backward':
         # Get important state variables
