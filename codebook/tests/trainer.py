@@ -175,6 +175,49 @@ def finish_epoch(direction, epoch, layer):
     #TBD
     pass
 
+def optimize(epoch, layer, params, grads):
+    """
+    Optimizes `w` and `b` by running Gradient Descent to get the `cost`.
+
+    Arguments:
+    epoch -- Integer representing the "current" epoch to close out.
+    layer -- Integer representing the current hidden layer.
+    params -- Dictionary containing the gradients of the weights and 
+                bias.
+    grads -- Dictionary containing the gardients of the wights and
+                bias with respect to the cost function.
+    
+    Returns:
+    TBD
+    """
+
+    #TBD
+    #Get the learning rate
+    #learning_rate = parameters['learning_rate']
+
+    """
+    Note:
+    Probably have to get the cost from the output of the NeuronLambdas
+    OR
+    Get data from the NeuronLambdas and calculate the cost here
+    """
+
+    # Get the grads and params
+    
+    # Perform the update rule
+    #w = w - learning_rate * grads['dw']
+    #b = b - learning_rate * grads['db']
+
+    pass
+
+def end():
+    """
+    Finishes out the process and launches the next state mechanisms for prediction.
+    """
+
+    #TBD
+    pass
+
 def propogate(direction, epoch, layer):
     """
     Determines the amount of "hidden" units based on the layer and loops
@@ -303,49 +346,6 @@ def propogate(direction, epoch, layer):
         for i in range(1, num_hidden_units + 1):
         # Do stuff
     """
-
-def optimize(epoch, layer, params, grads):
-    """
-    Optimizes `w` and `b` by running Gradient Descent to get the `cost`.
-
-    Arguments:
-    epoch -- Integer representing the "current" epoch to close out.
-    layer -- Integer representing the current hidden layer.
-    params -- Dictionary containing the gradients of the weights and 
-                bias.
-    grads -- Dictionary containing the gardients of the wights and
-                bias with respect to the cost function.
-    
-    Returns:
-    TBD
-    """
-
-    #TBD
-    #Get the learning rate
-    #learning_rate = parameters['learning_rate']
-
-    """
-    Note:
-    Probably have to get the cost from the output of the NeuronLambdas
-    OR
-    Get data from the NeuronLambdas and calculate the cost here
-    """
-
-    # Get the grads and params
-    
-    # Perform the update rule
-    #w = w - learning_rate * grads['dw']
-    #b = b - learning_rate * grads['db']
-
-    pass
-
-def end():
-    """
-    Finishes out the process and launches the next state mechanisms for prediction.
-    """
-
-    #TBD
-    pass
 
 def lambda_handler(event, context):
     """
