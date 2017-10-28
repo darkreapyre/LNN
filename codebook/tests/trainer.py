@@ -372,7 +372,7 @@ def lambda_handler(event, context):
     state = event.get('state')
     
     # Execute appropriate action based on the the current state
-    if state == 'forward'
+    if state == 'forward':
         # Get important state variables
         epoch = event.get('epoch')
         layer = event.get('layer')
