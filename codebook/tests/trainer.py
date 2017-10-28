@@ -168,7 +168,7 @@ def start_epoch(epoch, layer, parameter_key):
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
     # Update paramaters
     parameters['data_keys']['results'] = results_key
-    parameter_key = to_cache(endpoint=endpoint, obj=paramaters, name='parameters')
+    parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
     
     # Start forwardprop
     propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key)
