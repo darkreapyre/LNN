@@ -140,8 +140,8 @@ def to_cache(endpoint, obj, name):
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
         return key
-    else:
-        print("The Object is not a supported serialization type")
+    #else:
+    #    print("The Object is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
