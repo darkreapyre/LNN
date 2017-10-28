@@ -237,7 +237,7 @@ def lambda_handler(event, context):
 
     # Forward propogation from X to Cost
     activation = event.get('activation')
-    if activation == 'sigmoind':
+    if activation == 'sigmoid':
         a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
     else: # Some other function to be test later like tanh or ReLU
         pass
