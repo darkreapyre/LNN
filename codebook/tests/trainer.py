@@ -573,7 +573,7 @@ def lambda_handler(event, context):
         # Create initial parameters
         epoch = 1
         layer = 0
-        start_epoch(epoch=epoch, layer=layer, results)
+        start_epoch(epoch=epoch, layer=layer, results=results)
        
     else:
         print("No state informaiton has been provided.")
