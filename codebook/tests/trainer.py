@@ -457,6 +457,9 @@ def lambda_handler(event, context):
             # Create the matrix of Activations
             A = np.array([arr.tolist() for arr in A_dict.values()])
             # Format the shape depending on the number of activations
+            """
+            Note: Need to confirm if this `if` statement is still necessary
+            """
             if num_activations == 1:
                 dims = (key_list[0].split('|')[1].split('#')[1:])
                 A = A.reshape(int(dims[0]), int(dims[1]))
