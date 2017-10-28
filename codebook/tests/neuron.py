@@ -220,9 +220,6 @@ def lambda_handler(event, context):
     parameter_key = event.get('parameter_key')
     global parameters 
     parameters = from_cache(endpoint, key=parameter_key)
-    #global results_key
-    results_key = event.get("results_key")
-    #results = from_cache(endpoint=endpoint, key=results_key)
        
     # Get the current state
     state = event.get('state')
@@ -265,7 +262,6 @@ def lambda_handler(event, context):
             # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key
-            payload['results_key'] = results_key
             payload['state'] = 'forward'
             payload['epoch'] = epoch
             payload['layer'] = layer + 1
@@ -318,7 +314,6 @@ def lambda_handler(event, context):
             # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key
-            payload['results_key'] = results_key
             payload['state'] = 'backward'
             payload['epoch'] = epoch
             payload['layer'] = layer - 1
