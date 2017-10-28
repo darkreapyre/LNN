@@ -582,11 +582,11 @@ def lambda_handler(event, context):
         #global results
         results = {}
         results_key = to_cache(endpoint=endpoint, obj=results, name='results')
-        parameters['data_keys']['results'] = results
+        parameters['data_keys']['results'] = results_key
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
         # Create initial parameters
-        epoch = 1
+        epoch = 0
         layer = 0
         start_epoch(epoch=epoch, layer=layer, parameter_key=parameter_key)
        
