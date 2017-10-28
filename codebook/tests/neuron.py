@@ -244,13 +244,13 @@ def lambda_handler(event, context):
 
     if state == 'forward':
         # Capture activations for the current layer
-        A_key = parameters['data_keys']['A']['layer' + str(layer)]
+        A_key = parameters['data_keys']['A']
         # Load the activation object
         A = from_cache(endpoint=endpoint, key=A_key) # Should be empty dictionary
         # Update the activation object for this Neuron at this layer
-        A['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
+        A['layer' + str(layer)]['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
         # Update loacal parameter
-        parameters['data_keys']['A']['layer' + str(layer)] = A
+        parameters['data_keys']['A'] = A
         # Upload to ElastiCache
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
