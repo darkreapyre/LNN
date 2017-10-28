@@ -243,6 +243,12 @@ def lambda_handler(event, context):
         pass
 
     if state == 'forward':
+        if ID != 1:
+            import time
+            time.sleep(30)
+
+
+
         # Capture activations for the current layer
         A_key = parameters['data_keys']['A']
         # Load the activation object
