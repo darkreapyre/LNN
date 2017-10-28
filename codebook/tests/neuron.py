@@ -261,7 +261,7 @@ def lambda_handler(event, context):
         # Compute the Cost on TrainerLambda by caching it
         #to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
 
-        if last:
+        if last == "True":
             # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key
@@ -314,7 +314,7 @@ def lambda_handler(event, context):
         # Upload to ElastiCache
         parameter_key = to_cache(endpoint, obj=parameters, name='parameters')
 
-        if last:
+        if last == "True:
             # Build the state payload
             payload = {}
             payload['parameter_key'] = parameter_key

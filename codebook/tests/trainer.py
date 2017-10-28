@@ -150,7 +150,7 @@ def from_cache(endpoint, key):
     else:
         print(str(type(obj)) + "is not a supported serialization type")
 
-def start_epoch(epoch, layer, results, parameter_key):
+def start_epoch(epoch, layer, parameter_key):
     """
     Starts a new epoch and configures the necessary state tracking objcts.
     
@@ -160,12 +160,18 @@ def start_epoch(epoch, layer, results, parameter_key):
     """
 
     # Initialize the results object for the new epoch
-    # Note: key = 'results|json'
+    parameters = from_cache(endpoint=endpoint, key=parameter_key)
+    results_key = parameters.get('data_keys')['results']
+    results = from_cache(endpoint=endpoint, key=results_key)
+    # Update results for the new epoch
     results['epoch' + str(epoch)] = {}
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
+    # Update paramaters
+    parameters['data_keys']['results'] = results_key
+    parameter_key = to_cache(endpoint=endpoint, obj=paramaters, name='parameters')
     
     # Start forwardprop
-    propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key, results_key=results_key)
+    propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key)
 
 def finish_epoch(direction, epoch, layer):
     """
@@ -222,7 +228,7 @@ def end():
     #TBD
     pass
 
-def propogate(direction, epoch, layer, parameter_key, results_key):
+def propogate(direction, epoch, layer, parameter_key):
     """
     Determines the amount of "hidden" units based on the layer and loops
     through launching the necessary `NeuronLambda` functions with the 
@@ -246,6 +252,7 @@ def propogate(direction, epoch, layer, parameter_key, results_key):
     ###########################################################
 
     # Get the parameters for the layer
+    parameters = from_cache(endpoint=endpoint, key=parameter_key)
     num_hidden_units = parameters['neurons']['layer' + str(layer)]
     
     # Build the NeuronLambda payload
@@ -276,9 +283,9 @@ def propogate(direction, epoch, layer, parameter_key, results_key):
             # Prepare the payload for `NeuronLambda`
             payload['id'] = i
             if i == num_hidden_units:
-                payload['last'] = True
+                payload['last'] = "True"
             else:
-                payload['last'] = False
+                payload['last'] = "False"
             payload['activation'] = parameters['activations']['layer' + str(layer)]
             payloadbytes = dumps(payload)
             print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
@@ -470,9 +477,10 @@ def lambda_handler(event, context):
             # Update results with the Cost
             results['epoch' + str(epoch)]['cost'] = cost
             results_key = to_cache(endpoint=endpoint, obj=results, name='results')
+            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
             # Start backprop
-            propogate(direction='backward', epoch=epoch, layer=layer-1)
+            propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
             
         else:
             # Move to the next hidden layer
@@ -573,11 +581,14 @@ def lambda_handler(event, context):
         # Initialize the results tracking object
         #global results
         results = {}
+        results_key = to_cache(endpoint=endpoint, obj=results, name='results')
+        parameters['data_keys']['results'] = results
+        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
         # Create initial parameters
         epoch = 1
         layer = 0
-        start_epoch(epoch=epoch, layer=layer, results=results, parameter_key=parameter_key)
+        start_epoch(epoch=epoch, layer=layer, parameter_key=parameter_key)
        
     else:
         print("No state informaiton has been provided.")
