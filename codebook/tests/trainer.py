@@ -28,7 +28,7 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-global parameter_key
+parameter_key = ''
 #global parameters 
 #global results_key
 #global results
