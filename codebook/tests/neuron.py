@@ -193,8 +193,8 @@ def from_cache(endpoint, key):
         cache = redis(host=endpoint, port=6379, db=0)
         obj = cache.get(key)
         return obj
-    else:
-        print(str(type(obj)) + "is not a supported serialization type")
+    #else:
+    #    print(str(type(obj)) + "is not a supported serialization type")
 
 def sigmoid(z):
     """
