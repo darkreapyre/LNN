@@ -271,7 +271,7 @@ def propogate(direction, epoch, layer, parameter_key):
         A['layer' + str(layer)] = {}
         # Cache the object
         A_key = to_cache(endpoint=endpoint, obj=A, name='A')
-        parameters['data_keys']['A'] = A
+        parameters['data_keys']['A'] = A_key
         # Update ElastiCache with the latest parameters
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         # Prepare the payload for `NeuronLambda`
@@ -322,9 +322,9 @@ def propogate(direction, epoch, layer, parameter_key):
             # Prepare the payload for `NeuronLambda`
             payload['id'] = i
             if i == num_hidden_units:
-                payload['last'] = True
+                payload['last'] = "True"
             else:
-                payload['last'] = False
+                payload['last'] = "False"
             payloadbytes = dumps(payload)
             print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
