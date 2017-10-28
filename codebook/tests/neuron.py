@@ -141,7 +141,7 @@ def to_cache(endpoint, obj, name):
         cache.set(key, val)
         return key
     else:
-        print("Object is not a supported serialization type")
+        print("The Object is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
