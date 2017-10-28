@@ -150,7 +150,7 @@ def from_cache(endpoint, key):
     else:
         print(str(type(obj)) + "is not a supported serialization type")
 
-def start_epoch(epoch, layer):
+def start_epoch(epoch, layer, results):
     """
     Starts a new epoch and configures the necessary state tracking objcts.
     
@@ -567,13 +567,13 @@ def lambda_handler(event, context):
     elif state == 'start':
         # Start of a new run of the process
         # Initialize the results tracking object
-        global results
+        #global results
         results = {}
         
         # Create initial parameters
         epoch = 1
         layer = 0
-        start_epoch(epoch=epoch, layer=layer)
+        start_epoch(epoch=epoch, layer=layer, results)
        
     else:
         print("No state informaiton has been provided.")
