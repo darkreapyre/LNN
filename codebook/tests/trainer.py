@@ -28,7 +28,7 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-parameter_key = ''
+#global parameter_key
 #global parameters 
 #global results_key
 #global results
@@ -150,7 +150,7 @@ def from_cache(endpoint, key):
     else:
         print(str(type(obj)) + "is not a supported serialization type")
 
-def start_epoch(epoch, layer, results):
+def start_epoch(epoch, layer, results, parameter_key):
     """
     Starts a new epoch and configures the necessary state tracking objcts.
     
@@ -165,7 +165,7 @@ def start_epoch(epoch, layer, results):
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
     
     # Start forwardprop
-    propogate(direction='forward', epoch=epoch, layer=layer+1)
+    propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key)
 
 def finish_epoch(direction, epoch, layer):
     """
@@ -222,7 +222,7 @@ def end():
     #TBD
     pass
 
-def propogate(direction, epoch, layer):
+def propogate(direction, epoch, layer, parameter_key):
     """
     Determines the amount of "hidden" units based on the layer and loops
     through launching the necessary `NeuronLambda` functions with the 
@@ -358,7 +358,7 @@ def lambda_handler(event, context):
     then directs the next steps.
     """
        
-    # Get the Neural Network paramaters from Elasticache
+    # Get the Neural Network parameters from Elasticache
     # This Will fail if this is the first time `TrainerLambda` is called since
     # there is no results object
     try:
@@ -577,7 +577,7 @@ def lambda_handler(event, context):
         # Create initial parameters
         epoch = 1
         layer = 0
-        start_epoch(epoch=epoch, layer=layer, results=results)
+        start_epoch(epoch=epoch, layer=layer, results=results, parameter_key=parameter_key)
        
     else:
         print("No state informaiton has been provided.")
