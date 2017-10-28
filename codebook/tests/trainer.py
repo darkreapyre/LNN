@@ -165,7 +165,7 @@ def start_epoch(epoch, layer, results, parameter_key):
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
     
     # Start forwardprop
-    propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key)
+    propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key, results_key=results_key)
 
 def finish_epoch(direction, epoch, layer):
     """
@@ -222,7 +222,7 @@ def end():
     #TBD
     pass
 
-def propogate(direction, epoch, layer, parameter_key):
+def propogate(direction, epoch, layer, parameter_key, results_key):
     """
     Determines the amount of "hidden" units based on the layer and loops
     through launching the necessary `NeuronLambda` functions with the 
