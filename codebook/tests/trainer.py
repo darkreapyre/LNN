@@ -408,7 +408,7 @@ def lambda_handler(event, context):
         parameters['data_keys'][A_name] = A_key
 
         # Update ElastiCache for posterity
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        #parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
         # Determine the location within forwardprop
         if layer > parameters['layers']:
@@ -429,6 +429,7 @@ def lambda_handler(event, context):
             
         else:
             # Move to the next hidden layer
+            print("Moving onto Layer " + str(layer))
             propogate(direction='forward', epoch=epoch, layer=layer, parameter_key=parameter_key)
             
             #pass
