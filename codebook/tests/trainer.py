@@ -369,7 +369,7 @@ def lambda_handler(event, context):
     
     # Get the current state from the invoking lambda
     state = event.get('state')
-#    global parameters
+    global parameters
     global parameter_key
     parameter_key = event.get('parameter_key')
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
