@@ -259,6 +259,7 @@ def lambda_handler(event, context):
         parameters['data_keys']['A'] = A
         # Upload to ElastiCache
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        print("Neuron " + str(ID) + " successfully completed")
         
         # Compute the Cost on TrainerLambda by caching it
         #to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
