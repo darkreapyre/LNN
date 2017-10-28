@@ -401,7 +401,7 @@ def lambda_handler(event, context):
         # hidden units
         A = np.array([arr.tolist() for arr in A_dict.values()])
         if num_activations == 1:
-            dims = (key_list[0].split('|')[1].split('#')[:1:])
+            dims = (key_list[0].split('|')[1].split('#')[1:])
             A = A.reshape(int(dims[0]), int(dims[1]))
         else:
             A = np.squeeze(A)
@@ -432,7 +432,7 @@ def lambda_handler(event, context):
             
         else:
             # Move to the next hidden layer
-            print("Moving onto Layer " + str(layer))
+            #print("Moving onto Layer " + str(layer))
             propogate(direction='forward', epoch=epoch, layer=layer, parameter_key=parameter_key)
             
             #pass
