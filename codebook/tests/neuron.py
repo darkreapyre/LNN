@@ -249,8 +249,8 @@ def lambda_handler(event, context):
         if last == "True":
             # Build the state payload
             payload = {}
-            # Update parameters with this funciton's data
-            paramaters['epoch'] = epoch
+            # Update parameters with this function's data
+            parameters['epoch'] = epoch
             parameters['layer'] = layer + 1
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
             payload['parameter_key'] = parameter_key
