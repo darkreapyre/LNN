@@ -140,8 +140,8 @@ def to_cache(endpoint, obj, name):
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
         return key
-    #else:
-    #    print("The Object is not a supported serialization type")
+    else:
+        print("The Object is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
@@ -193,8 +193,8 @@ def from_cache(endpoint, key):
         cache = redis(host=endpoint, port=6379, db=0)
         obj = cache.get(key)
         return obj
-    #else:
-    #    print(str(type(obj)) + "is not a supported serialization type")
+    else:
+        print("The Object is not a supported de-serialization type")
 
 def sigmoid(z):
     """
@@ -243,14 +243,14 @@ def lambda_handler(event, context):
         pass
 
     if state == 'forward':
-        # Capture activations
-        A_key = parameters['data_keys']['A']
+        # Capture activations for the current layer
+        A_key = parameters['data_keys']['A']['layer' + str(layer)]
         # Load the activation object
         A = from_cache(endpoint=endpoint, key=A_key) # Should be empty dictionary
         # Update the activation object for this Neuron at this layer
-        A['layer' + str(layer)]['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
+        A['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
         # Update loacal parameter
-        parameters['data_keys']['A'] = A
+        parameters['data_keys']['A']['layer' + str(layer)] = A
         # Upload to ElastiCache
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
