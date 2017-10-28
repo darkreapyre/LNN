@@ -235,35 +235,17 @@ def lambda_handler(event, context):
     Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
     m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
 
-    # Forward propogation from X to Cost
-    activation = event.get('activation')
-    if activation == 'sigmoid':
-        a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
-    else: # Some other function to be test later like tanh or ReLU
-        pass
-
     if state == 'forward':
-        if ID != 1:
-            import time
-            time.sleep(30)
-
-
-
-        # Capture activations for the current layer
-        A_key = parameters['data_keys']['A']
-        # Load the activation object
-        A = from_cache(endpoint=endpoint, key=A_key) # Should be empty dictionary
-        # Update the activation object for this Neuron at this layer
-        A['layer' + str(layer)]['a_' + str(ID)] = to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
-        # Update loacal parameter
-        parameters['data_keys']['A'] = A
-        # Upload to ElastiCache
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-        print("Neuron " + str(ID) + " successfully completed")
+        # Forward propogation from X to Cost
+        activation = event.get('activation')
+        if activation == 'sigmoid':
+            a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
+        else: # Some other function to be test later like tanh or ReLU
+            pass
         
-        # Compute the Cost on TrainerLambda by caching it
-        #to_cache(endpoint=endpoint, obj=a, name='a_'+str(ID))
-
+        # Upload the results to ElastiCache for `TrainerLambda` to process
+        to_cache(endpoint=endpoint, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
+        
         if last == "True":
             # Build the state payload
             payload = {}

@@ -269,28 +269,6 @@ def propogate(direction, epoch, layer, parameter_key):
         The following is code starting 10/28
         """
         # Launch Lambdas to propogate forward
-        # Create the Activation tracking object for the current layer
-        # Note: `A` should have already been created in st `Start`
-        # so get the `A` tracking object
-        A_key = parameters['data_keys']['A']
-        A = from_cache(endpoint=endpoint, key=A_key)
-        # Update the activation tracking object for the current layer
-        # by adding the current layer
-        A['layer' + str(layer)] = {}
-        A_key = to_cache(endpoint=endpoint, obj=A, name='A')
-        # Update parameters
-        parameters['data_keys']['A'] = A_key
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-
-        """ Code before 10/28
-        A = {}
-        A['layer' + str(layer)] = {}
-        # Cache the object
-        A_key = to_cache(endpoint=endpoint, obj=A, name='A')
-        parameters['data_keys']['A'] = A_key
-        # Update ElastiCache with the latest parameters
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-        """
         # Prepare the payload for `NeuronLambda`
         payload['parameter_key'] = parameter_key
         # Remember to start the count from 1 as hidden unit indexing
@@ -601,12 +579,6 @@ def lambda_handler(event, context):
         results = {}
         results_key = to_cache(endpoint=endpoint, obj=results, name='results')
         parameters['data_keys']['results'] = results_key
-        A = {}
-        A_key = to_cache(endpoint=endpoint, obj=A, name='A')
-        parameters['data_keys']['A'] = A_key
-        grads = {}
-        grads_key = to_cache(endpoint=endpoint, obj=grads, name='grads')
-        parameters['data_keys']['grads'] = grads_key
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         
         # Create initial parameters
