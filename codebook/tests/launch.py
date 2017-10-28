@@ -291,6 +291,8 @@ def lambda_handler(event, context):
     print(dumps(parameters, indent=4, sort_keys=True))
     print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
+    return
+
 """
     
     # Invoke TrainerLambda for next layer
@@ -304,5 +306,6 @@ def lambda_handler(event, context):
         print(e)
         raise
     print(response)
-"""
+
     return
+"""
