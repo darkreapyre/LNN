@@ -456,7 +456,6 @@ def lambda_handler(event, context):
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
             print("Cost after epoch {0}: {1}".format(epoch, cost))
-            print("\n Starting Backward Propogation")
 
             # Start backprop
             propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
