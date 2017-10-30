@@ -245,7 +245,7 @@ def initialize_data(endpoint, w, b):
     
     # Initialize the results tracking object
     results = {}
-    data_keys['results'] = to_cahe(endpoint, obj=results, name='results')
+    data_keys['results'] = to_cache(endpoint, obj=results, name='results')
 #    to_cache(endpoint, dump='', name='results')
         
     return data_keys, [j for i in a_names for j in i], dims
