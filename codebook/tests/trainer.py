@@ -161,13 +161,21 @@ def start_epoch(epoch, layer, parameter_key):
 
     # Initialize the results object for the new epoch
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
+    
+    """
     results_key = parameters.get('data_keys')['results']
     results = from_cache(endpoint=endpoint, key=results_key)
     # Update results for the new epoch
     results['epoch' + str(epoch)] = {}
     results_key = to_cache(endpoint=endpoint, obj=results, name='results')
+    """
+    # Add current epoch to results
+    epoch2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
+    epoch2results['epoch' + str(epoch)] = {}
+    parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=epoch2results, name='results')
+   
     # Update paramaters with this functions data
-    parameters['data_keys']['results'] = results_key
+    #parameters['data_keys']['results'] = results_key
     parameters['epoch'] = epoch
     parameters['layer'] = layer
     parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
@@ -362,6 +370,7 @@ def lambda_handler(event, context):
     then directs the next steps.
     """
        
+    """
     # Get the Neural Network parameters from Elasticache
     # This Will fail if this is the first time `TrainerLambda` is called since
     # there is no results object
@@ -370,6 +379,7 @@ def lambda_handler(event, context):
         results = from_cache(endpoint=endpoint, key=results_key)
     except Exception:
         pass
+    """
     
     # Get the current state from the invoking lambda
     state = event.get('state')
@@ -385,7 +395,7 @@ def lambda_handler(event, context):
         layer = event.get('layer')
 
         # First pre-process the Activations from the "previous" layer
-        # Use the Folling Redis command to ensure a pure string is return for the key
+        # Use the folling Redis command to ensure a pure string is return for the key
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
         key_list = []
         # Compile a list of activations
@@ -407,8 +417,7 @@ def lambda_handler(event, context):
             A = np.squeeze(A)
         # Add the `A` Matrix to `data_keys` for later use
         A_name = 'A' + str(layer-1)
-        A_key = to_cache(endpoint=endpoint, obj=A, name=A_name)
-        parameters['data_keys'][A_name] = A_key
+        parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=A, name=A_name)
 
         # Update ElastiCache with this funciton's data
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
@@ -419,12 +428,28 @@ def lambda_handler(event, context):
             # Get the training examples data
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
             m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
+            
             # Calculate the Cost
-            cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
+            if parameters['layers'] == 1:
+                cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
+            else:
+                logprobs = np.multiply(np.log(A), Y) + np.multiply((1 - Y), np.log(1 - A))
+                cost = -np.sum(logprobs) / m
 
             # Update results with the Cost
+            """ 
             results['epoch' + str(epoch)]['cost'] = cost
             results_key = to_cache(endpoint=endpoint, obj=results, name='results')
+            Note: This is where the error occured on 10/28, therfore try the following:
+            """
+            # Get the results object
+            cost2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
+            # Append the cost to results object
+            cost2results['epoch' + sr(epoch)]['cost'] = cost
+            # Update results in ElastiCache
+            parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
+            
+            # Update parameters in ElastiCache
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
             # Start backprop
@@ -528,10 +553,13 @@ def lambda_handler(event, context):
     elif state == 'start':
         # Start of a new run of the process
         # Initialize the tracking objects
-        results = {}
-        results_key = to_cache(endpoint=endpoint, obj=results, name='results')
-        parameters['data_keys']['results'] = results_key
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        """
+        Note: Initializing results occurred in `LaunchLambda`
+        #results = {}
+        #results_key = to_cache(endpoint=endpoint, obj=results, name='results')
+        #parameters['data_keys']['results'] = results_key
+        #parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        """
         
         # Create initial parameters
         epoch = 0
