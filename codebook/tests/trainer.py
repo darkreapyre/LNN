@@ -323,6 +323,7 @@ def propogate(direction, epoch, layer, parameter_key):
     
     elif direction == 'backward':
         # Launch Lambdas to propogate backward
+        """
         # Create the gradient tracking object
         grads = {}
         grads['layer' + str(layer-1)] = {}
@@ -331,6 +332,8 @@ def propogate(direction, epoch, layer, parameter_key):
         parameters['data_keys']['grads'] = grads_key
         # Update ElastiCache with the latest parameters
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+        """
+        
         # Prepare the payload for `NeuronLambda`
         payload['parameter_key'] = parameter_key
 

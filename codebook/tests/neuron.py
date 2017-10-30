@@ -281,8 +281,7 @@ def lambda_handler(event, context):
         # Determine the correct notation for the layer and get the Matrix
         # of activations calculated at the end of forward propogation
         A_name = 'A'+str(layer)
-        A_key = parameters.get('data_keys')[A_name]
-        A = from_cache(endpoint=endpoint, key=A_key)
+        A = from_cache(endpoint=endpoint, key=parameters['data_keys'][A_name])
 
         # Backward propogation to determine gradients of current layer
         dw = (1 / m) * np.dot(X, (A - Y).T)
@@ -291,6 +290,7 @@ def lambda_handler(event, context):
         print("Partial Derivatives - Bias for Neuron" + str(ID) + ":\n" + dw)
 
         # Capture gradients
+        """
         grads_key = parameters['data_keys']['grads']
         # Load the grads object
         grads = from_cache(endpoint, key=grads_key) # Should be empty dictionary
@@ -301,6 +301,7 @@ def lambda_handler(event, context):
         parameters['data_keys']['grads'] = grads
         # Upload to ElastiCache
         parameter_key = to_cache(endpoint, obj=parameters, name='parameters')
+        """
 
         if last == "True":
             # Build the state payload
