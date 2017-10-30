@@ -440,11 +440,6 @@ def lambda_handler(event, context):
                 cost = -np.sum(logprobs) / m
 
             # Update results with the Cost
-            """ 
-            results['epoch' + str(epoch)]['cost'] = cost
-            results_key = to_cache(endpoint=endpoint, obj=results, name='results')
-            Note: This is where the error occured on 10/28, therfore try the following:
-            """
             # Get the results object
             cost2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
             # Append the cost to results object
