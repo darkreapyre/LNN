@@ -243,7 +243,9 @@ def initialize_data(endpoint, w, b):
     m = train_set_x.shape[1]
     data_keys['m'] = to_cache(endpoint, obj=m, name='m')
     
-#    # Initialize the results tracking object
+    # Initialize the results tracking object
+    results = {}
+    data_keys['results'] = to_cahe(endpoint, obj=results, name='results')
 #    to_cache(endpoint, dump='', name='results')
         
     return data_keys, [j for i in a_names for j in i], dims
@@ -274,7 +276,7 @@ def lambda_handler(event, context):
     parameters['data_keys'], \
     parameters['input_data'], \
     parameters['data_dimensions'] = initialize_data(
-        endpoint=endpoint, w=parameters.get('weight'), b = parameters.get('bias')
+        endpoint=endpoint, w=parameters.get('weight'), b=parameters.get('bias')
     )
     
     # Initialize payload to `TrainerLambda`
