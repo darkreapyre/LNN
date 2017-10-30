@@ -249,6 +249,13 @@ def propogate(direction, epoch, layer, parameter_key):
     direction -- The current direction of the propogation, either `forward` or `backward`.
     epoch -- Integer representing the "current" epoch to close out.
     layer -- Integer representing the current hidden layer.
+
+    Note: When launching NeuronLambda with multiple hidden unit,
+    remember to assign an ID, also remember to start at 1
+    and not 0. for example:
+    num_hidden_units = 5
+    for i in range(1, num_hidden_units + 1):
+        # Do stuff
     """
     
     ###########################################################
@@ -282,6 +289,9 @@ def propogate(direction, epoch, layer, parameter_key):
         parameters['layer'] = layer
         parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
         payload['parameter_key'] = parameter_key
+
+        print("Starting Forward Propogation for epoch " + str(epoch) + ", layer " + str(layer))
+
         # Remember to start the count from 1 as hidden unit indexing
         # starts at 1
         for i in range(1, num_hidden_units + 1):
@@ -324,6 +334,8 @@ def propogate(direction, epoch, layer, parameter_key):
         # Prepare the payload for `NeuronLambda`
         payload['parameter_key'] = parameter_key
 
+        print("Starting Backward Propogation for epoch " + str(epoch) + ", layer " + str(layer))
+
         for i in range(1, num_hidden_units + 1):
             # Prepare the payload for `NeuronLambda`
             payload['id'] = i
@@ -353,15 +365,6 @@ def propogate(direction, epoch, layer, parameter_key):
     else:
         raise
 
-    """
-    Note:
-    When launching NeuronLambda with multiple hidden unit,
-    remember to assign an ID, also remember to start at 1
-    and not 0. 
-    i.e num_hidden_units = 5
-        for i in range(1, num_hidden_units + 1):
-        # Do stuff
-    """
 
 def lambda_handler(event, context):
     """
@@ -451,6 +454,9 @@ def lambda_handler(event, context):
             
             # Update parameters in ElastiCache
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+
+            print("Cost after epoch {0}: {1}".format(epoch, cost))
+            print("\n Starting Backward Propogation")
 
             # Start backprop
             propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
