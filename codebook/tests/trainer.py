@@ -445,7 +445,7 @@ def lambda_handler(event, context):
             # Get the results object
             cost2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
             # Append the cost to results object
-            cost2results['epoch' + sr(epoch)]['cost'] = cost
+            cost2results['epoch' + str(epoch)]['cost'] = cost
             # Update results in ElastiCache
             parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
             
