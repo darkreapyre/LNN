@@ -219,7 +219,7 @@ def relu(z):
     z -- Output of the linear layer, of any shape
 
     Returns:
-    A -- Post-activation parameter, of the same shape as z
+    a -- Post-activation parameter, of the same shape as z
     """
 
     a = np.maximum(0, z)
@@ -263,7 +263,11 @@ def lambda_handler(event, context):
             A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
             w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights']
             b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
-            a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
+            if activation == 'sigmoid':
+                a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
+            else:
+                # No other functions supported on single layer at this time
+                pass
         else:
             for l in range(1, parameters['layers'] + 1):
                 if l == 1:
@@ -278,8 +282,12 @@ def lambda_handler(event, context):
                     b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
             if activation == 'sigmoid':
                 a = sigmoid(w.dot(A) + b) # Single Neuron activation
-                elif activation == "relu": # Some other function to be test later like tanh or ReLU
+            elif activation == 'relu':                
                 a = relu(w.dot(A) + b)
+            else:
+                print("Invalid Activastion function")
+                raise
+
         
         # Upload the results to ElastiCache for `TrainerLambda` to process
         to_cache(endpoint=endpoint, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
