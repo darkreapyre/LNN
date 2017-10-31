@@ -182,7 +182,7 @@ def standardize(x_orig):
     """
     return vectorize(x_orig) / 255
 
-def initialize_data(endpoint, w, b):
+def initialize_data(endpoint, parameters):
     """
     Extracts the training and testing data from S3, flattens, 
     standardizes and then dumps the data to ElastiCache 
@@ -222,6 +222,36 @@ def initialize_data(endpoint, w, b):
         dims[str(a_names[j][0])] = a_list[j].shape
     
     # Initialize weights
+    """
+    Separate single layer vs. L-Layer testing
+    """
+    if parameters['layers'] == 1 and parameters['weights'] == 0:
+        dims = dims.get('train_set_x')[0]
+        weights = np.zeros((dim, 1))
+        data_keys['weights'] = to_cache(endpoint=endpoint, obj=weights, name='weights')
+    else:
+        weights = {}
+        for l in range(1, parameters['layers'] + 1):
+            if l == 1:
+                data_keys['W'+str(l)] = to_cache(
+                    endpoint=endpoint,
+                    obj=np.random.randn(
+                        parameters['neurons']['layer'+str(l)],
+                        dims.get('train_set_x')[0]
+                    ) * paramaters['weight'],
+                    name='W'+str(l)
+                )
+            else:
+                data_keys['W'+str(l)] = to_cache(
+                    endpoint=endpoint,
+                    obj=np.random.randn(
+                        parameters['neurons']['layer'+str(l)],
+                        parameters['neurons']['layer'+str(l-1)] 
+                    ) * paramaters['weight'],
+                    name='W'+str(l)
+                )
+"""
+Previous implementations
     if w == 0: # Initialize weights to dimensions of the input data
         dim = dims.get('train_set_x')[0]
         weights = np.zeros((dim, 1))
@@ -230,6 +260,7 @@ def initialize_data(endpoint, w, b):
     else:
         #placeholder for random weight initialization
         pass
+"""
         
     # Initialize Bias
     if b != 0:
@@ -237,6 +268,13 @@ def initialize_data(endpoint, w, b):
         #data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
         pass
     else:
+        for l in range(1, paramaters['layers'] + 1):
+            
+
+
+
+
+
         data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
     
     # Initialize training example size
@@ -269,14 +307,17 @@ def lambda_handler(event, context):
         parameters = json.load(parameters_file)
     
     # Build in additional parameters from neural network parameters
-    parameters['epoch'] = 1
+    """
+    This is now being done in the `TrainerLambda`
+    #parameters['epoch'] = 1
     # Next Layer to process
-    parameters['layer'] = 1
+    #parameters['layer'] = 1
+    """
     # Input data sets and data set parameters
     parameters['data_keys'], \
     parameters['input_data'], \
     parameters['data_dimensions'] = initialize_data(
-        endpoint=endpoint, w=parameters.get('weight'), b=parameters.get('bias')
+        endpoint=endpoint, parameters=parameters)
     )
     
     # Initialize payload to `TrainerLambda`

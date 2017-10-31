@@ -211,6 +211,24 @@ def sigmoid(z):
 
     return s
 
+def relu(z):
+    """
+     mplement the ReLU function.
+
+    Arguments:
+    z -- Output of the linear layer, of any shape
+
+    Returns:
+    A -- Post-activation parameter, of the same shape as z
+    """
+
+    a = np.maximum(0, z)
+
+    #assert(A.shape == z.shape)
+
+    return a
+
+
 def lambda_handler(event, context):
     """
 
@@ -229,19 +247,39 @@ def lambda_handler(event, context):
     last = event.get('last')
 
     # Get data to process
-    w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
-    b = from_cache(endpoint=endpoint, key=parameters['data_keys']['bias'])
-    X = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
-    Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
-    m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
+    #w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
+    #b = from_cache(endpoint=endpoint, key=parameters['data_keys']['bias'])
+    #X = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
+    #Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
+    #m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
 
     if state == 'forward':
         # Forward propogation from X to Cost
         activation = event.get('activation')
-        if activation == 'sigmoid':
-            a = sigmoid(np.dot(w.T, X) + b) # Single Neuron activation
-        else: # Some other function to be test later like tanh or ReLU
-            pass
+        """
+        Separate single layer vs. L-Layer testing
+        """
+        if parameters['layers'] == 1:
+            A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
+            w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights']
+            b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
+            a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
+        else:
+            for l in range(1, parameters['layers'] + 1):
+                if l == 1:
+                    # A is equal to the input X
+                    A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
+                    w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
+                    b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
+                else:
+                    # A is equal to the output of the previous layer's activations
+                    A = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(l-1)])
+                    w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
+                    b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)]
+            if activation == 'sigmoid':
+                a = sigmoid(w.dot(A) + b) # Single Neuron activation
+                elif activation == "relu": # Some other function to be test later like tanh or ReLU
+                a = relu(w.dot(A) + b)
         
         # Upload the results to ElastiCache for `TrainerLambda` to process
         to_cache(endpoint=endpoint, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
@@ -252,8 +290,7 @@ def lambda_handler(event, context):
             # Update parameters with this function's data
             parameters['epoch'] = epoch
             parameters['layer'] = layer + 1
-            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-            payload['parameter_key'] = parameter_key
+            payload['parameter_key'] = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
             payload['state'] = 'forward'
             payload['epoch'] = epoch
             payload['layer'] = layer + 1
