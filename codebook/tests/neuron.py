@@ -275,7 +275,7 @@ def lambda_handler(event, context):
                     # A is equal to the output of the previous layer's activations
                     A = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(l-1)])
                     w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
-                    b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)]
+                    b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
             if activation == 'sigmoid':
                 a = sigmoid(w.dot(A) + b) # Single Neuron activation
                 elif activation == "relu": # Some other function to be test later like tanh or ReLU

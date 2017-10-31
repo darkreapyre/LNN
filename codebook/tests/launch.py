@@ -270,6 +270,7 @@ Previous implementations
     else:
         for l in range(1, paramaters['layers'] + 1):
             
+            
 
 
 
@@ -278,8 +279,8 @@ Previous implementations
         data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
     
     # Initialize training example size
-    m = train_set_x.shape[1]
-    data_keys['m'] = to_cache(endpoint, obj=m, name='m')
+    #m = train_set_x.shape[1]
+    #data_keys['m'] = to_cache(endpoint, obj=m, name='m')
     
     # Initialize the results tracking object
     results = {}
