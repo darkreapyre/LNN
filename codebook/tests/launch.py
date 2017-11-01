@@ -248,14 +248,14 @@ def initialize_data(endpoint, parameters):
                     endpoint=endpoint,
                     obj=np.random.randn(
                         parameters['neurons']['layer'+str(l)],
-                        dims.get('train_set_x')[0]) * paramaters['weight'],
+                        dims.get('train_set_x')[0]) * parameters['weight'],
                         name='W'+str(l))
             else:
                 data_keys['W'+str(l)] = to_cache(
                     endpoint=endpoint,
                     obj=np.random.randn(
                         parameters['neurons']['layer'+str(l)],
-                        parameters['neurons']['layer'+str(l-1)] ) * paramaters['weight'],
+                        parameters['neurons']['layer'+str(l-1)] ) * parameters['weight'],
                         name='W'+str(l))
         
     # Initialize Bias
