@@ -251,7 +251,7 @@ def initialize_data(endpoint, parameters):
                     name='W'+str(l)
                 )
 """
-Previous implementations
+Previous Single Neuron, Single Layer Implementation
     if w == 0: # Initialize weights to dimensions of the input data
         dim = dims.get('train_set_x')[0]
         weights = np.zeros((dim, 1))
