@@ -318,8 +318,8 @@ def lambda_handler(event, context):
     parameters['data_keys'], \
     parameters['input_data'], \
     parameters['data_dimensions'] = initialize_data(
-        endpoint=endpoint, parameters=parameters)
-    )
+        endpoint=endpoint,
+        parameters=parameters))
     
     # Initialize payload to `TrainerLambda`
     payload = {}
