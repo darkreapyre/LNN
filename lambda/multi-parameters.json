@@ -2,8 +2,8 @@
     "epochs": 1,
     "layers": 2,
     "activations": {
-        "layer1": "sigmoid",
-        "layer2": "relu"
+        "layer1": "relu",
+        "layer2": "sigmoid"
     },
     "neurons": {
         "layer1": 3,
