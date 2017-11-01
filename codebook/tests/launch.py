@@ -250,6 +250,7 @@ def initialize_data(endpoint, parameters):
                     ) * paramaters['weight'],
                     name='W'+str(l)
                 )
+    
 """
 Previous Single Neuron, Single Layer Implementation
     if w == 0: # Initialize weights to dimensions of the input data
