@@ -224,7 +224,18 @@ def initialize_data(endpoint, parameters):
     # Initialize weights
     """
     Separate single layer vs. L-Layer testing
+
+    Previous Single Neuron, Single Layer Implementation
+    if w == 0: # Initialize weights to dimensions of the input data
+        dim = dims.get('train_set_x')[0]
+        weights = np.zeros((dim, 1))
+        # Store the initial weights as a column vector on S3
+        data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
+    else:
+        #placeholder for random weight initialization
+        pass
     """
+
     if parameters['layers'] == 1 and parameters['weights'] == 0:
         dims = dims.get('train_set_x')[0]
         weights = np.zeros((dim, 1))
@@ -237,31 +248,15 @@ def initialize_data(endpoint, parameters):
                     endpoint=endpoint,
                     obj=np.random.randn(
                         parameters['neurons']['layer'+str(l)],
-                        dims.get('train_set_x')[0]
-                    ) * paramaters['weight'],
-                    name='W'+str(l)
-                )
+                        dims.get('train_set_x')[0]) * paramaters['weight'],
+                        name='W'+str(l))
             else:
                 data_keys['W'+str(l)] = to_cache(
                     endpoint=endpoint,
                     obj=np.random.randn(
                         parameters['neurons']['layer'+str(l)],
-                        parameters['neurons']['layer'+str(l-1)] 
-                    ) * paramaters['weight'],
-                    name='W'+str(l)
-                )
-    
-"""
-Previous Single Neuron, Single Layer Implementation
-    if w == 0: # Initialize weights to dimensions of the input data
-        dim = dims.get('train_set_x')[0]
-        weights = np.zeros((dim, 1))
-        # Store the initial weights as a column vector on S3
-        data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
-    else:
-        #placeholder for random weight initialization
-        pass
-"""
+                        parameters['neurons']['layer'+str(l-1)] ) * paramaters['weight'],
+                        name='W'+str(l))
         
     # Initialize Bias
     if b != 0:
