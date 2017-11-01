@@ -294,7 +294,7 @@ def lambda_handler(event, context):
             #assert(W.shape == (parameters['neurons']['layer'+str(layer)], parameters['data_dimensions']['train_set_x'][0]))
             #w = W[ID-1, :]
             assert(w.shape == (1, parameters['data_dimensions']['train_set_x'][0]))
-            b = from_cache(endpoint=endpoint, key=patameters['data_keys']['b'+str(layer)])
+            b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])
             
             if activation == 'sigmoid':
                 a = sigmoid(w.dot(A_prev) + b) # Single Neuron activation
