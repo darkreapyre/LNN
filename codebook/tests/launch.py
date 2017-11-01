@@ -274,8 +274,7 @@ def initialize_data(endpoint, parameters):
             for l in range(1, paramaters['layers'] + 1):
                 data_keys['b'+str(l)] = to_cache(
                     endpoint=endpoint,
-                    obj=np.zeros((parameters['neurons']['layer'+str(l)]), 1)),
-                    name='b'+str(l))
+                    obj=np.zeros((parameters['neurons']['layer'+str(l)]), 1)), name='b'+str(l))
    
     # Initialize training example size
     #m = train_set_x.shape[1]
