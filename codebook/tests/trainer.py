@@ -413,15 +413,15 @@ def lambda_handler(event, context):
             A_dict[i] = from_cache(endpoint=endpoint, key=i)
         # Number of Neuron Activations
         num_activations = len(key_list)
-        # Create a numpy array of the results, depending on the no. of
-        # hidden units
+        # Create a numpy array of the results, depending on the number
+        #  of hidden units
         A = np.array([arr.tolist() for arr in A_dict.values()])
         if num_activations == 1:
             dims = (key_list[0].split('|')[1].split('#')[1:])
             A = A.reshape(int(dims[0]), int(dims[1]))
         else:
             A = np.squeeze(A)
-        # Add the `A` Matrix to `data_keys` for later use
+        # Add the `A` Matrix to `data_keys` for later Neuron use
         A_name = 'A' + str(layer-1)
         parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=A, name=A_name)
 

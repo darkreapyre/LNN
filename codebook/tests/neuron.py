@@ -262,42 +262,57 @@ def lambda_handler(event, context):
         if parameters['layers'] == 1:
             A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
             w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights']
-            b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
+            b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['bias']
             if activation == 'sigmoid':
                 a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
             else:
                 # No other functions supported on single layer at this time
                 pass
         else:
+            """
             for l in range(1, parameters['layers'] + 1):
                 if l == 1:
                     # A is equal to the input X
-                    A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
-                    w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
-                    b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
+                    A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
                 else:
                     # A is equal to the output of the previous layer's activations
-                    A = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(l-1)])
-                    w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
-                    b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
+                    A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(l)]
+                #w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
+                W = from_cache(endpoint=endpoint, key=parameter['data_keys']['W'+str(l)]
+                w = W[ID-1, :]
+                b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
+            """
+            
+            if layer == 1:
+                # A is iequal to the input X
+                A_prev = from_cache(endpoint=endpoint, key=patameters['data_keys']['train_set_x'])
+            else:
+                # A is equal to the output of the previous layer's activations
+                A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
+            w = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer)])[ID-1, :]
+            #W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer)])
+            #assert(W.shape == (parameters['neurons']['layer'+str(layer)], parameters['data_dimensions']['train_set_x'][0]))
+            #w = W[ID-1, :]
+            assert(w.shape == (1, parameters['data_dimensions']['train_set_x'][0]))
+            b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(layer])
+            
             if activation == 'sigmoid':
-                a = sigmoid(w.dot(A) + b) # Single Neuron activation
+                a = sigmoid(w.dot(A_prev) + b) # Single Neuron activation
             elif activation == 'relu':                
-                a = relu(w.dot(A) + b)
+                a = relu(w.dot(A_prev) + b)
             else:
                 print("Invalid Activastion function")
                 raise
-
         
         # Upload the results to ElastiCache for `TrainerLambda` to process
         to_cache(endpoint=endpoint, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
         
         if last == "True":
-            # Build the state payload
-            payload = {}
-            # Update parameters with this function's data
+            # Update parameters with this Neuron's data
             parameters['epoch'] = epoch
             parameters['layer'] = layer + 1
+            # Build the state payload
+            payload = {}
             payload['parameter_key'] = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
             payload['state'] = 'forward'
             payload['epoch'] = epoch
