@@ -285,7 +285,7 @@ def lambda_handler(event, context):
             
             if layer == 1:
                 # A is iequal to the input X
-                A_prev = from_cache(endpoint=endpoint, key=patameters['data_keys']['train_set_x'])
+                A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
             else:
                 # A is equal to the output of the previous layer's activations
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
