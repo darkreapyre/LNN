@@ -259,24 +259,19 @@ def initialize_data(endpoint, parameters):
                         name='W'+str(l))
         
     # Initialize Bias
-    if b != 0:
-        #placeholder for random bias initialization
-        #data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
-        pass
+    """
+    Separate single layer vs. L-Layer testing
+    """
+    if parameters['bias'] == 0 and parameters['layers'] == 1:
+        b = 0
+        data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
     else:
-        """
-        Separate single layer vs. L-Layer testing
-        """
-        if parameters['layers'] == 1:
-            b = 0
-            data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
-        else:
-            for l in range(1, paramaters['layers'] + 1):
-                data_keys['b'+str(l)] = to_cache(
-                    endpoint=endpoint,
-                    obj=np.zeros((paramaters['neurons']['layer'+str(l)], 1)),
-                    name='b'+str(l)
-                )
+        for l in range(1, parameters['layers'] + 1):
+            data_keys['b'+str(l)] = to_cache(
+                endpoint=endpoint,
+                obj=np.zeros((parameters['neurons']['layer'+str(l)], 1)),
+                name='b'+str(l)
+            )
    
     # Initialize training example size
     #m = train_set_x.shape[1]
