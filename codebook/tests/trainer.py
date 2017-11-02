@@ -414,7 +414,7 @@ def lambda_handler(event, context):
         # Number of Neuron Activations
         num_activations = len(key_list)
         # Create a numpy array of the results, depending on the number
-        #  of hidden units
+        # of hidden units
         A = np.array([arr.tolist() for arr in A_dict.values()])
         if num_activations == 1:
             """
@@ -422,7 +422,7 @@ def lambda_handler(event, context):
             """
             dims = (key_list[0].split('|')[1].split('#')[1:])
             #debug
-            print("Dimensions to reshape single hidden unit activations: " + str(dims))
+            #print("Dimensions to reshape single hidden unit activations: " + str(dims))
             A = A.reshape(int(dims[0]), int(dims[1]))
             assert(A.shape == (parameters['dims']['train_set_y'][0], parameters['dims']['train_set_y'][1]))
         else:
@@ -440,21 +440,12 @@ def lambda_handler(event, context):
             # Location is at the end of forwardprop, therefore calculate Cost
             # Get the training examples data
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
-            #m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
             m = Y.shape[1]
             
             # Calculate the Cost
             cost = -1 / m * np.sum(np.multiply(Y, np.log(A)) + np.multiply((1 - Y), np.log(1 - A)))
             cost = np.squeeze(cost)
             assert(cost.shape == ())
-            """
-            Note: the 2 lines above needs to be verified
-            """
-            #if parameters['layers'] == 1:
-            #    cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
-            #else:
-            #    logprobs = np.multiply(np.log(A), Y) + np.multiply((1 - Y), np.log(1 - A))
-            #    cost = -np.sum(logprobs) / m
 
             # Update results with the Cost
             # Get the results object
