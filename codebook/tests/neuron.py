@@ -286,15 +286,17 @@ def lambda_handler(event, context):
                 # A is iequal to the input X
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
                 assert(A_prev.shape == (parameters['dims']['train_set_x'][0], parameters['dims']['train_set_x'][1]))
+                w = from_cache(
+                    endpoint=endpoint,
+                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['dims']['train_set_x'][0])
+                b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
             else:
                 # A is equal to the output of the previous layer's activations
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
                 assert(A_prev.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
             
-            w = from_cache(
-                endpoint=endpoint,
-                key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['dims']['train_set_x'][0])
-            b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
+            
+            
             
             # Compute the Activation
             if activation == 'sigmoid':
