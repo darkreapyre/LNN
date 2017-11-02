@@ -296,7 +296,7 @@ def lambda_handler(event, context):
                 assert(A_prev.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
                 w = from_cache(
                     endpoint=endpoint,
-                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['dims']['train_set_x'][0])
+                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['neurons']['layer'+str(layer-1)])
                 b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
             
             
