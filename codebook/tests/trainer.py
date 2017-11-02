@@ -461,15 +461,14 @@ def lambda_handler(event, context):
             print("Cost after epoch {0}: {1}".format(epoch, cost))
 
             # Start backprop
-            #propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
-            pass
+            propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
+            #pass
             
         else:
             # Move to the next hidden layer
-            #print("Moving onto Layer " + str(layer))
+            #debug
+            print("Propogating forward onto Layer " + str(layer))
             propogate(direction='forward', epoch=epoch, layer=layer, parameter_key=parameter_key)
-            
-            #pass
         
     elif state == 'backward':
         # Get important state variables
@@ -480,7 +479,7 @@ def lambda_handler(event, context):
         if epoch == parameters['epochs'] and layer == 0:
             # Location is at the end of the final epoch
             # First pre-process the Weights
-            # Note: Get the activations from the NeuronLambda by using this redis
+            # Get the activations from the NeuronLambda by using this redis
             # command to ensure that a pure string is returned for the key
             r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
             key_list = []
@@ -507,7 +506,7 @@ def lambda_handler(event, context):
             dW_name = 'dW' + str(layer+1)
             parameters['data_keys'][dW_name] = to_cache(endpoint=endpoint, obj=dW, name=dW_name)
 
-            # Repeat teh above process for the Bias
+            # Repeat the above process for the Bias
             key_list = []
             for key in r.scan_iter(match="db_*"):
                 key_list.append(key)

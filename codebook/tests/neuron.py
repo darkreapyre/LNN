@@ -331,17 +331,27 @@ def lambda_handler(event, context):
         # Get the results of the forwardprop activation
         # Determine the correct notation for the layer and get the Matrix
         # of activations calculated at the end of forward propogation
+        """
+        Note: TrainerLambda launched back prop with `layer-1`, therefore this should be 
+        last "active" layer.
+        """
         A_name = 'A'+str(layer)
         A = from_cache(endpoint=endpoint, key=parameters['data_keys'][A_name])
 
         # Backward propogation to determine gradients of current layer
         dw = (1 / m) * np.dot(X, (A - Y).T)
+        #debug
         print("Partial Derivatives - Weights for Neuron" + str(ID) + ":\n" + dw)
+        # Upload the results to ElastiCache for `TrainerLambda` to process
+        to_cache(endpoint=endpoint, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
         db = (1 / m) * np.sum(A - Y)
+        #debug
         print("Partial Derivatives - Bias for Neuron" + str(ID) + ":\n" + dw)
-
-        # Capture gradients
+        # Upload the results to ElastiCache for `TrainerLambda` to process
+        to_cache(endpoint=endpoint, obj=db, name='layer'+str(layer)+'_db_'+str(ID))
+        
         """
+        # Capture gradients
         grads_key = parameters['data_keys']['grads']
         # Load the grads object
         grads = from_cache(endpoint, key=grads_key) # Should be empty dictionary
@@ -355,9 +365,12 @@ def lambda_handler(event, context):
         """
 
         if last == "True":
+            # Update parameters with this Neuron's data
+            parameters['epoch'] = epoch
+            parameters['layer'] = layer - 1
             # Build the state payload
             payload = {}
-            payload['parameter_key'] = parameter_key
+            payload['parameter_key'] = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
             payload['state'] = 'backward'
             payload['epoch'] = epoch
             payload['layer'] = layer - 1
