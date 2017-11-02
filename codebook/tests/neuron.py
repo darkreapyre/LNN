@@ -282,27 +282,18 @@ def lambda_handler(event, context):
                 w = W[ID-1, :]
                 b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['b'+str(l)])
             """
-            
             if layer == 1:
                 # A is iequal to the input X
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
+                assert(A_prev.shape == (parameters['dims']['train_set_x'][0], parameters['dims']['train_set_x'][1]))
             else:
                 # A is equal to the output of the previous layer's activations
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
-            assert(A_prev.shape == \
-                (parameters.get('dims')['train_set_x'][0],
-                parameters.get('dims')['train_set_x'][1]))
-            #w = from_cache(
-            #    endpoint=endpoint,
-            #    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['dims']['train_set_x'][0])
-            """
-            Note: Confirm if the reshape from `(12288, )` to `(1, 12288)` is even necessary for the calculations, as
-            the above `w` works.
-            """
-            W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer)])
-            assert(W.shape == (parameters['neurons']['layer'+str(layer)], parameters['dims']['train_set_x'][0]))
-            w = W[ID-1, :]
-            #assert(w.shape == (1, parameters['data_dimensions']['train_set_x'][0]))
+                assert(A_prev.shape == (parameters['neurons']['layer'+sr(layer-1)], parameters['dims']['train_set_x'][1]))
+            
+            w = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['dims']['train_set_x'][0])
             b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
             
             # Compute the Activation
