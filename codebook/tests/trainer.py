@@ -391,8 +391,8 @@ def lambda_handler(event, context):
     state = event.get('state')
     global parameters
 #    global parameter_key
-    parameter_key = event.get('parameter_key')
-    parameters = from_cache(endpoint=endpoint, key=parameter_key)
+#    parameter_key = event.get('parameter_key')
+    parameters = from_cache(endpoint=endpoint, key=event.get('parameter_key'))
     
     # Execute appropriate action based on the the current state
     if state == 'forward':
@@ -417,10 +417,17 @@ def lambda_handler(event, context):
         #  of hidden units
         A = np.array([arr.tolist() for arr in A_dict.values()])
         if num_activations == 1:
+            """
+            Note: This assumes a single hidden unit for the last layer
+            """
             dims = (key_list[0].split('|')[1].split('#')[1:])
+            #debug
+            print("Dimensions to reshape single hidden unit activations: " + str(dims))
             A = A.reshape(int(dims[0]), int(dims[1]))
+            assert(A.shape == (parameters['dims']['train_set_y'][0], parameters['dims']['train_set_y'][1]))
         else:
             A = np.squeeze(A)
+            assert(A.shape == (parameters['neurons']['layer'+str(leyer-1)], parameters['dims']['train_set_x'][1]))
         # Add the `A` Matrix to `data_keys` for later Neuron use
         A_name = 'A' + str(layer-1)
         parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=A, name=A_name)
@@ -433,14 +440,21 @@ def lambda_handler(event, context):
             # Location is at the end of forwardprop, therefore calculate Cost
             # Get the training examples data
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
-            m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
+            #m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
+            m = Y.shape[1]
             
             # Calculate the Cost
-            if parameters['layers'] == 1:
-                cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
-            else:
-                logprobs = np.multiply(np.log(A), Y) + np.multiply((1 - Y), np.log(1 - A))
-                cost = -np.sum(logprobs) / m
+            cost = -1 / m * np.sum(np.multiply(Y, np.log(A)) + np.multiply((1 - Y), np.log(1 - A)))
+            cost = np.squeeze(cost)
+            assert(cost.shape == ())
+            """
+            Note: the 2 lines above needs to be verified
+            """
+            #if parameters['layers'] == 1:
+            #    cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
+            #else:
+            #    logprobs = np.multiply(np.log(A), Y) + np.multiply((1 - Y), np.log(1 - A))
+            #    cost = -np.sum(logprobs) / m
 
             # Update results with the Cost
             # Get the results object
@@ -456,7 +470,8 @@ def lambda_handler(event, context):
             print("Cost after epoch {0}: {1}".format(epoch, cost))
 
             # Start backprop
-            propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
+            #propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
+            pass
             
         else:
             # Move to the next hidden layer

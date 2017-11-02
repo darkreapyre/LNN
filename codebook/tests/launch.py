@@ -312,7 +312,7 @@ def lambda_handler(event, context):
     # Input data sets and data set parameters
     parameters['data_keys'], \
     parameters['input_data'], \
-    parameters['data_dimensions'] = initialize_data(
+    parameters['dims'] = initialize_data(
         endpoint=endpoint,
         parameters=parameters
     )
