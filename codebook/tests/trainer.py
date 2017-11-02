@@ -427,7 +427,7 @@ def lambda_handler(event, context):
             assert(A.shape == (parameters['dims']['train_set_y'][0], parameters['dims']['train_set_y'][1]))
         else:
             A = np.squeeze(A)
-            assert(A.shape == (parameters['neurons']['layer'+str(leyer-1)], parameters['dims']['train_set_x'][1]))
+            assert(A.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
         # Add the `A` Matrix to `data_keys` for later Neuron use
         A_name = 'A' + str(layer-1)
         parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=A, name=A_name)
