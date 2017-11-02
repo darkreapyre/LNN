@@ -289,7 +289,7 @@ def lambda_handler(event, context):
             else:
                 # A is equal to the output of the previous layer's activations
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
-                assert(A_prev.shape == (parameters['neurons']['layer'+sr(layer-1)], parameters['dims']['train_set_x'][1]))
+                assert(A_prev.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
             
             w = from_cache(
                 endpoint=endpoint,
