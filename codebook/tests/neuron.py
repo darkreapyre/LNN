@@ -378,9 +378,8 @@ def lambda_handler(event, context):
             # TBD
             pass
         else:
-            if layer == parameters['layers'] + 1
+            if layer == parameters['layers'] + 1: # Location equals calculating cost
                 print("True")
-                pass
                 # Calculate the derivative of the last layer with respect to Cost
                 # Get the last layer
                 #A_name = 'A' + str(layer-1)
