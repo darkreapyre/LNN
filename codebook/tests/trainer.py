@@ -287,13 +287,10 @@ def propogate(direction, epoch, layer, parameter_key):
         # Update parameters with this function's updates
         parameters['epoch'] = epoch
         parameters['layer'] = layer
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-        payload['parameter_key'] = parameter_key
+        payload['parameter_key'] = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
         print("Starting Forward Propogation for epoch " + str(epoch) + ", layer " + str(layer))
 
-        # Remember to start the count from 1 as hidden unit indexing
-        # starts at 1
         for i in range(1, num_hidden_units + 1):
             # Prepare the payload for `NeuronLambda`
             payload['id'] = i
@@ -322,20 +319,12 @@ def propogate(direction, epoch, layer, parameter_key):
         return
     
     elif direction == 'backward':
-        # Launch Lambdas to propogate backward
-        """
-        # Create the gradient tracking object
-        grads = {}
-        grads['layer' + str(layer-1)] = {}
-        # Cache the object
-        grads_key = to_cache(endpoint=endpoint, obj=grads, name='grads')
-        parameters['data_keys']['grads'] = grads_key
-        # Update ElastiCache with the latest parameters
-        parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-        """
-        
+        # Launch Lambdas to propogate backward        
         # Prepare the payload for `NeuronLambda`
-        payload['parameter_key'] = parameter_key
+        # Update parameters with this functions updates
+        parameters['epoch'] = epoch
+        parameters['layer'] = layer
+        payload['parameter_key'] = to_cache(endpoint=endpoint, obj=paramaters, name='parameters')
 
         print("Starting Backward Propogation for epoch " + str(epoch) + ", layer " + str(layer))
 
@@ -452,17 +441,23 @@ def lambda_handler(event, context):
             cost2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
             # Append the cost to results object
             cost2results['epoch' + str(epoch)]['cost'] = cost
-            # Update results in ElastiCache
+            # Update results key in ElastiCache
             parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
-            
-            # Update parameters in ElastiCache
-            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
             print("Cost after epoch {0}: {1}".format(epoch, cost))
 
-            # Start backprop
+            # Initialize backprop
+            # Calculate the derivative of the Cost with respect to the last activation
+            # Ensure that `Y` is the correct shape as the last activation
+            Y = Y.reshape(A.shape)
+            dA = - (np.divide(Y, A) - np.divide(1 - Y, 1- A))
+            paramaters['data_keys']['dA'+str(layer-1)] = to_cache(endpoint=endpoint, obj=dA, name='dA'+str(layer-1))
+
+            # Update parameters from theis function in ElastiCache
+            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+
+            # Start Backpropogation
             propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
-            #pass
             
         else:
             # Move to the next hidden layer

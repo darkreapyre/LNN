@@ -331,10 +331,12 @@ def lambda_handler(event, context):
         # Get the results of the forwardprop activation
         # Determine the correct notation for the layer and get the Matrix
         # of activations calculated at the end of forward propogation
+
+        
         """
+        Previous Code
         Note: TrainerLambda launched back prop with `layer-1`, therefore this should be 
         last "active" layer.
-        """
         A_name = 'A'+str(layer)
         A = from_cache(endpoint=endpoint, key=parameters['data_keys'][A_name])
 
@@ -350,7 +352,6 @@ def lambda_handler(event, context):
         # Upload the results to ElastiCache for `TrainerLambda` to process
         to_cache(endpoint=endpoint, obj=db, name='layer'+str(layer)+'_db_'+str(ID))
         
-        """
         # Capture gradients
         grads_key = parameters['data_keys']['grads']
         # Load the grads object
