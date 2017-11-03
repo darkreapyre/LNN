@@ -451,6 +451,11 @@ def lambda_handler(event, context):
             # Ensure that `Y` is the correct shape as the last activation
             Y = Y.reshape(A.shape)
             dA = - (np.divide(Y, A) - np.divide(1 - Y, 1- A))
+            """
+            Note need to confirm if it's necessary to create `dA` instead 
+            of just overwriting `A(layer-1)` with the derivative of the cost, 
+            to keep the code clean as far as what the Neuron processes.
+            """
             paramaters['data_keys']['dA'+str(layer-1)] = to_cache(endpoint=endpoint, obj=dA, name='dA'+str(layer-1))
 
             # Update parameters from theis function in ElastiCache
