@@ -374,6 +374,7 @@ def lambda_handler(event, context):
         activation = event.get('activation')
         """
         Separate single layer vs. L-Layer testing
+        """
         if parameters['layers'] == 1:
             # TBD
             pass
@@ -388,12 +389,12 @@ def lambda_handler(event, context):
                 
                 # Initialize backprop
                 dA = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
-                parameters
+                #parameters
 
 
 
 
-        
+        """
         Previous Code
         Note: TrainerLambda launched back prop with `layer-1`, therefore this should be 
         last "active" layer.
