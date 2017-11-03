@@ -335,7 +335,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 payload['last'] = "True"
             else:
                 payload['last'] = "False"
-            payload['activastion'] = param,eters['activations']['layer' + str(layer)]
+            payload['activastion'] = parameters['activations']['layer' + str(layer)]
             payloadbytes = dumps(payload)
             print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
