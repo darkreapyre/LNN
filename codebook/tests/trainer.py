@@ -324,7 +324,7 @@ def propogate(direction, epoch, layer, parameter_key):
         # Update parameters with this functions updates
         parameters['epoch'] = epoch
         parameters['layer'] = layer
-        payload['parameter_key'] = to_cache(endpoint=endpoint, obj=paramaters, name='parameters')
+        payload['parameter_key'] = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
         print("Starting Backward Propogation for epoch " + str(epoch) + ", layer " + str(layer))
 
