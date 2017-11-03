@@ -312,7 +312,7 @@ def lambda_handler(event, context):
                 pass
         else:
             if layer == 1:
-                # A is iequal to the input X
+                # A is iequal to the input X which is technically A0
                 A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
                 assert(A_prev.shape == (parameters['dims']['train_set_x'][0], parameters['dims']['train_set_x'][1]))
                 w = from_cache(
@@ -370,9 +370,29 @@ def lambda_handler(event, context):
         return
 
     elif state == 'backward':
-        # Get the results of the forwardprop activation
-        # Determine the correct notation for the layer and get the Matrix
-        # of activations calculated at the end of forward propogation
+        # Backprop from Cost to X (A0)
+        activation = event.get('activation')
+        """
+        Separate single layer vs. L-Layer testing
+        """
+        if parameters['layers'] == 1:
+            # TBD
+            pass
+        else:
+            if layer == parameters['layers'] + 1 # Location of calculating Cost
+                # Calculate the derivative of the last layer with respect to Cost
+                # Get the last layer
+                A_name = 'A' + str(layer-1)
+                A = from_cache(endpoint=endpoint, key=parameters['data_keys'][A_name])
+                Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
+                Y = Y.reshape(A.shape)
+                
+                # Initialize backprop
+                dA = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
+                parameters
+
+
+
 
         
         """

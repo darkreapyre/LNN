@@ -335,6 +335,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 payload['last'] = "True"
             else:
                 payload['last'] = "False"
+            payload['activastion'] = param,eters['activations']['layer' + str(layer)]
             payloadbytes = dumps(payload)
             print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
@@ -444,25 +445,24 @@ def lambda_handler(event, context):
             # Update results key in ElastiCache
             parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
 
-            print("Cost after epoch {0}: {1}".format(epoch, cost))
-
-            # Initialize backprop
-            # Calculate the derivative of the Cost with respect to the last activation
-            # Ensure that `Y` is the correct shape as the last activation
-            Y = Y.reshape(A.shape)
-            dA = - (np.divide(Y, A) - np.divide(1 - Y, 1- A))
-            """
-            Note need to confirm if it's necessary to create `dA` instead 
-            of just overwriting `A(layer-1)` with the derivative of the cost, 
-            to keep the code clean as far as what the Neuron processes.
-            """
-            paramaters['data_keys']['dA'+str(layer-1)] = to_cache(endpoint=endpoint, obj=dA, name='dA'+str(layer-1))
-
             # Update parameters from theis function in ElastiCache
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
+            print("Cost after epoch {0}: {1}".format(epoch, cost))
+
+            # Initialize backprop
+            """
+            # Calculate the derivative of the Cost with respect to the last activation
+            # Ensure that `Y` is the correct shape as the last activation
+            Y = Y.reshape(A.shape)
+            dA = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
+            parameters['data_keys']['dA'+str(layer-1)] = to_cache(endpoint=endpoint, obj=dA, name='dA'+str(layer-1))
+            """
+
             # Start Backpropogation
-            propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
+            # This should start with layer (layers + 1)
+            #propogate(direction='backward', epoch=epoch, layer=layer, parameter_key=parameter_key)
+            pass
             
         else:
             # Move to the next hidden layer
