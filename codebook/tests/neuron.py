@@ -277,8 +277,7 @@ def lambda_handler(event, context):
     """
     
     # Get the Neural Network paramaters from Elasticache
-    parameter_key = event.get('parameter_key')
-    parameters = from_cache(endpoint, key=parameter_key)
+    parameters = from_cache(endpoint, key=event.get('parameter_key'))
        
     # Get the current state
     state = event.get('state')
@@ -381,6 +380,7 @@ def lambda_handler(event, context):
         else:
             if layer == parameters['layers'] + 1
                 print("True")
+                pass
                 # Calculate the derivative of the last layer with respect to Cost
                 # Get the last layer
                 #A_name = 'A' + str(layer-1)
