@@ -445,24 +445,21 @@ def lambda_handler(event, context):
             # Update results key in ElastiCache
             parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
 
-            # Update parameters from theis function in ElastiCache
-            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-
             print("Cost after epoch {0}: {1}".format(epoch, cost))
 
             # Initialize backprop
-            """
             # Calculate the derivative of the Cost with respect to the last activation
             # Ensure that `Y` is the correct shape as the last activation
             Y = Y.reshape(A.shape)
             dA = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
             parameters['data_keys']['dA'+str(layer-1)] = to_cache(endpoint=endpoint, obj=dA, name='dA'+str(layer-1))
-            """
+
+            # Update parameters from theis function in ElastiCache
+            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
             # Start Backpropogation
             # This should start with layer (layers + 1)
-            #propogate(direction='backward', epoch=epoch, layer=layer, parameter_key=parameter_key)
-            pass
+            propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
             
         else:
             # Move to the next hidden layer

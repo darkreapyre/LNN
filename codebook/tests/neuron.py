@@ -378,19 +378,7 @@ def lambda_handler(event, context):
             # TBD
             pass
         else:
-            if layer == parameters['layers'] + 1: # Location equals calculating cost
-                print("True")
-                # Calculate the derivative of the last layer with respect to Cost
-                # Get the last layer
-                #A_name = 'A' + str(layer-1)
-                #A = from_cache(endpoint=endpoint, key=parameters['data_keys'][A_name])
-                #Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
-                #Y = Y.reshape(A.shape)
-                
-                # Initialize backprop
-                #dA = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
-                #parameters
-
+            A_prev = from_cache
 
 
 
