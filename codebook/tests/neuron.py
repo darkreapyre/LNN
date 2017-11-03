@@ -377,9 +377,8 @@ def lambda_handler(event, context):
         if parameters['layers'] == 1:
             # TBD
             pass
-        else:
-            pass
-        #    A_prev = from_cache
+        #else:
+        #    da = from_cache(endpoint=endpoint, key=parameters['data_keys']['dA'+str(layer)])[]
 
 
 
