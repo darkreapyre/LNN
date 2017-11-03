@@ -378,7 +378,8 @@ def lambda_handler(event, context):
             # TBD
             pass
         else:
-            A_prev = from_cache
+            pass
+        #    A_prev = from_cache
 
 
 
