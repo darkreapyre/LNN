@@ -230,7 +230,7 @@ def initialize_data(endpoint, parameters):
     # Initialize Bias
     b = 0
     # Store the bias in ElastiCache
-    data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
+    data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
    
     # Initialize training example size
     m = train_set_x.shape[1]
