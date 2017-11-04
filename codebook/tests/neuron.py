@@ -297,50 +297,14 @@ def lambda_handler(event, context):
     if state == 'forward':
         # Forward propogation from X to Cost
         activation = event.get('activation')
-        """
-        Separate single layer vs. L-Layer testing
-        """
-        if parameters['layers'] == 1:
-            A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
-            w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
-            b = from_cache(endpoint=endpoint, key=eters['data_keys']['bias'])
-            if activation == 'sigmoid':
-                a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
-            else:
-                # No other functions supported on single layer at this time
-                pass
+        A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
+        w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
+        b = from_cache(endpoint=endpoint, key=eters['data_keys']['bias'])
+        if activation == 'sigmoid':
+            a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
         else:
-            if layer == 1:
-                # A is iequal to the input X which is technically A0
-                A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
-                assert(A_prev.shape == (parameters['dims']['train_set_x'][0], parameters['dims']['train_set_x'][1]))
-                w = from_cache(
-                    endpoint=endpoint,
-                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
-                        1,
-                        parameters['dims']['train_set_x'][0]
-                    )
-                b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
-            else:
-                # A is equal to the output of the previous layer's activations
-                A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
-                assert(A_prev.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
-                w = from_cache(
-                    endpoint=endpoint,
-                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
-                        1,
-                        parameters['neurons']['layer'+str(layer-1)]
-                    )
-                b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
-            
-            # Compute the Activation
-            if activation == 'sigmoid':
-                a = sigmoid(w.dot(A_prev) + b) # Single Neuron activation
-            elif activation == 'relu':                
-                a = relu(w.dot(A_prev) + b)
-            else:
-                print("Forward Activation function not yet implemented")
-                raise
+            # No other functions supported on single layer at this time
+            pass
         
         # Upload the results to ElastiCache for `TrainerLambda` to process
         to_cache(endpoint=endpoint, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
@@ -377,43 +341,9 @@ def lambda_handler(event, context):
     elif state == 'backward':
         # Backprop from Cost to X (A0)
         activation = event.get('activation')
-        """
-        Separate single layer vs. L-Layer testing
-        """
-        if parameters['layers'] == 1:
-            # TBD
-            pass
-        else:
-            """
-            Note: This assumes dZ2 has already been calulcated to initialize Backprop.
-            This way the neurons can concentrate on calculating "dW" and "db". But this
-            is subject to change if there are multiple classification outputs"
-            """
-            #debug
-            print("Processing the derivatives for layer" + str(layer))
 
-            #get dz^layer
-            #dz_name = 'dZ' + str(layer)
-            #dz = from_cache(
-            #    endpoint=endpoint,
-            #    key=parameters['data_keys'][dz_name]
-            #)
+        pass
 
-
-
-
-
-            
-            # Derivative of the non-linear activation
-            #if activation == "sigmoid":
-            #    dz = sigmoid_backward(da, a)
-            #elif activation == "relu":
-            #    dz = relu_backward(da, a)
-            #else:
-            #    print("Backward Activation function not yet implemented")
-
-                
-                
 
 
         """
