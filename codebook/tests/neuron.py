@@ -391,6 +391,18 @@ def lambda_handler(event, context):
             """
             #debug
             print("Processing the derivatives for layer" + str(layer))
+
+            #get dz^layer
+            #dz_name = 'dZ' + str(layer)
+            #dz = from_cache(
+            #    endpoint=endpoint,
+            #    key=parameters['data_keys'][dz_name]
+            #)
+
+
+
+
+
             
             # Derivative of the non-linear activation
             #if activation == "sigmoid":
