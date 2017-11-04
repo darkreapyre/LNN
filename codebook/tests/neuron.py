@@ -303,7 +303,7 @@ def lambda_handler(event, context):
         if parameters['layers'] == 1:
             A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
             w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
-            b = from_cache(endpoint=endpoint, key=paramaters['data_keys']['bias'])
+            b = from_cache(endpoint=endpoint, key=eters['data_keys']['bias'])
             if activation == 'sigmoid':
                 a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
             else:
@@ -316,7 +316,7 @@ def lambda_handler(event, context):
                 assert(A_prev.shape == (parameters['dims']['train_set_x'][0], parameters['dims']['train_set_x'][1]))
                 w = from_cache(
                     endpoint=endpoint,
-                    key=paramaters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
+                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
                         1,
                         parameters['dims']['train_set_x'][0]
                     )
@@ -327,7 +327,7 @@ def lambda_handler(event, context):
                 assert(A_prev.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
                 w = from_cache(
                     endpoint=endpoint,
-                    key=paramaters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
+                    key=eters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
                         1,
                         parameters['neurons']['layer'+str(layer-1)]
                     )
