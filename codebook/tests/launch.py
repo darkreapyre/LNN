@@ -222,56 +222,15 @@ def initialize_data(endpoint, parameters):
         dims[str(a_names[j][0])] = a_list[j].shape
     
     # Initialize weights
-    """
-    Separate single layer vs. L-Layer testing
-
-    Previous Single Neuron, Single Layer Implementation
-    if w == 0: # Initialize weights to dimensions of the input data
-        dim = dims.get('train_set_x')[0]
-        weights = np.zeros((dim, 1))
-        # Store the initial weights as a column vector on S3
-        data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
-    else:
-        #placeholder for random weight initialization
-        pass
-    """
-
-    if parameters['layers'] == 1 and parameters['weights'] == 0:
-        dims = dims.get('train_set_x')[0]
-        weights = np.zeros((dim, 1))
-        data_keys['weights'] = to_cache(endpoint=endpoint, obj=weights, name='weights')
-    else:
-        weights = {}
-        for l in range(1, parameters['layers'] + 1):
-            if l == 1:
-                data_keys['W'+str(l)] = to_cache(
-                    endpoint=endpoint,
-                    obj=np.random.randn(
-                        parameters['neurons']['layer'+str(l)],
-                        dims.get('train_set_x')[0]) * parameters['weight'],
-                        name='W'+str(l))
-            else:
-                data_keys['W'+str(l)] = to_cache(
-                    endpoint=endpoint,
-                    obj=np.random.randn(
-                        parameters['neurons']['layer'+str(l)],
-                        parameters['neurons']['layer'+str(l-1)] ) * parameters['weight'],
-                        name='W'+str(l))
+    dim = dims.get('train_set_x')[0]
+    weights = np.zeros((dim, 1))
+    # Store the initial weights in ElastiCache
+    data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
         
     # Initialize Bias
-    """
-    Separate single layer vs. L-Layer testing
-    """
-    if parameters['bias'] == 0 and parameters['layers'] == 1:
-        b = 0
-        data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
-    else:
-        for l in range(1, parameters['layers'] + 1):
-            data_keys['b'+str(l)] = to_cache(
-                endpoint=endpoint,
-                obj=np.zeros((parameters['neurons']['layer'+str(l)], 1)),
-                name='b'+str(l)
-            )
+    b = 0
+    # Store the bias in ElastiCache
+    data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
    
     # Initialize training example size
     m = train_set_x.shape[1]
@@ -280,7 +239,6 @@ def initialize_data(endpoint, parameters):
     # Initialize the results tracking object
     results = {}
     data_keys['results'] = to_cache(endpoint, obj=results, name='results')
-#    to_cache(endpoint, dump='', name='results')
 
     # Initialize gradient tracking object
     grads = {}
@@ -314,8 +272,8 @@ def lambda_handler(event, context):
     #parameters['layer'] = 1
     """
     # Input data sets and data set parameters
-    parameters['data_keys'], \
-    parameters['input_data'], \
+    parameters['data_keys'],\
+    parameters['input_data'],\
     parameters['dims'] = initialize_data(
         endpoint=endpoint,
         parameters=parameters
