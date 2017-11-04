@@ -274,8 +274,8 @@ def initialize_data(endpoint, parameters):
             )
    
     # Initialize training example size
-    #m = train_set_x.shape[1]
-    #data_keys['m'] = to_cache(endpoint, obj=m, name='m')
+    m = train_set_x.shape[1]
+    data_keys['m'] = to_cache(endpoint, obj=m, name='m')
     
     # Initialize the results tracking object
     results = {}
