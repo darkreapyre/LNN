@@ -316,7 +316,10 @@ def lambda_handler(event, context):
                 assert(A_prev.shape == (parameters['dims']['train_set_x'][0], parameters['dims']['train_set_x'][1]))
                 w = from_cache(
                     endpoint=endpoint,
-                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['dims']['train_set_x'][0])
+                    key=paramaters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
+                        1,
+                        parameters['dims']['train_set_x'][0]
+                    )
                 b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
             else:
                 # A is equal to the output of the previous layer's activations
@@ -324,7 +327,10 @@ def lambda_handler(event, context):
                 assert(A_prev.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
                 w = from_cache(
                     endpoint=endpoint,
-                    key=parameters['data_keys']['W'+str(layer)])[ID-1, :].reshape(1, parameters['neurons']['layer'+str(layer-1)])
+                    key=paramaters['data_keys']['W'+str(layer)])[ID-1, :].reshape(
+                        1,
+                        parameters['neurons']['layer'+str(layer-1)]
+                    )
                 b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer)])[ID-1]
             
             # Compute the Activation
@@ -333,7 +339,7 @@ def lambda_handler(event, context):
             elif activation == 'relu':                
                 a = relu(w.dot(A_prev) + b)
             else:
-                print("Invalid Activation function")
+                print("Forward Activation function not yet implemented")
                 raise
         
         # Upload the results to ElastiCache for `TrainerLambda` to process
@@ -377,9 +383,20 @@ def lambda_handler(event, context):
         if parameters['layers'] == 1:
             # TBD
             pass
-        #else:
-        #    da = from_cache(endpoint=endpoint, key=parameters['data_keys']['dA'+str(layer)])[]
+        else:
+            pass
+            
+            
+            # Derivative of the non-linear activation
+            #if activation == "sigmoid":
+            #    dz = sigmoid_backward(da, a)
+            #elif activation == "relu":
+            #    dz = relu_backward(da, a)
+            #else:
+            #    print("Backward Activation function not yet implemented")
 
+                
+                
 
 
         """
