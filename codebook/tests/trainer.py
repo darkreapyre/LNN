@@ -427,7 +427,7 @@ def lambda_handler(event, context):
         
         # Determine the location within forwardprop
         if layer > parameters['layers']:
-            # Location is at the end of forwardprop, therefore calculate Cost
+            # Location is at the end of forwardprop (layer 3), therefore calculate Cost
             # Get the training examples data
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
             m = Y.shape[1]
@@ -451,14 +451,15 @@ def lambda_handler(event, context):
             # Calculate the derivative of the Cost with respect to the last activation
             # Ensure that `Y` is the correct shape as the last activation
             Y = Y.reshape(A.shape)
-            dA = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
-            parameters['data_keys']['dA'+str(layer-1)] = to_cache(endpoint=endpoint, obj=dA, name='dA'+str(layer-1))
+            dZ = - (np.divide(Y, A) - np.divide(1 - Y, 1 - A))
+            dZ_name = 'dZ' + str(layer-1)
+            parameters['data_keys'][dZ_name] = to_cache(endpoint=endpoint, obj=dZ, name=dZ_name)
 
             # Update parameters from theis function in ElastiCache
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
             # Start Backpropogation
-            # This should start with layer (layers + 1)
+            # This should start with layer (layers = 3-1)
             propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
             
         else:
