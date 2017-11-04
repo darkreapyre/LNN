@@ -217,7 +217,7 @@ def initialize_data(endpoint, parameters):
         a_names.append(name2str(a_list[i], locals()))
     for j in range(len(a_list)):
         # Dump the numpy arrays to ElastiCache
-        data_keys[str(a_names[j][0])] = to_cache(endpoint, obj=a_list[j], name=a_names[j][0])
+        data_keys[str(a_names[j][0])] = to_cache(endpoint=endpoint, obj=a_list[j], name=a_names[j][0])
         # Append the array dimensions to the list
         dims[str(a_names[j][0])] = a_list[j].shape
     
@@ -225,12 +225,12 @@ def initialize_data(endpoint, parameters):
     dim = dims.get('train_set_x')[0]
     weights = np.zeros((dim, 1))
     # Store the initial weights in ElastiCache
-    data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
+    data_keys['weights'] = to_cache(endpoint=endpoint, obj=weights, name='weights')
         
     # Initialize Bias
-    b = 0
+    bias = 0
     # Store the bias in ElastiCache
-    data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
+    data_keys['bias'] = to_cache(endpoint=endpoint, obj=bias, name='bias')
    
     # Initialize training example size
     m = train_set_x.shape[1]
@@ -264,13 +264,7 @@ def lambda_handler(event, context):
     with open('/tmp/parameters.json') as parameters_file:
         parameters = json.load(parameters_file)
     
-    # Build in additional parameters from neural network parameters
-    """
-    This is now being done in the `TrainerLambda`
-    #parameters['epoch'] = 1
-    # Next Layer to process
-    #parameters['layer'] = 1
-    """
+    # Build in additional neural network parameters
     # Input data sets and data set parameters
     parameters['data_keys'],\
     parameters['input_data'],\
