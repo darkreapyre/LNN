@@ -299,7 +299,7 @@ def lambda_handler(event, context):
         activation = event.get('activation')
         A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
         w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
-        b = from_cache(endpoint=endpoint, key=eters['data_keys']['bias'])
+        b = from_cache(endpoint=endpoint, key=parameters['data_keys']['bias'])
         if activation == 'sigmoid':
             a = sigmoid(np.dot(w, A) + b) # Single Neuron activation
         else:
