@@ -384,8 +384,13 @@ def lambda_handler(event, context):
             # TBD
             pass
         else:
-            pass
-            
+            """
+            Note: This assumes dZ2 has already been calulcated to initialize Backprop.
+            This way the neurons can concentrate on calculating "dW" and "db". But this
+            is subject to change if there are multiple classification outputs"
+            """
+            #debug
+            print("Processing the derivatives for layer" + str(layer))
             
             # Derivative of the non-linear activation
             #if activation == "sigmoid":
