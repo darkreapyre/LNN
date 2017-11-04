@@ -162,20 +162,12 @@ def start_epoch(epoch, layer, parameter_key):
     # Initialize the results object for the new epoch
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
     
-    """
-    results_key = parameters.get('data_keys')['results']
-    results = from_cache(endpoint=endpoint, key=results_key)
-    # Update results for the new epoch
-    results['epoch' + str(epoch)] = {}
-    results_key = to_cache(endpoint=endpoint, obj=results, name='results')
-    """
     # Add current epoch to results
     epoch2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
     epoch2results['epoch' + str(epoch)] = {}
     parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=epoch2results, name='results')
    
     # Update paramaters with this functions data
-    #parameters['data_keys']['results'] = results_key
     parameters['epoch'] = epoch
     parameters['layer'] = layer
     parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
@@ -557,16 +549,7 @@ def lambda_handler(event, context):
             pass
             
     elif state == 'start':
-        # Start of a new run of the process
-        # Initialize the tracking objects
-        """
-        Note: Initializing results occurred in `LaunchLambda`
-        #results = {}
-        #results_key = to_cache(endpoint=endpoint, obj=results, name='results')
-        #parameters['data_keys']['results'] = results_key
-        #parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
-        """
-        
+        # Start of a new run of the process        
         # Create initial parameters
         epoch = 0
         layer = 0
