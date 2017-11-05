@@ -353,17 +353,21 @@ def lambda_handler(event, context):
                 endpoint=endpoint,
                 key=parameters['data_keys'][dZ_name]
             )
+            X = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['train_set_x']
+            )
             m = from_cache(
                 endpoint=endpoint,
                 key=parameters['data_keys']['m']
             )
             # Backward propogation to determine gradients of current layer
             dw = (1 / m) * np.dot(X, (dZ).T)
-            #debug
-            print("Partial Derivatives - Weights for Neuron" + str(ID) + ":\n" + dw)
             db = (1 / m) * np.sum(dZ)
-            #debug
-            print("Partial Derivatives - Bias for Neuron" + str(ID) + ":\n" + dw)
+
+            # Debug
+            w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
+            assert(dw.shape == w.shape)
             
             # Upload the results to ElastiCache for `TrainerLambda` to process
             #to_cache(endpoint=endpoint, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
