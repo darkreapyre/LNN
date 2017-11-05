@@ -351,7 +351,7 @@ def lambda_handler(event, context):
             dZ_name = 'dZ' + str(layer)
             dZ = from_cache(
                 endpoint=endpoint,
-                ley=parameters['data_keys'][dZ_name]
+                key=parameters['data_keys'][dZ_name]
             )
             m = from_cache(
                 endpoint=endpoint,
