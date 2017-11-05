@@ -341,42 +341,59 @@ def lambda_handler(event, context):
     elif state == 'backward':
         # Backprop from Cost to X (A0)
         activation = event.get('activation')
-
-        pass
-
-
-
         """
-        Previous Code
         Note: TrainerLambda launched back prop with `layer-1`, therefore this should be 
-        last "active" layer.
-        A_name = 'A'+str(layer)
-        A = from_cache(endpoint=endpoint, key=parameters['data_keys'][A_name])
+        last "active" layer. That means that the "dZ" for this layer has already been
+        calculate. Thus, no need to do the `A - Y` error calculation. Additionally, 
+        the following code structure makes the it more idempotenent for multiple layers.
+        """
+        if layer == parameters['layers']:
+            dZ_name = 'dZ' + str(layer)
+            dZ = from_cache(
+                endpoint=endpoint,
+                ley=parameters['data_keys'][dZ_name]
+            )
+            m = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['m']
+            )
+            # Backward propogation to determine gradients of current layer
+            dw = (1 / m) * np.dot(X, (dZ).T)
+            #debug
+            print("Partial Derivatives - Weights for Neuron" + str(ID) + ":\n" + dw)
+            db = (1 / m) * np.sum(dZ)
+            #debug
+            print("Partial Derivatives - Bias for Neuron" + str(ID) + ":\n" + dw)
+            
+            # Upload the results to ElastiCache for `TrainerLambda` to process
+            #to_cache(endpoint=endpoint, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
+            # Upload the results to ElastiCache for `TrainerLambda` to process
+            #to_cache(endpoint=endpoint, obj=db, name='layer'+str(layer)+'_db_'+str(ID))
 
-        # Backward propogation to determine gradients of current layer
-        dw = (1 / m) * np.dot(X, (A - Y).T)
-        #debug
-        print("Partial Derivatives - Weights for Neuron" + str(ID) + ":\n" + dw)
-        # Upload the results to ElastiCache for `TrainerLambda` to process
-        to_cache(endpoint=endpoint, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
-        db = (1 / m) * np.sum(A - Y)
-        #debug
-        print("Partial Derivatives - Bias for Neuron" + str(ID) + ":\n" + dw)
-        # Upload the results to ElastiCache for `TrainerLambda` to process
-        to_cache(endpoint=endpoint, obj=db, name='layer'+str(layer)+'_db_'+str(ID))
+        else:
+            # Placeholder for potential L-Layer
+            pass
         
         # Capture gradients
-        grads_key = parameters['data_keys']['grads']
         # Load the grads object
-        grads = from_cache(endpoint, key=grads_key) # Should be empty dictionary
+        grads = from_cache(endpoint, key=parameters['data_keys']['grads']) # Should be empty dictionary
         # Update the grads object with the calculated derivatives
-        grads['layer' + str(layer)]['dw_' + str(ID)] = to_cache(endpoint, obj=dw, name='dw_'+str(ID))
-        grads['layer' + str(layer)]['db_' + str(ID)] = to_cache(endpoint, obj=db, name='db_'+str(ID))
+        grads['layer' + str(layer)]['dw'] = to_cache(
+            endpoint=endpoint,
+            obj=dw,
+            name='dw'
+        )
+        grads['layer' + str(layer)]['db'] = to_cache(
+            endpoint=endpoint,
+            obj=db,
+            name='db'
+        )
         # Update the pramaters (local)
-        parameters['data_keys']['grads'] = grads
-        # Upload to ElastiCache
-        parameter_key = to_cache(endpoint, obj=parameters, name='parameters')
-        """
+        parameters['data_keys']['grads'] = to_cache(
+            endpoint=endpoint,
+            obj=grads,
+            name='grads'
+        )
 
         if last == "True":
             # Update parameters with this Neuron's data
