@@ -187,7 +187,7 @@ def finish_epoch(direction, epoch, layer):
     #TBD
     pass
 
-def optimize(epoch, layer, params, grads):
+def update_paraneters(epoch, layer, params, grads):
     """
     Optimizes `w` and `b` by running Gradient Descent to get the `cost`.
 
@@ -202,18 +202,6 @@ def optimize(epoch, layer, params, grads):
     Returns:
     TBD
     """
-
-    #TBD
-    #Get the learning rate
-    #learning_rate = parameters['learning_rate']
-
-    """
-    Note:
-    Probably have to get the cost from the output of the NeuronLambdas
-    OR
-    Get data from the NeuronLambdas and calculate the cost here
-    """
-
     # Get the grads and params
     
     # Perform the update rule
@@ -468,6 +456,19 @@ def lambda_handler(event, context):
         # Determine the location within backprop
         if epoch == parameters['epochs'] and layer == 0:
             # Location is at the end of the final epoch
+
+            ##Retieve the "params"
+
+            # Retrieve the gradients
+
+            # Run Gradient Descent
+
+            # Finalize the the process and clean up
+            #end()
+
+            """
+            Previos Code
+
             # First pre-process the Weights
             # Get the activations from the NeuronLambda by using this redis
             # command to ensure that a pure string is returned for the key
@@ -514,37 +515,52 @@ def lambda_handler(event, context):
             parameters['data_keys'][db_name] = to_cache(endpoint=endpoint, obj=db, name=db_name)
 
             # Run Gadient Descent
-            """
             # Note: Need to determine the exact location as SGD only runs at the end of 
             # the epoch and I need to ensure that we truly are and not just calculating
             # Weights and Bias for a hidden layer -> Work through flow and detmine if 
             # this is the right place
             """
-
-            
-            # Finalize the the process and clean up
-            #end()
             
             pass
             
         elif epoch < parameters['epochs'] and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
+            # Retieve the "params"
+            w = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['weights']
+            )
+            b = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['bias']
+            )
+
+            # Retrieve the gradients
+            grads = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['grads']
+            )
+            dw = from_cache(
+                endpoint=endpoint,
+                key=grads['layer'+ str(layer + 1)]['dw']
+            )
+            db = from_cache(
+                endpoint=endpoint,
+                key=grads['layer'+ str(layer + 1)]['db']
+            )
 
             # Run Gradient Descent
-            
-            # Calculate the weights for this epoch
-            
-            # Update/get the weights and bias from the results object
-            
+            w = w - learning_rate * dw
+            b = b - learning_rate * db
+
+            # Update/get the weights and bias from the results object            
             # Start the next epoch
             #epoch = epoch + 1
             #start_epoch(epoch)
             
-            pass
-            
         else:
             # Move to the next hidden layer
-            #propogate(direction='backward', layer=layer-1)
+            #propogate(direction='backward', epoch=epoch, layer=layer, parameter_key=parameter_key)
             
             pass
             
