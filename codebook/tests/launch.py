@@ -240,8 +240,11 @@ def initialize_data(endpoint, parameters):
     results = {}
     data_keys['results'] = to_cache(endpoint, obj=results, name='results')
 
-    # Initialize gradient tracking object
+    # Initialize gradient tracking object for each layer
     grads = {}
+    for lin range(1, parameters['layers']):
+        layer_name = 'layer' + str(l)
+        grads[layer_name] = {}
     data_keys['grads'] = to_cache(endpoint=endpoint, obj=grads, name='grads')
         
     return data_keys, [j for i in a_names for j in i], dims
