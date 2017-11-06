@@ -297,7 +297,7 @@ def lambda_handler(event, context):
     if state == 'forward':
         # Forward propogation from X to Cost
         activation = event.get('activation')
-        A = from_cache(endpoint=endpoint, key=parameters['data_keys']['A']+str(layer - 1))
+        A = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer - 1)])
         w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
         b = from_cache(endpoint=endpoint, key=parameters['data_keys']['bias'])
         if activation == 'sigmoid':
