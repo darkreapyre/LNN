@@ -228,7 +228,7 @@ def end(parameter_key):
     numpy2s3(array=weights, name='predict_input/weights', bucket=bucket)
     numpy2s3(array=bias, name='predict_input/bias', bucket=bucket)
 
-    print("LNN Training complete!")
+    print("Training Completed Successfully!")
 
     return
 
