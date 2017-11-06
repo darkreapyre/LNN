@@ -275,7 +275,7 @@ def lambda_handler(event, context):
     
     # Build in additional neural network parameters
     # Input data sets and data set parameters
-    parameters['s3_bucket'] = input_bucket['name']
+    #parameters['s3_bucket'] = input_bucket
     #parameters['s3_object'] = dataset_key
     parameters['data_keys'],\
     parameters['input_data'],\
