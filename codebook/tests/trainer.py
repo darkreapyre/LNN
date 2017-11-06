@@ -34,6 +34,21 @@ cache = redis(host=endpoint, port=6379, db=0)
 #global results
 
 # Helper Functions
+def numpy2s3(array, name, bucket):
+    """
+    Serialize a Numpy array to S3 without using local copy
+    
+    Arguments:
+    array -- Numpy array of any shape
+    name -- filename on S3
+    """
+    f_out = io.BytesIO()
+    np.save(f_out, array)
+    try:
+        s3_client.put_object(Key=name, Bucket=bucket, Body=f_out.getvalue(), ACL='bucket-owner-full-control')
+    except botocore.exceptions.ClientError as e:
+        priont(e)
+
 def to_cache(endpoint, obj, name):
     """
     Serializes multiple data type to ElastiCache and returns
@@ -175,48 +190,37 @@ def start_epoch(epoch, layer, parameter_key):
     # Start forwardprop
     propogate(direction='forward', epoch=epoch, layer=layer+1, parameter_key=parameter_key)
 
-def finish_epoch(direction, epoch, layer):
-    """
-    Closes out the current epoch and updates the necessary information to the results object.
-
-    Arguments:
-    direction -- The current direction of the propogation, either `forward` or `backward`.
-    epoch -- Integer representing the "current" epoch to close out.
-    """
-
-    #TBD
-    pass
-
-def update_paraneters(epoch, layer, params, grads):
-    """
-    Optimizes `w` and `b` by running Gradient Descent to get the `cost`.
-
-    Arguments:
-    epoch -- Integer representing the "current" epoch to close out.
-    layer -- Integer representing the current hidden layer.
-    params -- Dictionary containing the gradients of the weights and 
-                bias.
-    grads -- Dictionary containing the gardients of the wights and
-                bias with respect to the cost function.
-    
-    Returns:
-    TBD
-    """
-    # Get the grads and params
-    
-    # Perform the update rule
-    #w = w - learning_rate * grads['dw']
-    #b = b - learning_rate * grads['db']
-
-    pass
-
-def end():
+def end(parameter_key):
     """
     Finishes out the process and launches the next state mechanisms for prediction.
     """
-
-    #TBD
-    pass
+    parameters = from_cache(
+        endpoint=endpoint,
+        key=parameter_key
+    )
+    
+    # Get the results
+    final_results = from_cache(
+        endpoint=endpoint,
+        key=parameters['data_keys']['results']
+    )
+    # Upload results to S3
+    # TBD
+    
+    # Get the final Weights and Bias
+    weights = from_cache(
+        endpoint=endpoint,
+        key=parameters['data_keys']['weights']
+    )
+    bias = from_cache(
+        endpoint=endpoint,
+        key=parameters['data_keys']['bias']
+    )
+    bucket = parameters['s3_bucket']
+    
+    # Put the weights and bias onto S3 for prediction
+    numpy2s3(array=weights, name='prediction_input\weights', bucket=bucket)
+    numpy2s3(array=bias, name='prediction_input\bias', bucket=bucket)
 
 def propogate(direction, epoch, layer, parameter_key):
     """
@@ -454,17 +458,58 @@ def lambda_handler(event, context):
         layer = event.get('layer')
         
         # Determine the location within backprop
-        if epoch == parameters['epochs'] and layer == 0:
+        if epoch == parameters['epochs']-1 and layer == 0:
             # Location is at the end of the final epoch
-
-            ##Retieve the "params"
+            # Retieve the "params"
+            w = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['weights']
+            )
+            b = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['bias']
+            )
 
             # Retrieve the gradients
+            grads = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['grads']
+            )
+            dw = from_cache(
+                endpoint=endpoint,
+                key=grads['layer'+ str(layer + 1)]['dw']
+            )
+            db = from_cache(
+                endpoint=endpoint,
+                key=grads['layer'+ str(layer + 1)]['db']
+            )
 
             # Run Gradient Descent
+            w = w - learning_rate * dw
+            b = b - learning_rate * db
 
+            # Update ElastiCache with the Weights and Bias so be used as the inputs for
+            # the next epoch
+            parameters['data_keys']['weights'] = to_cache(
+                endpoint=endpoint,
+                obj=w,
+                name='weights'
+            )
+            parameters['data_keys']['bias'] = to_cache(
+                endpoint=endpoint,
+                obj=b,
+                name='bias'
+            )
+            
+            # Update paramters for the next epoch
+            parameter_key = to_cache(
+                endpoint=endpoint,
+                obj=parameters,
+                name='parameters'
+            )
+                        
             # Finalize the the process and clean up
-            #end()
+            end(parameter_key=parameter_key)
 
             """
             Previos Code
@@ -523,7 +568,7 @@ def lambda_handler(event, context):
             
             pass
             
-        elif epoch < parameters['epochs'] and layer == 0:
+        elif epoch < parameters['epochs']-1 and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
             # Retieve the "params"
             w = from_cache(
@@ -553,10 +598,28 @@ def lambda_handler(event, context):
             w = w - learning_rate * dw
             b = b - learning_rate * db
 
-            # Update/get the weights and bias from the results object            
+            # Update ElastiCache with the Weights and Bias so be used as the inputs for
+            # the next epoch
+            parameters['data_keys']['weights'] = to_cache(
+                endpoint=endpoint,
+                obj=w,
+                name='weights'
+            )
+            parameters['data_keys']['bias'] = to_cache(
+                endpoint=endpoint,
+                obj=b,
+                name='bias'
+            )
+            
+            # Update paramters for the next epoch
+            parameter_key = to_cache(
+                endpoint=endpoint,
+                obj=parameters,
+                name='parameters'
+            )
+                        
             # Start the next epoch
-            #epoch = epoch + 1
-            #start_epoch(epoch)
+            start_epoch(epoch=epoch+1, layer=0, parameter_key=parameter_key)
             
         else:
             # Move to the next hidden layer

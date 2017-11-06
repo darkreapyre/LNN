@@ -347,40 +347,30 @@ def lambda_handler(event, context):
         calculate. Thus, no need to do the `A - Y` error calculation. Additionally, 
         the following code structure makes the it more idempotenent for multiple layers.
         """
-        if layer == parameters['layers']:
-            dZ_name = 'dZ' + str(layer)
-            dZ = from_cache(
-                endpoint=endpoint,
-                key=parameters['data_keys'][dZ_name]
-            )
-            X = from_cache(
-                endpoint=endpoint,
-                key=parameters['data_keys']['train_set_x']
-            )
-            m = from_cache(
-                endpoint=endpoint,
-                key=parameters['data_keys']['m']
-            )
-            # Backward propogation to determine gradients of current layer
-            dw = (1 / m) * np.dot(X, (dZ).T)
-            db = (1 / m) * np.sum(dZ)
+        dZ_name = 'dZ' + str(layer)
+        dZ = from_cache(
+            endpoint=endpoint,
+            key=parameters['data_keys'][dZ_name]
+        )
+        X = from_cache(
+            endpoint=endpoint,
+            key=parameters['data_keys']['train_set_x']
+        )
+        m = from_cache(
+           endpoint=endpoint,
+           key=parameters['data_keys']['m']
+        )
+        # Backward propogation to determine gradients of current layer
+        dw = (1 / m) * np.dot(X, (dZ).T)
+        db = (1 / m) * np.sum(dZ)
 
-            # Debug
-            w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
-            assert(dw.shape == w.shape)
-            
-            # Upload the results to ElastiCache for `TrainerLambda` to process
-            #to_cache(endpoint=endpoint, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
-            # Upload the results to ElastiCache for `TrainerLambda` to process
-            #to_cache(endpoint=endpoint, obj=db, name='layer'+str(layer)+'_db_'+str(ID))
-
-        else:
-            # Placeholder for potential L-Layer
-            pass
-        
+        # Debug
+        w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
+        assert(dw.shape == w.shape)
+       
         # Capture gradients
         # Load the grads object
-        grads = from_cache(endpoint, key=parameters['data_keys']['grads']) # Should be empty dictionary
+        grads = from_cache(endpoint, key=parameters['data_keys']['grads'])
         # Update the grads object with the calculated derivatives
         grads['layer' + str(layer)]['dw'] = to_cache(
             endpoint=endpoint,
