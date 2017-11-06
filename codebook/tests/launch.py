@@ -256,8 +256,6 @@ def initialize_data(endpoint, parameters):
 def lambda_handler(event, context):
     # Retrieve datasets and setting from S3
     input_bucket = s3_resource.Bucket(str(event['Records'][0]['s3']['bucket']['name']))
-    #debug
-    print(input_bucket)
     dataset_key = str(event['Records'][0]['s3']['object']['key'])
     settings_key = dataset_key.split('/')[-2] + '/parameters.json'
     try:
@@ -275,8 +273,6 @@ def lambda_handler(event, context):
     
     # Build in additional neural network parameters
     # Input data sets and data set parameters
-    #parameters['s3_bucket'] = input_bucket
-    #parameters['s3_object'] = dataset_key
     parameters['data_keys'],\
     parameters['input_data'],\
     parameters['dims'] = initialize_data(
