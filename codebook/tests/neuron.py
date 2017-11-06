@@ -297,7 +297,7 @@ def lambda_handler(event, context):
     if state == 'forward':
         # Forward propogation from X to Cost
         activation = event.get('activation')
-        A = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_x'])
+        A = from_cache(endpoint=endpoint, key=parameters['data_keys']['A']+str(layer - 1))
         w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
         b = from_cache(endpoint=endpoint, key=parameters['data_keys']['bias'])
         if activation == 'sigmoid':
@@ -352,16 +352,17 @@ def lambda_handler(event, context):
             endpoint=endpoint,
             key=parameters['data_keys'][dZ_name]
         )
-        X = from_cache(
+        # Get the activaion from the previous layer, in this case `X` or `A0`
+        A_prev = from_cache(
             endpoint=endpoint,
-            key=parameters['data_keys']['train_set_x']
+            key=parameters['data_keys']['A' + str(layer-1)]
         )
         m = from_cache(
            endpoint=endpoint,
            key=parameters['data_keys']['m']
         )
         # Backward propogation to determine gradients of current layer
-        dw = (1 / m) * np.dot(X, (dZ).T)
+        dw = (1 / m) * np.dot(A_prev, (dZ).T)
         db = (1 / m) * np.sum(dZ)
 
         # Debug

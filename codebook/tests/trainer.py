@@ -198,14 +198,21 @@ def end(parameter_key):
         endpoint=endpoint,
         key=parameter_key
     )
-    
+    bucket = parameters['s3_bucket']
+
     # Get the results
     final_results = from_cache(
         endpoint=endpoint,
         key=parameters['data_keys']['results']
     )
     # Upload results to S3
-    # TBD
+    results_obj = s3_resource.Object(bucket,'training_results/results.json')
+    try:
+        results_obj.put(Body=json.dumps(final_results))
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        raise
+    
     
     # Get the final Weights and Bias
     weights = from_cache(
@@ -216,11 +223,14 @@ def end(parameter_key):
         endpoint=endpoint,
         key=parameters['data_keys']['bias']
     )
-    bucket = parameters['s3_bucket']
     
     # Put the weights and bias onto S3 for prediction
-    numpy2s3(array=weights, name='prediction_input\weights', bucket=bucket)
-    numpy2s3(array=bias, name='prediction_input\bias', bucket=bucket)
+    numpy2s3(array=weights, name='predict_input/weights', bucket=bucket)
+    numpy2s3(array=bias, name='predict_input/bias', bucket=bucket)
+
+    print("LNN Training complete!")
+
+    return
 
 def propogate(direction, epoch, layer, parameter_key):
     """

@@ -221,13 +221,17 @@ def initialize_data(endpoint, parameters):
         # Append the array dimensions to the list
         dims[str(a_names[j][0])] = a_list[j].shape
     
-    # Initialize weights
+    # Initialize A0 and Y names from `train_setx`` and train_set_y`
+    data_keys['A0'] = to_cache(endpoint=endpoint, obj=train_set_x, name='A0')
+    data_keys['Y'] = to_cache(endpoint=endpoint, obj=train_set_y, name='Y')
+    
+    # Initialize weights to zero for single layer
     dim = dims.get('train_set_x')[0]
     weights = np.zeros((dim, 1))
     # Store the initial weights in ElastiCache
     data_keys['weights'] = to_cache(endpoint=endpoint, obj=weights, name='weights')
         
-    # Initialize Bias
+    # Initialize Bias to zero for single layer
     bias = 0
     # Store the bias in ElastiCache
     data_keys['bias'] = to_cache(endpoint=endpoint, obj=bias, name='bias')
