@@ -256,6 +256,8 @@ def initialize_data(endpoint, parameters):
 def lambda_handler(event, context):
     # Retrieve datasets and setting from S3
     input_bucket = s3_resource.Bucket(str(event['Records'][0]['s3']['bucket']['name']))
+    #debug
+    print(input_bucket)
     dataset_key = str(event['Records'][0]['s3']['object']['key'])
     settings_key = dataset_key.split('/')[-2] + '/parameters.json'
     try:
