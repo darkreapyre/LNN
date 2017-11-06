@@ -470,7 +470,7 @@ def lambda_handler(event, context):
         if epoch == parameters['epochs']-1 and layer == 0:
             # Location is at the end of the final epoch
             # Retieve the "params"
-            learning_rate = parameters['learning_rate']
+            
             w = from_cache(
                 endpoint=endpoint,
                 key=parameters['data_keys']['weights']
@@ -581,6 +581,7 @@ def lambda_handler(event, context):
         elif epoch < parameters['epochs']-1 and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
             # Retieve the "params"
+            learning_rate = parameters['learning_rate']
             w = from_cache(
                 endpoint=endpoint,
                 key=parameters['data_keys']['weights']
