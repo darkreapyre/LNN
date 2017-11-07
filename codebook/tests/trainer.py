@@ -45,7 +45,7 @@ def numpy2s3(array, name, bucket):
     f_out = io.BytesIO()
     np.save(f_out, array)
     try:
-        s3_client.put_object(Key=name, Bucket=bucket, Body=f_out.getvalue(), ACL='bucket-owner-full-control')
+        s3_client.put_object(Key=name, Bucket=bucket, Body=f_out.getvalue())#, ACL='bucket-owner-full-control')
     except botocore.exceptions.ClientError as e:
         priont(e)
 
