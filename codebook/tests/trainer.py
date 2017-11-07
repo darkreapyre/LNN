@@ -194,7 +194,7 @@ def end(parameter_key):
     """
     Finishes out the process and launches the next state mechanisms for prediction.
     """
-    bucket = 'lnn'
+    bucket = parameters['s3_bucket']
     parameters = from_cache(
         endpoint=endpoint,
         key=parameter_key

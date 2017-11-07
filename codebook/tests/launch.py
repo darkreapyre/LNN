@@ -273,6 +273,7 @@ def lambda_handler(event, context):
     
     # Build in additional neural network parameters
     # Input data sets and data set parameters
+    parameters['s3_bucket'] = event['Records'][0]['s3']['bucket']['name']
     parameters['data_keys'],\
     parameters['input_data'],\
     parameters['dims'] = initialize_data(
