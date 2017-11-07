@@ -194,7 +194,6 @@ def end(parameter_key):
     """
     Finishes out the process and launches the next state mechanisms for prediction.
     """
-    bucket = parameters['s3_bucket']
     parameters = from_cache(
         endpoint=endpoint,
         key=parameter_key
@@ -206,6 +205,7 @@ def end(parameter_key):
         key=parameters['data_keys']['results']
     )
     # Upload results to S3
+    bucket = parameters['s3_bucket']
     results_obj = s3_resource.Object(bucket,'training_results/results.json')
     try:
         results_obj.put(Body=json.dumps(final_results))
