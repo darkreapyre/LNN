@@ -97,18 +97,18 @@ Resources:
                 Subnets: !GetAtt VPC.Outputs.PublicSubnets
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
 
-    gluonService:
-        Type: AWS::CloudFormation::Stack
-        Properties:
-            TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/gluon-dev/service.yaml
-            Parameters:
-                VPC: !GetAtt VPC.Outputs.VPC
-                Cluster: !GetAtt ECS.Outputs.Cluster
-                DesiredCount: 1
-                EnvironmentName: !Ref AWS::StackName
-                ECRRepository: !Ref ECRRepository
-                Subnets: !GetAtt VPC.Outputs.PublicSubnets
-                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+#    gluonService:
+#        Type: AWS::CloudFormation::Stack
+#        Properties:
+#            TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/gluon-dev/service.yaml
+#            Parameters:
+#                VPC: !GetAtt VPC.Outputs.VPC
+#                Cluster: !GetAtt ECS.Outputs.Cluster
+#                DesiredCount: 1
+#                EnvironmentName: !Ref AWS::StackName
+#                ECRRepository: !Ref ECRRepository
+#                Subnets: !GetAtt VPC.Outputs.PublicSubnets
+#                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
     
     Redis:
         Type: AWS::CloudFormation::Stack
