@@ -10,9 +10,7 @@ import base64
 import cStringIO
 import numpy as np
 import matplotlib.pyplot as plt
-from flask import Flask, Response
-from flask import request
-from flask import jsonify
+from flask import Flask, Response, request, jsonify, render_template
 from json import dumps, loads
 from boto3 import client, resource, Session
 from PIL import image
@@ -89,31 +87,6 @@ def predict(w, b, X):
 
     return output
 
-"""
-def predict(url, mod, synsets):
-     req = urllib2.urlopen(url)
-     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-     cv2_img = cv2.imdecode(arr, -1)
-     img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-     if img is None:
-         return None
-     img = cv2.resize(img, (224, 224))
-     img = np.swapaxes(img, 0, 2)
-     img = np.swapaxes(img, 1, 2)
-     img = img[np.newaxis, :]
-
-     mod.forward(Batch([mx.nd.array(img)]))
-     prob = mod.get_outputs()[0].asnumpy()
-     prob = np.squeeze(prob)
-
-     a = np.argsort(prob)[::-1]
-     out = ''
-     for i in a[0:5]:
-         out += 'probability=%f, class=%s' %(prob[i], synsets[i])
-     out += "\n"
-     return out
-"""
-
 app = Flask(__name__)
 
 @app.route('/')
@@ -147,24 +120,9 @@ def image():
     figfile = BytesIO()
     plt.imsave(figfile, img, format='png')
     figfile.seek(0)
-    figfile_png =base64.b64encode(figfile.getvalue())
+    figfile_png = base64.b64encode(figfile.getvalue())
 
     return render_template('results.html', content=figfile_png, prediction=prediction)
-
-"""
-    sym, arg_params, aux_params = load_model(f_symbol_file.name, f_params_file.name)
-    mod = mx.mod.Module(symbol=sym, context=mx.cpu())
-    mod.bind(for_training=False, data_shapes=[('data', (1,3,224,224))])
-    mod.set_params(arg_params, aux_params)
-
-    labels = predict(url, mod, synsets)
-
-    resp = Response(response=labels,
-    status=200, \
-    mimetype="application/json")
-
-    return(resp)
-"""
 
 if __name__ == '__main__':
     app.run('0.0.0.0', debug=True)
