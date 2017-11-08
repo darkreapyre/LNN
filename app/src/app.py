@@ -120,7 +120,7 @@ def image():
     # Prediction
     prediction = predict(w, b, image)
 
-    # Return image
+    # Return prediction and image
     figfile = BytesIO()
     plt.imsave(figfile, img, format='png')
     figfile.seek(0)
