@@ -3,22 +3,24 @@ import os
 import json
 import boto3
 import tempfile
-import urllib2
+import urllib
 import scipy
 import botocore
 import base64
-import cStringIO
+from io import BytesIO
 import numpy as np
 import matplotlib.pyplot as plt
 from flask import Flask, Response, request, jsonify, render_template
 from json import dumps, loads
 from boto3 import client, resource, Session
-from PIL import image
+from PIL import Image
 from scipy import ndimage, misc
-from io import BytesIO
+
 
 # Global variables
 bucket = 'lnn'
+s3_client = client('s3', region_name='us-west-2') # S3 access
+s3_resource = resource('s3')
 
 # Helper Functions
 def s3numpy(bucket, key):
@@ -37,9 +39,9 @@ def s3numpy(bucket, key):
             Bucket=bucket,
             Key='predict_input/'+key)['Body'].read()
         )
-        content = file.getvalue()
-        array = np.load(io.BytesIO(content))
-        return array
+    content = file.getvalue()
+    array = np.load(io.BytesIO(content))
+    return array
 
 def sigmoid(z):
     """
@@ -107,7 +109,9 @@ def image():
     b = s3numpy(bucket, 'bias')
 
     # Pre-process the image
-    fname = cStringIO.StringIO(urllib2.urlopen(url).read())
+    req = urllib.request.Request(url)
+    res = urllib.request.urlopen(req).read()
+    fname = BytesIO(res)
     img = np.array(ndimage.imread(fname, flatten=False))
     #img = np.array(ndimage.imread(fname, mode='RGB', flatten=False))
     #img = np.array(misc.imread(fname, flatten=False))
