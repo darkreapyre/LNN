@@ -73,7 +73,7 @@ Resources:
             LogGroupName: !Ref AWS::StackName
             RetentionInDays: 7
 
-    precictLoadBalancer:
+    predictLoadBalancer:
         Type: AWS::ElasticLoadBalancingV2::LoadBalancer
         Properties:
             Name: !Sub ${EnvironmentName}-predict
