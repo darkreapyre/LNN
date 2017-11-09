@@ -27,13 +27,18 @@ RUN pip3 install \
   matplotlib \
   scipy \
   Pillow \
-  boto3
+  boto3 \
+  Jinja2 \
+  Werkzeug \
+  certifi \
+  gunicorn\
+  requests
 
 
 ADD ./src /app
 ADD ./config /config
 
-RUN pip3 install -r /config/requirements.txt
+#RUN pip3 install -r /config/requirements.txt
 
 
 #RUN echo "\ndaemon off;" >> /etc/nginx/nginx.conf
