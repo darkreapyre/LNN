@@ -40,7 +40,7 @@ def s3numpy(bucket, key):
             Key='predict_input/'+key)['Body'].read()
         )
     content = file.getvalue()
-    array = np.load(io.BytesIO(content))
+    array = np.load(BytesIO(content))
     return array
 
 def sigmoid(z):
