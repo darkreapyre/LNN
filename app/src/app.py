@@ -34,7 +34,7 @@ def s3numpy(bucket, key):
     Returns:
     array -- Numpy array
     """
-    file = io.BytesIO(
+    file = BytesIO(
         s3_client.get_object(
             Bucket=bucket,
             Key='predict_input/'+key)['Body'].read()
