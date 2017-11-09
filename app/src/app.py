@@ -124,9 +124,11 @@ def image():
     figfile = BytesIO()
     plt.imsave(figfile, img, format='png')
     figfile.seek(0)
-    figfile_png = base64.b64encode(figfile.getvalue())
+    figfile_png = base64.b64encode(figfile.getvalue()).decode('ascii')
+    # Remove byst string formatting
+    #result = str(figfile_png)[2:-1]
 
-    return render_template('results.html', content=figfile_png, prediction=prediction)
+    return render_template('results.html', image=figfile_png, prediction=prediction)
 
 if __name__ == '__main__':
     app.run('0.0.0.0', debug=True)
