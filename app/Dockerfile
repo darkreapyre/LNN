@@ -5,7 +5,10 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   git \
   libopenblas-dev \
+  gfortran \
+  gcc \
   libopencv-dev \
+  libav-tools \
   python3-dev \
   python-setuptools \
   wget \
