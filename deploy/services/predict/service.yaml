@@ -56,7 +56,7 @@ Resources:
             ContainerDefinitions:
                 - Name: predict
                   Essential: true
-                  Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}:predict
+                  Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}:app
                   Memory: 4096
                   PortMappings:
                     - ContainerPort: 5000
