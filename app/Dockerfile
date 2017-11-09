@@ -1,22 +1,25 @@
-FROM ubuntu:14.04
+FROM python:3.6
 
 # Install build-essential, git, wget and other dependencies
 RUN apt-get update && apt-get install -y \
   build-essential \
   git \
   libopenblas-dev \
+  libatlas-base-dev \
   gfortran \
   gcc \
-  libopencv-dev \
-  libav-tools \
-  python3-dev \
-  python-setuptools \
+#  libopencv-dev \
+#  libav-tools \
+#  python3-dev \
+#  python-setuptools \
   wget \
-  python3-pip \
+#  python3-pip \
   nginx \
-  supervisor
+  supervisor && \
+  rm -rf /var/lib/apt/lists/*
 
 #install Flask
+RUN pip3 install --upgrade pip
 RUN pip3 install \
   uwsgi \
   Flask \
