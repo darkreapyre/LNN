@@ -16,6 +16,7 @@ from boto3 import client, resource, Session
 import botocore
 import uuid
 import io
+import redis
 from redis import StrictRedis as redis
 
 # Global Variables
@@ -51,7 +52,11 @@ def to_cache(endpoint, obj, name):
     # Test if the object to Serialize is a Numpy Array
     if 'numpy' in str(type(obj)):
         array_dtype = str(obj.dtype)
-        length, width = obj.shape
+        if len(obj.shape) == 0:
+            length = 0
+            width = 0
+        else:
+            length, width = obj.shape
         # Convert the array to string
         val = obj.ravel().tostring()
         # Create a key from the name and necessary parameters from the array
@@ -84,6 +89,8 @@ def to_cache(endpoint, obj, name):
         cache = redis(host=endpoint, port=6379, db=0)
         cache.set(key, val)
         return key
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def from_cache(endpoint, key):
     """
@@ -106,16 +113,19 @@ def from_cache(endpoint, key):
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        if int(length) == 0:
+            obj = np.float64(np.fromstring(val))
+        else:
+            obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a Numpy array containing
     # `int64` data types
     elif 'int64' in key:
         cache = redis(host=endpoint, port=6379, db=0)
-        data = cache.get(key)
+        val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
-        obj = np.fromstring(data, dtype=array_dtype).reshape(int(length), int(width))
+        obj = np.fromstring(val, dtype=array_dtype).reshape(int(length), int(width))
         return obj
     # Check if the Key is for a json type
     elif 'json' in key:
@@ -132,6 +142,8 @@ def from_cache(endpoint, key):
         cache = redis(host=endpoint, port=6379, db=0)
         obj = cache.get(key)
         return obj
+    else:
+        print(str(type(obj)) + "is not a supported serialization type")
 
 def name2str(obj, namespace):
     """
@@ -170,7 +182,7 @@ def standardize(x_orig):
     """
     return vectorize(x_orig) / 255
 
-def initialize_data(endpoint, w, b):
+def initialize_data(endpoint, parameters):
     """
     Extracts the training and testing data from S3, flattens, 
     standardizes and then dumps the data to ElastiCache 
@@ -194,8 +206,7 @@ def initialize_data(endpoint, w, b):
     train_set_x = standardize(train_set_x_orig)
     test_set_x = standardize(test_set_x_orig)
 
-    # Dump the inputs to the temporary s3 bucket for TrainerLambda
-    #bucket = storage_init() # Creates a temporary bucket for the propogation steps
+    # Create necessary keys for the data in ElastiCache
     data_keys = {} # Dictionary for the hask keys of the data set
     dims = {} # Dictionary of data set dimensions
     a_list = [train_set_x, train_set_y, test_set_x, test_set_y]
@@ -205,30 +216,39 @@ def initialize_data(endpoint, w, b):
         a_names.append(name2str(a_list[i], locals()))
     for j in range(len(a_list)):
         # Dump the numpy arrays to ElastiCache
-        data_keys[str(a_names[j][0])] = to_cache(endpoint, obj=a_list[j], name=a_names[j][0])
+        data_keys[str(a_names[j][0])] = to_cache(endpoint=endpoint, obj=a_list[j], name=a_names[j][0])
         # Append the array dimensions to the list
         dims[str(a_names[j][0])] = a_list[j].shape
     
-    # Initialize weights
-    if w == 0: # Initialize weights to dimensions of the input data
-        dim = dims.get('train_set_x')[0]
-        weights = np.zeros((dim, 1))
-        # Store the initial weights as a column vector on S3
-        data_keys['weights'] = to_cache(endpoint, obj=weights, name='weights')
-    else:
-        #placeholder for random weight initialization
-        pass
-        
-    # Initialize Bias
-    if b != 0:
-        #placeholder for random bias initialization
-        #data_keys['bias'] = to_cache(endpoint, obj=bias, name='bias')
-        pass
-    else:
-        data_keys['bias'] = to_cache(endpoint, obj=b, name='bias')
+    # Initialize A0 and Y names from `train_setx`` and train_set_y`
+    data_keys['A0'] = to_cache(endpoint=endpoint, obj=train_set_x, name='A0')
+    data_keys['Y'] = to_cache(endpoint=endpoint, obj=train_set_y, name='Y')
     
-#    # Initialize the results tracking object
-#    to_cache(endpoint, dump='', name='results')
+    # Initialize weights to zero for single layer
+    dim = dims.get('train_set_x')[0]
+    weights = np.zeros((dim, 1))
+    # Store the initial weights in ElastiCache
+    data_keys['weights'] = to_cache(endpoint=endpoint, obj=weights, name='weights')
+        
+    # Initialize Bias to zero for single layer
+    bias = 0
+    # Store the bias in ElastiCache
+    data_keys['bias'] = to_cache(endpoint=endpoint, obj=bias, name='bias')
+   
+    # Initialize training example size
+    m = train_set_x.shape[1]
+    data_keys['m'] = to_cache(endpoint, obj=m, name='m')
+    
+    # Initialize the results tracking object
+    results = {}
+    data_keys['results'] = to_cache(endpoint, obj=results, name='results')
+
+    # Initialize gradient tracking object for each layer
+    grads = {}
+    for l in range(1, parameters['layers']+1):
+        layer_name = 'layer' + str(l)
+        grads[layer_name] = {}
+    data_keys['grads'] = to_cache(endpoint=endpoint, obj=grads, name='grads')
         
     return data_keys, [j for i in a_names for j in i], dims
 
@@ -250,15 +270,14 @@ def lambda_handler(event, context):
     with open('/tmp/parameters.json') as parameters_file:
         parameters = json.load(parameters_file)
     
-    # Build in additional parameters from neural network parameters
-    parameters['epoch'] = 1
-    # Next Layer to process
-    parameters['layer'] = 1
+    # Build in additional neural network parameters
     # Input data sets and data set parameters
-    parameters['data_keys'], \
-    parameters['input_data'], \
-    parameters['data_dimensions'] = initialize_data(
-        endpoint=endpoint, w=parameters.get('weight'), b = parameters.get('bias')
+    parameters['s3_bucket'] = event['Records'][0]['s3']['bucket']['name']
+    parameters['data_keys'],\
+    parameters['input_data'],\
+    parameters['dims'] = initialize_data(
+        endpoint=endpoint,
+        parameters=parameters
     )
     
     # Initialize payload to `TrainerLambda`
@@ -274,6 +293,9 @@ def lambda_handler(event, context):
     print("Complete Neural Network Settings: \n")
     print(dumps(parameters, indent=4, sort_keys=True))
     print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+
+    return
+
     
     # Invoke TrainerLambda for next layer
     try:
@@ -286,4 +308,5 @@ def lambda_handler(event, context):
         print(e)
         raise
     print(response)
+
     return

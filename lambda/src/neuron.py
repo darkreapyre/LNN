@@ -275,19 +275,17 @@ def lambda_handler(event, context):
             payloadbytes = dumps(payload)
             print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
-######################################################################################################            
-#            # Invoke TrainerLambda to process activations
-#            try:
-#                response = lambda_client.invoke(
-#                    FunctionName=environ['TrainerLambda'], #ENSURE ARN POPULATED BY CFN
-#                    InvocationType='Event',
-#                    Payload=payloadbytes
-#                )
-#            except botocore.exceptions.ClientError as e:
-#                print(e)
-#                raise
-#            print(response)
-######################################################################################################
+            # Invoke TrainerLambda to process activations
+            try:
+                response = lambda_client.invoke(
+                    FunctionName=environ['TrainerLambda'], #ENSURE ARN POPULATED BY CFN
+                    InvocationType='Event',
+                    Payload=payloadbytes
+                )
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                raise
+            print(response)
 
         return
 
@@ -356,19 +354,17 @@ def lambda_handler(event, context):
             payloadbytes = dumps(payload)
             print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
-######################################################################################################            
-#            # Invoke NeuronLambdas for next layer
-#            try:
-#                response = lambda_client.invoke(
-#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
-#                    InvocationType='Event',
-#                    Payload=payloadbytes
-#                )
-#            except botocore.exceptions.ClientError as e:
-#                print(e)
-#                raise
-#            print(response)
-######################################################################################################
+            # Invoke NeuronLambdas for next layer
+            try:
+                response = lambda_client.invoke(
+                    FunctionName=environ['TrainerLambda'], #ENSURE ARN POPULATED BY CFN
+                    InvocationType='Event',
+                    Payload=payloadbytes
+                )
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                raise
+            print(response)
 
         return
 

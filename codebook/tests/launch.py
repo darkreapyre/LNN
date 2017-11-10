@@ -206,8 +206,7 @@ def initialize_data(endpoint, parameters):
     train_set_x = standardize(train_set_x_orig)
     test_set_x = standardize(test_set_x_orig)
 
-    # Dump the inputs to the temporary s3 bucket for TrainerLambda
-    #bucket = storage_init() # Creates a temporary bucket for the propogation steps
+    # Create necessary keys for the data in ElastiCache
     data_keys = {} # Dictionary for the hask keys of the data set
     dims = {} # Dictionary of data set dimensions
     a_list = [train_set_x, train_set_y, test_set_x, test_set_y]

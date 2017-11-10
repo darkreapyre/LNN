@@ -28,10 +28,6 @@ redis_client = client('elasticache', region_name='us-west-2')
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-#global parameter_key
-#global parameters 
-#global results_key
-#global results
 
 # Helper Functions
 def numpy2s3(array, name, bucket):
@@ -257,16 +253,6 @@ def propogate(direction, epoch, layer, parameter_key):
         # Do stuff
     """
     
-    ###########################################################
-    # When launching Neuron, the following must be added      #
-    # to the payload:                                         #
-    # 1. parameter_key.                                       #
-    # 2. state/direction.                                     #
-    # 3. epoch.                                               #
-    # 4. layer.                                               #
-    # 5. final. (Is it the last neuron? True|False).          #
-    ###########################################################
-
     # Get the parameters for the layer
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
     num_hidden_units = parameters['neurons']['layer' + str(layer)]
@@ -301,19 +287,17 @@ def propogate(direction, epoch, layer, parameter_key):
             payloadbytes = dumps(payload)
             print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
-######################################################################################################            
-#            # Invoke NeuronLambdas for next layer
-#            try:
-#                response = lambda_client.invoke(
-#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
-#                    InvocationType='Event',
-#                    Payload=payloadbytes
-#                )
-#            except botocore.exceptions.ClientError as e:
-#                print(e)
-#                raise
-#            print(response)
-######################################################################################################
+            # Invoke NeuronLambdas for next layer
+            try:
+                response = lambda_client.invoke(
+                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+                    InvocationType='Event',
+                    Payload=payloadbytes
+                )
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                raise
+            print(response)
         
         return
     
@@ -338,19 +322,17 @@ def propogate(direction, epoch, layer, parameter_key):
             payloadbytes = dumps(payload)
             print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
-######################################################################################################            
-#            # Invoke NeuronLambdas for next layer
-#            try:
-#                response = lambda_client.invoke(
-#                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
-#                    InvocationType='Event',
-#                    Payload=payloadbytes
-#                )
-#            except botocore.exceptions.ClientError as e:
-#                print(e)
-#                raise
-#            print(response)
-######################################################################################################
+            # Invoke NeuronLambdas for next layer
+            try:
+                response = lambda_client.invoke(
+                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+                    InvocationType='Event',
+                    Payload=payloadbytes
+                )
+            except botocore.exceptions.ClientError as e:
+                print(e)
+                raise
+            print(response)
 
             return
 
@@ -379,8 +361,6 @@ def lambda_handler(event, context):
     # Get the current state from the invoking lambda
     state = event.get('state')
     global parameters
-#    global parameter_key
-#    parameter_key = event.get('parameter_key')
     parameters = from_cache(endpoint=endpoint, key=event.get('parameter_key'))
     
     # Execute appropriate action based on the the current state
@@ -526,63 +506,6 @@ def lambda_handler(event, context):
                         
             # Finalize the the process and clean up
             end(parameter_key=parameter_key)
-
-            """
-            Previos Code
-
-            # First pre-process the Weights
-            # Get the activations from the NeuronLambda by using this redis
-            # command to ensure that a pure string is returned for the key
-            r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
-            key_list = []
-            for key in r.scan_iter(match='dw_*'):
-                key_list.append(key)
-            # Create a dictionary of the numpy arrays
-            dW_dict = {}
-            for i in key_list:
-                dW_dict[i] = from_cache(endpoint=endpoint, key=i)
-            # Create a numpy array of all the Weights, depending on
-            # the number of hidden units
-            num_weights = len(key_list)
-            # Create the matrix of Weights
-            dW = np.arra([arr.tolist() for arr in dW_dict.values()])
-            # Format the shape depending onthe number of Weights
-            if num_weights == 1:
-                dims = (key_list[0].split('|')[1].split('#')[1:])
-                dW = dW.reshape(int(dims[0]), int(dims1))
-            else:
-                dW = np.squeeze(dW)
-            # Concatenate into matrix of column vectors
-            dW = dW.T
-            # Add `W{layer}` to input for Gradient Descent
-            dW_name = 'dW' + str(layer+1)
-            parameters['data_keys'][dW_name] = to_cache(endpoint=endpoint, obj=dW, name=dW_name)
-
-            # Repeat the above process for the Bias
-            key_list = []
-            for key in r.scan_iter(match="db_*"):
-                key_list.append(key)
-            db_dict = {}
-            for i in key_list:
-                db_dict[i] = from_cache(endpoint=endpoint, key=i)
-            num_bias = len(key_list)
-            db = np.array([arr.tolist() for arr in db_dict.value()])
-            if num_bias ==1:
-                db = np.float64(db)
-            else:
-                db = np.squeeze(db)
-            db = db.T
-            dB_name = 'db' + str(layer+1)
-            parameters['data_keys'][db_name] = to_cache(endpoint=endpoint, obj=db, name=db_name)
-
-            # Run Gadient Descent
-            # Note: Need to determine the exact location as SGD only runs at the end of 
-            # the epoch and I need to ensure that we truly are and not just calculating
-            # Weights and Bias for a hidden layer -> Work through flow and detmine if 
-            # this is the right place
-            """
-            
-            pass
             
         elif epoch < parameters['epochs']-1 and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
@@ -640,9 +563,7 @@ def lambda_handler(event, context):
             
         else:
             # Move to the next hidden layer
-            #propogate(direction='backward', epoch=epoch, layer=layer, parameter_key=parameter_key)
-            
-            pass
+            propogate(direction='backward', epoch=epoch, layer=layer, parameter_key=parameter_key)
             
     elif state == 'start':
         # Start of a new run of the process        
@@ -654,5 +575,3 @@ def lambda_handler(event, context):
     else:
         print("No state informaiton has been provided.")
         raise
-
-###### Add code to clean up if this is `epochs + 1`
