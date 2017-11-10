@@ -193,4 +193,4 @@ Outputs:
 
     ServiceUrl:
         Description: The URL of the Prediction App
-        Value: !Join ["/", ["http:/", !GetAtt predictLoadBalancer.DNSName, "image"]]
+        Value: !Join ["/", ["http:/", !GetAtt predictLoadBalancer.DNSName, "image?image="]
