@@ -20,16 +20,30 @@ import redis
 from redis import StrictRedis as redis
 
 # Global Variables
-s3_client = client('s3', region_name='us-west-2') # S3 access
+rgn = environ['Region']
+s3_client = client('s3', region_name=rgn) # S3 access
 s3_resource = resource('s3')
-lambda_client = client('lambda', region_name='us-west-2') # Lambda invocations
-redis_client = client('elasticache', region_name='us-west-2')
+sns_client = client('sns', region_name=rgn) # SNS
+lambda_client = client('lambda', region_name=rgn) # Lambda invocations
+redis_client = client('elasticache', region_name=rgn) # ElastiCache
 # Retrieve the Elasticache Cluster endpoint
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
 
 # Helper Functions
+def publish_sns(sns_message):
+    """
+    Publish message to the master SNS topic.
+
+    Arguments:
+    sns_message -- the Body of the SNS Message
+    """
+
+    print "Publishing message to SNS topic..."
+    sns_client.publish(TargetArn=environ['SNSArn'], Message=sns_message)
+    return
+
 def numpy2s3(array, name, bucket):
     """
     Serialize a Numpy array to S3 without using local copy
@@ -43,7 +57,9 @@ def numpy2s3(array, name, bucket):
     try:
         s3_client.put_object(Key=name, Bucket=bucket, Body=f_out.getvalue(), ACL='bucket-owner-full-control')
     except botocore.exceptions.ClientError as e:
-        print(e)
+        sns_message = "The following error occurred while running `numpy2s3`:\n" + e
+        publish_sns(sns_message)
+        raise
 
 def to_cache(endpoint, obj, name):
     """
@@ -64,7 +80,6 @@ def to_cache(endpoint, obj, name):
            the case of Numpy Arrays, the Length and Widtch of the 
            array are added to the Key.
     """
-    
     # Test if the object to Serialize is a Numpy Array
     if 'numpy' in str(type(obj)):
         array_dtype = str(obj.dtype)
@@ -106,7 +121,10 @@ def to_cache(endpoint, obj, name):
         cache.set(key, val)
         return key
     else:
-        print(str(type(obj)) + "is not a supported serialization type")
+        sns_message = "`to_cache` Error:\n" + str(type(obj)) + "is not a supported serialization type"
+        publish_sns(sns_message)
+        print("The Object is not a supported serialization type")
+        raise
 
 def from_cache(endpoint, key):
     """
@@ -121,7 +139,6 @@ def from_cache(endpoint, key):
     Returns:
     obj -- The object converted to specifed data type
     """
-    
     # Check if the Key is for a Numpy array containing
     # `float64` data types
     if 'float64' in key:
@@ -159,7 +176,10 @@ def from_cache(endpoint, key):
         obj = cache.get(key)
         return obj
     else:
-        print(str(type(obj)) + "is not a supported serialization type")
+        sns_message = "`from_cache` Error:\n" + str(type(obj)) + "is not a supported serialization type"
+        publish_sns(sns_message)
+        print("The Object is not a supported de-serialization type")
+        raise
 
 def start_epoch(epoch, layer, parameter_key):
     """
@@ -169,7 +189,6 @@ def start_epoch(epoch, layer, parameter_key):
     epoch -- Integer representing the "current" epoch.
     layer -- Integer representing the current hidden layer.
     """
-
     # Initialize the results object for the new epoch
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
     
@@ -194,7 +213,6 @@ def end(parameter_key):
     Arguments:
     parameter_key -- The ElastiCache key for the current set of state parameters.
     """
-
     # Get the latest parameters
     parameters = from_cache(
         endpoint=endpoint,
@@ -229,7 +247,7 @@ def end(parameter_key):
     numpy2s3(array=weights, name='predict_input/weights', bucket=bucket)
     numpy2s3(array=bias, name='predict_input/bias', bucket=bucket)
 
-    print("Training Completed Successfully!")
+    sns_message = "Training Completed Successfully!\n" + dumps(final_results, indent=4, sort_keys=True)
 
     return
 
@@ -244,15 +262,7 @@ def propogate(direction, epoch, layer, parameter_key):
     direction -- The current direction of the propogation, either `forward` or `backward`.
     epoch -- Integer representing the "current" epoch to close out.
     layer -- Integer representing the current hidden layer.
-
-    Note: When launching NeuronLambda with multiple hidden unit,
-    remember to assign an ID, also remember to start at 1
-    and not 0. for example:
-    num_hidden_units = 5
-    for i in range(1, num_hidden_units + 1):
-        # Do stuff
-    """
-    
+    """    
     # Get the parameters for the layer
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
     num_hidden_units = parameters['neurons']['layer' + str(layer)]
@@ -295,6 +305,10 @@ def propogate(direction, epoch, layer, parameter_key):
                     Payload=payloadbytes
                 )
             except botocore.exceptions.ClientError as e:
+                sns_message = "Errors occurred invoking Neuron Lambda from TrainerLambda."
+                sns_message += "\nError:\n" + e
+                sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+                publish_sns(sns_message)
                 print(e)
                 raise
             print(response)
@@ -330,6 +344,10 @@ def propogate(direction, epoch, layer, parameter_key):
                     Payload=payloadbytes
                 )
             except botocore.exceptions.ClientError as e:
+                sns_message = "Errors occurred invoking Neuron Lambda from TrainerLambda."
+                sns_message += "\nError:\n" + e
+                sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+                publish_sns(sns_message)
                 print(e)
                 raise
             print(response)
@@ -337,6 +355,8 @@ def propogate(direction, epoch, layer, parameter_key):
             return
 
     else:
+        sns_message = "Errors processing `propogate()` function."
+        publish_sns(sns_message)
         raise
 
 
@@ -345,19 +365,7 @@ def lambda_handler(event, context):
     Processes the `event` vaiables from the various Lambda functions that call it, 
     i.e. `TrainerLambda` and `NeuronLambda`. Determines the "current" state and
     then directs the next steps.
-    """
-       
-    """
-    # Get the Neural Network parameters from Elasticache
-    # This Will fail if this is the first time `TrainerLambda` is called since
-    # there is no results object
-    try:
-        results_key = event.get('results_key')
-        results = from_cache(endpoint=endpoint, key=results_key)
-    except Exception:
-        pass
-    """
-    
+    """    
     # Get the current state from the invoking lambda
     state = event.get('state')
     global parameters
@@ -573,5 +581,6 @@ def lambda_handler(event, context):
         start_epoch(epoch=epoch, layer=layer, parameter_key=event.get('parameter_key'))
        
     else:
-        print("No state informaiton has been provided.")
+        sns_message = "General error processing TrainerLambda handler!"
+        publish_sns(sns_message)
         raise

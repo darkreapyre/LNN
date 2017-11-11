@@ -20,15 +20,29 @@ import redis
 from redis import StrictRedis as redis
 
 # Global Variables
-s3_client = client('s3', region_name='us-west-2') # S3 access
+rgn = environ['Region']
+s3_client = client('s3', region_name=rgn) # S3 access
 s3_resource = resource('s3')
-redis_client = client('elasticache', region_name='us-west-2')
+sns_client = client('sns', region_name=rgn) # SNS
+redis_client = client('elasticache', region_name=rgn)
 #Retrieve the Elasticache Cluster endpoint
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
-lambda_client = client('lambda', region_name='us-west-2') # Lambda invocations
+lambda_client = client('lambda', region_name=rgn) # Lambda invocations
 
 # Helper Functions
+def publish_sns(sns_message):
+    """
+    Publish message to the master SNS topic.
+
+    Arguments:
+    sns_message -- the Body of the SNS Message
+    """
+
+    print "Publishing message to SNS topic..."
+    sns_client.publish(TargetArn=environ['SNSArn'], Message=sns_message)
+    return
+
 def to_cache(endpoint, obj, name):
     """
     Serializes multiple data type to ElastiCache and returns
@@ -90,7 +104,10 @@ def to_cache(endpoint, obj, name):
         cache.set(key, val)
         return key
     else:
-        print(str(type(obj)) + "is not a supported serialization type")
+        sns_message = "`to_cache` Error:\n" + str(type(obj)) + "is not a supported serialization type"
+        publish_sns(sns_message)
+        print("The Object is not a supported serialization type")
+        raise
 
 def from_cache(endpoint, key):
     """
@@ -143,7 +160,10 @@ def from_cache(endpoint, key):
         obj = cache.get(key)
         return obj
     else:
-        print(str(type(obj)) + "is not a supported serialization type")
+        sns_message = "`from_cache` Error:\n" + str(type(obj)) + "is not a supported serialization type"
+        publish_sns(sns_message)
+        print("The Object is not a supported de-serialization type")
+        raise
 
 def name2str(obj, namespace):
     """
@@ -262,7 +282,8 @@ def lambda_handler(event, context):
         input_bucket.download_file(settings_key, '/tmp/parameters.json')
     except botocore.exceptions.ClientError as e:
         if e.response['Error']['Code'] == '404':
-            print("Error downloading input data from S3, S3 object does not exist")
+            sns_message = "Error downloading input data from S3, S3 object does not exist"
+            publish_sns(sns_message)
         else:
             raise
     
@@ -305,6 +326,10 @@ def lambda_handler(event, context):
             Payload=payloadbytes
             )
     except botocore.exceptions.ClientError as e:
+        sns_message = "Errors occurred invoking TrainerLambda from LaunchLambda."
+        sns_message += "\nError:\n" + e
+        sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+        publish_sns(sns_message)
         print(e)
         raise
     print(response)
