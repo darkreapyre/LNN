@@ -1,3 +1,11 @@
-# placeholder
-
-# Don't forget to add S3 event trigger
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ""
+Parameters:
+  TopicEmail:
+    Default: mail@example.com
+    Description: E-Mail Address to send Training Alerts to
+    Type: String
+  S3Bucket:
+    Default: lnn
+    Description: S3 Vucket containing training data
+    Type: String
