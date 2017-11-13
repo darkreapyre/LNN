@@ -21,28 +21,7 @@ Parameters:
         Type: AWS::EC2::SecurityGroup::Id
 
 Resources:
-
-#    LoadBalancer:
-#        Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-#        Properties:
-#            Name: !Sub ${EnvironmentName}-default
-#            Subnets: !Ref Subnets
-#            SecurityGroups: 
-#                - !Ref SecurityGroup
-#            Tags: 
-#                - Key: Name
-#                  Value: !Ref EnvironmentName
-
-#    LoadBalancerListener:
-#        Type: AWS::ElasticLoadBalancingV2::Listener
-#        Properties:
-#            LoadBalancerArn: !Ref LoadBalancer
-#            Port: 80
-#            Protocol: HTTP 
-#            DefaultActions: 
-#                - Type: forward
-#                  TargetGroupArn: !Ref DefaultTargetGroup
-    
+   
     # We define a default target group here, as this is a mandatory Parameters
     # when creating an Application Load Balancer Listener. This is not used, instead
     # a target group is created per-service in each service template (../services/*)
