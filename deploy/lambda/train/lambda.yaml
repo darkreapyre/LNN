@@ -22,3 +22,28 @@ Parameters:
     SecurityGroup:
         Description: The security groups IDs in the VPC that includes the resources to which the Lambda function requires access.
         Type: AWS::EC2::SecurityGroup::Id
+
+Resources:
+    SNSTopic:
+        Type: AWS::SNS::Topic
+        Description: Publish Alerts and Training Status
+        Properties:
+            DisplayName: Lambda Neural Network Status Messages
+            Subscription:
+            - Endpoint:
+                Ref: TopicEmail
+              Protocol: email
+    
+    LaunchLambda:
+        Type: AWS::Lambda::Function
+        Properties:
+            Description: Launches Neural Network training from an S3 training data upload
+            Code:
+                S3Bucket: !Ref S3Bucket
+                S3Key: lambda/v0.1/lnn.zip
+                Handler: launch.lambda_handler
+                Role: !GetAtt LaunchLambdaRole.Arn
+                Runtime: python3.6
+                MemorySize: 512
+
+    LaunchLambdaRole:
