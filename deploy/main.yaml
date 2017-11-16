@@ -143,9 +143,9 @@ Resources:
                 EnvironmentName: !Ref AWS::StackName
                 TopicEmail: !Ref TopicEmail
                 S3Bucket: !Ref TemplateBucket
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
                 PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
-                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
 
 Outputs:
 
