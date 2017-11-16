@@ -13,6 +13,7 @@ find $libdir -name "dataset" | xargs rm -rf
 find $libdir -name "*.pyc" -delete
 find $libdir -type d -empty -delete
 find $libdir -name "*.so" | xargs strip
+echo "venv new size $(du -sh $VIRTUAL_ENV | cut -f1)"
 pushd $VIRTUAL_ENV/lib/python3.6/site-packages/
 zip -r -9 deps.zip *
 popd
