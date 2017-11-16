@@ -9,6 +9,7 @@ deploy:
 	aws s3 cp main.yaml s3://$(BUCKET)/$(FOLDER)/ --region $(REGION)
 	aws s3 cp --recursive infrastructure/ s3://$(BUCKET)/$(FOLDER)/infrastructure --region $(REGION)
 	aws s3 cp --recursive services/ s3://$(BUCKET)/$(FOLDER)/services --region $(REGION)
+	aws s3 cp --recursive lambda/ s3://$(BUCKET)/$(FOLDER)/lambda --region $(REGION)
 
 clean:
 #	aws s3 rm s3://$(BUCKET)/$(FOLDER)/templates.zip --region $(REGION)
