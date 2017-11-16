@@ -114,12 +114,12 @@ This document outlinnes the proceedure to create the Lambda deployment packagew 
 ## Adding the necessary Python Libraries
 ```text
 pip install virtualenv
-virtualenv -p /var/lang/bin/python \
+virtualenv -p /usr/local/bin/python \
 --always-copy \
 --no-site-packages \
-lambda_build
+package
 
-source lambda_build/bin/activate
+source package/bin/activate
 
 pip install --upgrade pip wheel
 pip install numpy
@@ -127,28 +127,36 @@ pip install scipy
 pip install -U scikit-learn
 pip install multiprocess
 
-libdir="$VIRTUAL_ENV/lib/python3.6/site-packages/lib/"
-mkdir -p $VIRTUAL_ENV/lib/python3.6/site-packages/lib || true
+libdir="$VIRTUAL_ENV/lib/python3.6/site-packages/"
+mkdir -p $libdir/lib || true
 echo "venv original size $(du -sh $VIRTUAL_ENV | cut -f1)"
 find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name "tests" | xargs rm -r
-find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name "dataset" | xargs rm -r
+find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name "dataset" | xargs rm -rf
 
 Can't remove tests files from pandas
 
 pip install pandas
 
-find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name ".pyc" -delete
+find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name "*.pyc" -delete
 
 find $VIRTUAL_ENV/lib/python3.6/site-packages/ -type d -empty -delete
 
-find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name ".so" | xargs strip
+find $VIRTUAL_ENV/lib/python3.6/site-packages/ -name "*.so" | xargs strip
 
 pushd $VIRTUAL_ENV/lib/python3.6/site-packages/
 
 Only select pkgs that needed for your project
-zip -r -9 -q /lambda.zip scipy numpy sklearn pandas pytz multiprocess dill
+zip -r -9 -q ~/package.zip *
 
 popd
+
+deactivate
+
+rm -rf package
+
+cd src
+
+zip -r ../package.zip *.py
 ```
 
 ## Makefile
