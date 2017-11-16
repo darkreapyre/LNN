@@ -135,17 +135,17 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 ClusterNodeType: !Ref ClusterNodeType
     
-    Lambda:
+    trainLambda:
         Type: AWS::CloudFormation::Stack
         Properties:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/lambda/train/lambda.yaml
             Parameters:
-                EnvironmentName:!Ref AWS::StackName
+                EnvironmentName: !Ref AWS::StackName
                 TopicEmail: !Ref TopicEmail
                 S3Bucket: !Ref TemplateBucket
-                Subnets: !GetAtt VPC.Outputs.PrivateSubnets
-                SecurityGroup: !GetAtt SecurityGRoups.Outputs.ECSHostSecurityGroup
-
+                PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
+                PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
 
 Outputs:
 
