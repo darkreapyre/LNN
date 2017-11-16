@@ -88,7 +88,7 @@ Resources:
         - LambdaRole
         - Arn
       Runtime: python3.6
-      MemorySize: '512'
+      MemorySize: '1536'
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
@@ -118,7 +118,7 @@ Resources:
         - LambdaRole
         - Arn
       Runtime: python3.6
-      MemorySize: '512'
+      MemorySize: '1536'
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
@@ -132,6 +132,31 @@ Resources:
           SNSArn: !Ref SNSTopic
           TrainerLambda: !GetAtt 
             - TrainerLambda
+            - Arn
+    DependsOn: LambdaRole
+
+  ConfigLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Sub '${EnvironmentName}-ConfigLambda'
+      Description: Custom Resource to configure S3 Event Trigger
+      Code:
+        S3Bucket: !Ref S3Bucket
+        S3Key: deloy/lambda/train/package.zip
+      Handler: config.lambda_handler
+      Role: !GettAtt
+        - LambdaRole
+        - Arn
+      Runtime: python3.6
+      MemorySize: '128'
+      Timeout: '300'
+      Environment:
+        Variables:
+          Region: !Ref 'AWS::Region'
+          Bucket: !Ref S3Bucket
+          Account: !Ref 'AWS::AccountId'
+          FunctionArn: !GetAtt
+            - LaunchLambda
             - Arn
     DependsOn: LambdaRole
 
@@ -187,5 +212,3 @@ Resources:
                   - 'events:DisableRule'
                 Resource:
                   - '*'
-
-# Create CloudWatch rule for S3 Event
