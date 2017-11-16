@@ -156,5 +156,3 @@ Outputs:
     predictServiceUrl:
         Description: The URL endpoint for the Prediction App
         Value: !GetAtt predictService.Outputs.ServiceUrl
-
-# Add prediction sercice URL's

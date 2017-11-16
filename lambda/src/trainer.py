@@ -300,7 +300,7 @@ def propogate(direction, epoch, layer, parameter_key):
             # Invoke NeuronLambdas for next layer
             try:
                 response = lambda_client.invoke(
-                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+                    FunctionName=parameters['ARNs']['NeuronLambda'],
                     InvocationType='Event',
                     Payload=payloadbytes
                 )
@@ -339,7 +339,7 @@ def propogate(direction, epoch, layer, parameter_key):
             # Invoke NeuronLambdas for next layer
             try:
                 response = lambda_client.invoke(
-                    FunctionName=environ['NeuronLambda'], #ENSURE ARN POPULATED BY CFN
+                    FunctionName=parameters['ARNs']['NeuronLambda'],
                     InvocationType='Event',
                     Payload=payloadbytes
                 )

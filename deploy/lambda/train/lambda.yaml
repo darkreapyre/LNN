@@ -77,7 +77,7 @@ Resources:
   TrainerLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub '${EnvironmentName}-TrainerLambda'
+      FunctionName: !Sub 'TrainerLambda'
       Description: Coordinates Forward and Backward Propogation across epochs
       Code:
         S3Bucket: !Ref S3Bucket
@@ -106,7 +106,7 @@ Resources:
   NeuronLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub '${EnvironmentName}-NeuronLambda'
+      FunctionName: !Sub 'NeuronLambda'
       Description: Executes Forwardprop Activation or Backprop Gradient calculation
       Code:
         S3Bucket: !Ref S3Bucket

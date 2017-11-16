@@ -291,6 +291,15 @@ def lambda_handler(event, context):
     with open('/tmp/parameters.json') as parameters_file:
         parameters = json.load(parameters_file)
     
+    # Get the ARNs for the TrainerLambda and NeuronLambda
+    trainer_response = lambda_client.get_function(FunctionName=TrainerLambda)
+    neuron_response = lambda_client.get_function(FunctionName=NeuronLambda)
+    parameters['ARNs'] = {
+        'TrainerLambda': trainer_response['Configuration']['FunctionArn'],
+        'NeuronLambda': neuron_response['Configuration']['FunctionArn']
+    }
+
+
     # Build in additional neural network parameters
     # Input data sets and data set parameters
     parameters['s3_bucket'] = event['Records'][0]['s3']['bucket']['name']
@@ -321,7 +330,7 @@ def lambda_handler(event, context):
     # Invoke TrainerLambda for next layer
     try:
         response = lambda_client.invoke(
-            FunctionName=environ['TrainerLambda'], #ENSURE ARN POPULATED BY CFN OR S3 EVENT
+            FunctionName=parameters['ARNs']['TrainerLambda'],
             InvocationType='Event',
             Payload=payloadbytes
             )
