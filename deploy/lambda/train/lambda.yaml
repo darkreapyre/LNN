@@ -145,7 +145,7 @@ Resources:
         S3Key: deloy/lambda/train/package.zip
       Handler: config.lambda_handler
       Role: !GetAtt
-        - LambdaRole
+        - ConfigLambdaRole
         - Arn
       Runtime: python3.6
       MemorySize: '128'
@@ -181,34 +181,13 @@ Resources:
                   - 'logs:CreateLogGrouyp'
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
-                Resource: 'arn:aws:logs:*:*:log-group:/aws/lambda/*'
-              - Effect: Allow
-                Action:
                   - 'sns:Publish'
-                Resource:
-                  - !Ref SNSTopic
-              - Effect: Allow
-                Action:
-                  - 'lambda:Invoke*'
-                Resource:
-                  - !GetAtt 
-                    - TrainerLambda
-                    - Arn
-                  - !GetAtt 
-                    - NeuronLambda
-                    - Arn
-              - Effect: Allow
-                Action:
                   - 'ec2:CreateNetworkInterface'
                   - 'ec2:DescribeNetworkInterfaces'
                   - 'ec2:DeleteNetworkInterface'
                   - 'ec2:DetachNetworkInterface'
                   - 's3:*'
                   - 'elasticache:*'
-                  - 'events:PutRule'
-                  - 'events:DeleteRule'
-                  - 'events:DescribeRule'
-                  - 'events:EnableRule'
-                  - 'events:DisableRule'
+                  - 'lambda:*'
                 Resource:
                   - '*'
