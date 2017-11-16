@@ -142,7 +142,7 @@ Resources:
         S3Key: deloy/lambda/train/package.zip
       Handler: config.lambda_handler
       Role: !GetAtt
-        - ConfigLambdaRole
+        - LambdaRole
         - Arn
       Runtime: python3.6
       MemorySize: '128'
