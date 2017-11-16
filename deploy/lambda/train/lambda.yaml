@@ -70,9 +70,9 @@ Resources:
         Variables:
           Region: !Ref 'AWS::Region'
           SNSArn: !Ref SNSTopic
-          TrainerLambda: !GetAtt 
-            - TrainerLambda
-            - Arn
+#          TrainerLambda: !GetAtt 
+#            - TrainerLambda
+#            - Arn
 
   TrainerLambda:
     Type: 'AWS::Lambda::Function'
@@ -99,9 +99,9 @@ Resources:
         Variables:
           Region: !Ref 'AWS::Region'
           SNSArn: !Ref SNSTopic
-          NeuronLambda: !GetAtt 
-            - NeuronLambda
-            - Arn
+#          NeuronLambda: !GetAtt 
+#            - NeuronLambda
+#            - Arn
 
   NeuronLambda:
     Type: 'AWS::Lambda::Function'
@@ -128,9 +128,9 @@ Resources:
         Variables:
           Region: !Ref 'AWS::Region'
           SNSArn: !Ref SNSTopic
-          TrainerLambda: !GetAtt 
-            - TrainerLambda
-            - Arn
+#          TrainerLambda: !GetAtt 
+#            - TrainerLambda
+#            - Arn
 
   ConfigLambda:
     Type: 'AWS::Lambda::Function'
