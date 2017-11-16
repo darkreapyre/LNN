@@ -144,7 +144,7 @@ Resources:
         S3Bucket: !Ref S3Bucket
         S3Key: deloy/lambda/train/package.zip
       Handler: config.lambda_handler
-      Role: !GettAtt
+      Role: !GetAtt
         - LambdaRole
         - Arn
       Runtime: python3.6
