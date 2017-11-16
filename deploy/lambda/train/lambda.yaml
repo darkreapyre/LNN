@@ -73,7 +73,6 @@ Resources:
           TrainerLambda: !GetAtt 
             - TrainerLambda
             - Arn
-    DependsOn: LambdaRole
 
   TrainerLambda:
     Type: 'AWS::Lambda::Function'
@@ -103,7 +102,6 @@ Resources:
           NeuronLambda: !GetAtt 
             - NeuronLambda
             - Arn
-    DependsOn: LambdaRole
 
   NeuronLambda:
     Type: 'AWS::Lambda::Function'
@@ -133,7 +131,6 @@ Resources:
           TrainerLambda: !GetAtt 
             - TrainerLambda
             - Arn
-    DependsOn: LambdaRole
 
   ConfigLambda:
     Type: 'AWS::Lambda::Function'
@@ -158,7 +155,6 @@ Resources:
           FunctionArn: !GetAtt
             - LaunchLambda
             - Arn
-    DependsOn: LambdaRole
 
   LambdaRole:
     Type: 'AWS::IAM::Role'
