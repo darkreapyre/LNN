@@ -98,7 +98,7 @@ Resources:
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 Subnets: !GetAtt VPC.Outputs.PrivateSubnets
 
-    lambdaService:
+    lambda-devService:
         Type: AWS::CloudFormation::Stack
         Properties:
             TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/lambda-dev/service.yaml
@@ -151,7 +151,7 @@ Outputs:
 
     lambdaServiceUrl:
         Description: The URL endpoint for the Lambda Development Environment
-        Value: !Join [ ":", [ !GetAtt lambdaService.Outputs.ServiceUrl, "8888"]]
+        Value: !Join [ ":", [ !GetAtt lambda-devService.Outputs.ServiceUrl, "8888"]]
 
     predictServiceUrl:
         Description: The URL endpoint for the Prediction App
