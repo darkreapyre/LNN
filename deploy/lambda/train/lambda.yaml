@@ -43,7 +43,7 @@ Resources:
       Subscription:
         - Endpoint: !Ref TopicEmail
           Protocol: email
-      TopicName: LNN-SNS
+      TopicName: !Sub ${EnvironmentName}-LNN-SNS
 
   LaunchLambda:
     Type: 'AWS::Lambda::Function'
