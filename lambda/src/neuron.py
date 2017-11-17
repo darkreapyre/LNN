@@ -42,7 +42,7 @@ def publish_sns(sns_message):
     sns_message -- the Body of the SNS Message
     """
 
-    print "Publishing message to SNS topic..."
+    print("Publishing message to SNS topic...")
     sns_client.publish(TargetArn=environ['SNSArn'], Message=sns_message)
     return
 

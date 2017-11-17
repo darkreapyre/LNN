@@ -48,7 +48,7 @@ Resources:
   LaunchLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub '${EnvironmentName}-LaunchLambda'
+      FunctionName: LaunchLambda
       Description: Launches Neural Network training from an S3 training data upload
       Code:
         S3Bucket: !Ref S3Bucket
@@ -111,11 +111,10 @@ Resources:
             - elasticache:*
             Resource: '*'
 
-
   TrainerLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub 'TrainerLambda'
+      FunctionName: TrainerLambda
       Description: Coordinates Forward and Backward Propogation across epochs
       Code:
         S3Bucket: !Ref S3Bucket
@@ -182,7 +181,7 @@ Resources:
   NeuronLambda:
     Type: 'AWS::Lambda::Function'
     Properties:
-      FunctionName: !Sub 'NeuronLambda'
+      FunctionName: NeuronLambda
       Description: Executes Forwardprop Activation or Backprop Gradient calculation
       Code:
         S3Bucket: !Ref S3Bucket
