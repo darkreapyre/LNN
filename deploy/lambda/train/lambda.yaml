@@ -55,7 +55,7 @@ Resources:
         S3Key: deploy/lambda/train/package.zip
       Handler: launch.lambda_handler
       Role: !GetAtt 
-        - LambdaRole
+        - LaunchLambdaRole
         - Arn
       Runtime: python3.6
       MemorySize: '512'
