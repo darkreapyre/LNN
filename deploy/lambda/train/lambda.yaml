@@ -244,6 +244,16 @@ Resources:
             - s3:*
             - elasticache:*
             Resource: '*'
+  
+#  S3Notify:
+#    Type: Custom:S3Notify
+#    Properties:
+#      ServiceToken: !GetAtt ConfigLambda.Arn
+#      Region: !Ref AWS::Region
+#      AccountNumber: !Ref AWS:AccountId
+#      Bucket: !Ref S3Bucket
+
+
 
 #  ConfigLambda:
 #    Type: AWS::Lambda::Function
@@ -263,7 +273,7 @@ Resources:
 #          Region: !Ref 'AWS::Region'
 #          Bucket: !Ref S3Bucket
 #          Account: !Ref 'AWS::AccountId'
-#          FunctionArn: !GetAtt
+#          DestinationArn: !GetAtt
 #            - LaunchLambda
 #            - Arn
 #    DependsOn: ConfigLambdaRole

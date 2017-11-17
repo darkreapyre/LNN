@@ -4,9 +4,7 @@ import boto3
 from cfnresponse import send, SUCCESS, FAILED
 
 AVAILABLE_CONFIGURATIONS = (
-    'LambdaFunctionConfigurations',
-    'TopicConfigurations',
-    'QueueConfigurations'
+    'LambdaFunctionConfigurations'
 )
 
 def register_permission(self, template):
@@ -41,11 +39,7 @@ def handler(event, context):
     Bucket notifications configuration.
     """
     properties = event['ResourceProperties']
-
-    # It doesn't matter how big you put this on the doc... people wil
-    # always put bucket's arn instead of name... and it would be a shame
-    # to fail because this stupid error.
-    buckent_name = properties['Bucket'].replace('arn:aws:s3:::', '')
+    buckent_name = properties['Bucket']
     physical_resource_id = '{}-bucket-notification-configuration'.format(buckent_name)
 
     client = boto3.client('s3')
@@ -53,45 +47,18 @@ def handler(event, context):
         Bucket=buckent_name
     )
 
-    # Check if there is any notification-id which doesn't start with gordon-
-    # If so... fail.
-    for _type in AVAILABLE_CONFIGURATIONS:
-        for notification in existing_notifications.get(_type, []):
-            if not notification.get('Id', '').startswith('gordon-'):
-                send(
-                    event,
-                    context,
-                    FAILED,
-                    physical_resource_id=physical_resource_id,
-                    reason=("Bucket {} contains a notification called {} "
-                            "which was not created by gordon, hence the risk "
-                            "of trying it to add/modify/delete new notifications. "
-                            "Please check the documentation in order to understand "
-                            "why gordon refuses to proceed.").format(
-                                buckent_name,
-                                notification.get('Id', '')
-                     )
-                )
-                return
-
-    # For Delete requests, we need to simply send an empty dictionary.
-    # Again - this have bad implications if the user has tried to configure
-    # notification manually, because we are going to override their
-    # configuration. There is no much else we can do.
+    # Clean existing configurations
     configuration = {}
     if event['RequestType'] != 'Delete':
 
         arn_name_map = {
-            'LambdaFunctionConfigurations': 'LambdaFunctionArn',
-            'TopicConfigurations': 'TopicArn',
-            'QueueConfigurations': 'QueueArn',
+            'LambdaFunctionConfigurations': 'LambdaFunctionArn'
         }
 
         for _type in AVAILABLE_CONFIGURATIONS:
             configuration[_type] = []
             for notification in properties.get(_type, []):
                 data = {
-                    'Id': notification['Id'],
                     arn_name_map.get(_type): notification['DestinationArn'],
                     'Events': notification['Events'],
                 }

@@ -31,6 +31,19 @@ endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 lambda_client = client('lambda', region_name=rgn) # Lambda invocations
 
 # Helper Functions
+def get_lambda_function_arn(function_name):
+    """
+    Return the ARN for the LNN Functions.
+    Note: This addresses circular dependency issues in CloudFormation
+    """
+    function_list = lambda_client.list_functions()
+    function_arn = None
+    for function in function_list['Functions']:
+        if function['FunctionName'] == function_name:
+            function_arn = function['FunctionArn']
+            break
+    return function_arn
+
 def publish_sns(sns_message):
     """
     Publish message to the master SNS topic.
@@ -292,13 +305,10 @@ def lambda_handler(event, context):
         parameters = json.load(parameters_file)
     
     # Get the ARNs for the TrainerLambda and NeuronLambda
-    trainer_response = lambda_client.get_function(FunctionName=TrainerLambda)
-    neuron_response = lambda_client.get_function(FunctionName=NeuronLambda)
     parameters['ARNs'] = {
-        'TrainerLambda': trainer_response['Configuration']['FunctionArn'],
-        'NeuronLambda': neuron_response['Configuration']['FunctionArn']
+        'TrainerLambda': get_lambda_function_arn('TrainerLambda'),
+        'NeuronLambda': get_lambda_function_arn('NeuronLambda')
     }
-
 
     # Build in additional neural network parameters
     # Input data sets and data set parameters
