@@ -330,13 +330,11 @@ def lambda_handler(event, context):
     # Prepare the payload for `TrainerLambda`
     payloadbytes = dumps(payload)
     
-    print("Complete Neural Network Settings: \n")
-    print(dumps(parameters, indent=4, sort_keys=True))
-    print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+    # Debug Statements
+    #print("Complete Neural Network Settings: \n")
+    #print(dumps(parameters, indent=4, sort_keys=True))
+    #print("Payload to be sent to TrainerLambda: \n" + dumps(payload))
 
-    return
-
-    
     # Invoke TrainerLambda for next layer
     try:
         response = lambda_client.invoke(
