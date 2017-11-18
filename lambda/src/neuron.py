@@ -381,7 +381,7 @@ def lambda_handler(event, context):
             # Invoke NeuronLambdas for next layer
             try:
                 response = lambda_client.invoke(
-                    FunctionName=parameters['ARNs']['TrainerLambda'], #ENSURE ARN POPULATED BY CFN
+                    FunctionName=parameters['ARNs']['TrainerLambda'],
                     InvocationType='Event',
                     Payload=payloadbytes
                 )

@@ -248,6 +248,7 @@ def end(parameter_key):
     numpy2s3(array=bias, name='predict_input/bias', bucket=bucket)
 
     sns_message = "Training Completed Successfully!\n" + dumps(final_results, indent=4, sort_keys=True)
+    publish_sns(sns_message)
 
     return
 
@@ -393,10 +394,11 @@ def lambda_handler(event, context):
         # Create a numpy array of the results, depending on the number
         # of hidden units
         A = np.array([arr.tolist() for arr in A_dict.values()])
+
+        """
+        Note: The following is code to differentiate between S-Layer and L-Layer. For now (11/18/17),
+        only S-Layer will be implemented
         if num_activations == 1:
-            """
-            Note: This assumes a single hidden unit for the last layer
-            """
             dims = (key_list[0].split('|')[1].split('#')[1:])
             #debug
             #print("Dimensions to reshape single hidden unit activations: " + str(dims))
@@ -405,6 +407,10 @@ def lambda_handler(event, context):
         else:
             A = np.squeeze(A)
             assert(A.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
+        """
+        dims = (key_list[0].split('|')[1].split('#')[1:])
+        A = A.reshape(int(dims[0]), int(dims[1]))
+
         # Add the `A` Matrix to `data_keys` for later Neuron use
         A_name = 'A' + str(layer-1)
         parameters['data_keys'][A_name] = to_cache(endpoint=endpoint, obj=A, name=A_name)
