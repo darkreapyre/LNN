@@ -85,6 +85,8 @@ Resources:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
       Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
       - PolicyName: LaunchLambda-AssumeRole
         PolicyDocument:
@@ -162,6 +164,8 @@ Resources:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
       Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
       - PolicyName: TrainerLambda-AssumeRole
         PolicyDocument:
@@ -233,6 +237,8 @@ Resources:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
       Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
       - PolicyName: NeuronLambda-AssumeRole
         PolicyDocument:
