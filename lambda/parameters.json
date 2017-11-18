@@ -1,5 +1,5 @@
 {
-    "epochs": 10,
+    "epochs": 3,
     "layers": 1,
     "activations": {
         "layer1": "sigmoid"
