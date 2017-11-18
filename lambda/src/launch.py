@@ -31,7 +31,7 @@ endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 lambda_client = client('lambda', region_name=rgn) # Lambda invocations
 
 # Helper Functions
-def get_lambda_function_arn(function_name):
+def get_arns(function_name):
     """
     Return the ARN for the LNN Functions.
     Note: This addresses circular dependency issues in CloudFormation
@@ -306,8 +306,8 @@ def lambda_handler(event, context):
     
     # Get the ARNs for the TrainerLambda and NeuronLambda
     parameters['ARNs'] = {
-        'TrainerLambda': get_lambda_function_arn('TrainerLambda'),
-        'NeuronLambda': get_lambda_function_arn('NeuronLambda')
+        'TrainerLambda': get_arns('TrainerLambda'),
+        'NeuronLambda': get_arns('NeuronLambda')
     }
 
     # Build in additional neural network parameters

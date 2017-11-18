@@ -103,6 +103,13 @@ Resources:
           - Effect: Allow
             Action:
             - lambda:Invoke*
+            - lambda:ListVersionsByFunction
+            - lambda:ListAliases
+            - lambda:GetFunction
+            - lambda:GetFunctionConfiguration
+            - lambda:ListEventSourceMapping
+            - lambda:GetPolicy
+            - lambda:ListFunctions
             - ec2:CreateNetworkInterface
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
