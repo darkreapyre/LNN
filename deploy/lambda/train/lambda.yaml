@@ -110,6 +110,9 @@ Resources:
             - lambda:ListEventSourceMapping
             - lambda:GetPolicy
             - lambda:ListFunctions
+            - ec2:DescribeInstances
+            - ec2:ModifyNetworkInterfaceAttribute
+            - ec2:ResetNetworkInterfaceAttribute
             - ec2:CreateNetworkInterface
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
@@ -177,10 +180,14 @@ Resources:
           - Effect: Allow
             Action:
             - lambda:Invoke*
+            - ec2:DescribeInstances
+            - ec2:ModifyNetworkInterfaceAttribute
+            - ec2:ResetNetworkInterfaceAttribute
             - ec2:CreateNetworkInterface
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
+
             - s3:*
             - elasticache:*
             Resource: '*'
@@ -244,10 +251,14 @@ Resources:
           - Effect: Allow
             Action:
             - lambda:Invoke*
+            - ec2:DescribeInstances
+            - ec2:ModifyNetworkInterfaceAttribute
+            - ec2:ResetNetworkInterfaceAttribute
             - ec2:CreateNetworkInterface
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
+
             - s3:*
             - elasticache:*
             Resource: '*'
