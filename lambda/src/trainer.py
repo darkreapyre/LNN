@@ -247,7 +247,7 @@ def end(parameter_key):
     numpy2s3(array=weights, name='predict_input/weights', bucket=bucket)
     numpy2s3(array=bias, name='predict_input/bias', bucket=bucket)
 
-    sns_message = "Training Completed Successfully!\n" + dumps(final_results, indent=4, sort_keys=True)
+    sns_message = "Training Completed Successfully!\n" + dumps(final_results)
     publish_sns(sns_message)
 
     return
