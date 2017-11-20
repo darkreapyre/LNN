@@ -73,6 +73,7 @@ Resources:
 #          TrainerLambda: !GetAtt 
 #            - TrainerLambda
 #            - Arn
+    DependsOn: LaunchLambdaRole
 
   LaunchLambdaRole:
     Type: AWS::IAM::Role
@@ -191,7 +192,6 @@ Resources:
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
-
             - s3:*
             - elasticache:*
             Resource: '*'
@@ -264,7 +264,6 @@ Resources:
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
-
             - s3:*
             - elasticache:*
             Resource: '*'
