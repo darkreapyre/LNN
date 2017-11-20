@@ -302,7 +302,7 @@ def propogate(direction, epoch, layer, parameter_key):
             try:
                 response = lambda_client.invoke(
                     FunctionName=parameters['ARNs']['NeuronLambda'],
-                    InvocationType='Event',
+                    InvocationType='RequestResponse',
                     Payload=payloadbytes
                 )
             except botocore.exceptions.ClientError as e:
@@ -341,7 +341,7 @@ def propogate(direction, epoch, layer, parameter_key):
             try:
                 response = lambda_client.invoke(
                     FunctionName=parameters['ARNs']['NeuronLambda'],
-                    InvocationType='Event',
+                    InvocationType='RequestResponse',
                     Payload=payloadbytes
                 )
             except botocore.exceptions.ClientError as e:

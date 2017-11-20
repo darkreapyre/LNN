@@ -339,7 +339,7 @@ def lambda_handler(event, context):
     try:
         response = lambda_client.invoke(
             FunctionName=parameters['ARNs']['TrainerLambda'],
-            InvocationType='Event',
+            InvocationType='event',
             Payload=payloadbytes
             )
     except botocore.exceptions.ClientError as e:
