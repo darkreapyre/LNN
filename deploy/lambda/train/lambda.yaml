@@ -60,12 +60,12 @@ Resources:
       Runtime: python3.6
       MemorySize: '128'
       Timeout: '300'
-      VpcConfig:
-        SecurityGroupIds:
-          - !Ref SecurityGroup
-        SubnetIds:
-          - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
+#      VpcConfig:
+#        SecurityGroupIds:
+#          - !Ref SecurityGroup
+#        SubnetIds:
+#          - !Ref PrivateSubnet1
+#          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
@@ -85,8 +85,8 @@ Resources:
             Service: lambda.amazonaws.com
           Action: sts:AssumeRole
       Path: "/"
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+#      ManagedPolicyArns:
+#        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
       Policies:
       - PolicyName: LaunchLambda-AssumeRole
         PolicyDocument:
