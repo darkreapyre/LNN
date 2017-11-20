@@ -197,7 +197,7 @@ def start_epoch(epoch, layer, parameter_key):
     epoch2results['epoch' + str(epoch)] = {}
     parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=epoch2results, name='results')
    
-    # Update paramaters with this functions data
+    # Update parameters with this functions data
     parameters['epoch'] = epoch
     parameters['layer'] = layer
     parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
@@ -422,11 +422,20 @@ def lambda_handler(event, context):
         if layer > parameters['layers']:
             # Location is at the end of forwardprop (layer 3), therefore calculate Cost
             # Get the training examples data
-            Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
-            m = Y.shape[1]
+            #Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['train_set_y'])
+            #m = Y.shape[1]
+            Y = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['Y']
+            )
+            m = from_cache(
+                endpoint=endpoint,
+                key=parameters['data_keys']['m']
+            )
             
             # Calculate the Cost
-            cost = -1 / m * np.sum(np.multiply(Y, np.log(A)) + np.multiply((1 - Y), np.log(1 - A)))
+            #cost = -1 / m * np.sum(np.multiply(Y, np.log(A)) + np.multiply((1 - Y), np.log(1 - A)))
+            cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A)))
             cost = np.squeeze(cost)
             assert(cost.shape == ())
 
@@ -440,6 +449,11 @@ def lambda_handler(event, context):
 
             print("Cost after epoch {0}: {1}".format(epoch, cost))
 
+            """
+            Note: For the S-Layer implementation, the error is now calculated on NeuronLambda and hence
+            Backprop is initialized there. SO the following code will be used for L-Layer testing to verify
+            that Backprop should be initialized here.
+
             # Initialize backprop
             # Calculate the derivative of the Cost with respect to the last activation
             # Ensure that `Y` is the correct shape as the last activation
@@ -448,13 +462,19 @@ def lambda_handler(event, context):
             dZ_name = 'dZ' + str(layer-1)
             parameters['data_keys'][dZ_name] = to_cache(endpoint=endpoint, obj=dZ, name=dZ_name)
 
-            # Update parameters from theis function in ElastiCache
+            # Update parameters from this function in ElastiCache
             parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
 
-            # Start Backpropogation
-            # This should start with layer (layers = 3-1)
+            # Start Backpropogation on NeuronLambda
             propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
-            
+            """
+
+            #Update parameters from this function in ElastiCache
+            parameter_key = to_cache(endpoint=endpoint, obj=parameters, name='parameters')
+
+            # Start Backpropogation on NeuronLambda
+            propogate(direction='backward', epoch=epoch, layer=layer-1, parameter_key=parameter_key)
+
         else:
             # Move to the next hidden layer
             #debug
