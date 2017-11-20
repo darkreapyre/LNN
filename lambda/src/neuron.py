@@ -249,7 +249,7 @@ def lambda_handler(event, context):
     forward and backward propogation.
     """
     
-    # Get the Neural Network paramaters from Elasticache
+    # Get the Neural Network parameters from Elasticache
     parameters = from_cache(endpoint, key=event.get('parameter_key'))
        
     # Get the current state
@@ -317,11 +317,14 @@ def lambda_handler(event, context):
         # Backprop from Cost to X (A0)
         activation = event.get('activation')
         """
-        Note: TrainerLambda launched back prop with `layer-1`, therefore this should be 
+        Note: Unfortunately the previous intuition doesn't work with S-Layer, therefore switching code 
+        to run `A - Y`.
+        
+        Previous Inutition: TrainerLambda launched back prop with `layer-1`, therefore this should be 
         last "active" layer. That means that the "dZ" for this layer has already been
         calculate. Thus, no need to do the `A - Y` error calculation. Additionally, 
         the following code structure makes the it more idempotenent for multiple layers.
-        """
+
         dZ_name = 'dZ' + str(layer)
         dZ = from_cache(
             endpoint=endpoint,
@@ -339,6 +342,36 @@ def lambda_handler(event, context):
         # Backward propogation to determine gradients of current layer
         dw = (1 / m) * np.dot(A_prev, (dZ).T)
         db = (1 / m) * np.sum(dZ)
+        """
+        # Load the activations from the previous layer, in this case it's `X` or `A0`
+        A_prev = from_cache(
+            endpoint=endpoint,
+            key=parameters['data_keys']['A'+str(layer-1)]
+        )
+        # load the activastions for the current layer. This was calculated from the previous
+        # invokation of the TrainerLamabda
+        A_curr = from_cache(
+            endpoint=endpoint,
+            key=parameters['data_keys']['A'+str(layer)]
+        )
+        # Get the "TRUE" labels
+        Y = from_cache(
+            endpoint=endpoint,
+            key=parameters['data_keys']['Y']
+        )
+        # Get the length of the training examples
+        m = from_cache(
+            endpoint=endpoint,
+            key=parameters['data_keys']['m']
+        )
+
+        # Start backprop to find the gradients
+        """
+        Note: For the sake of S-Layer testing, the error will be calulated here and not in 
+        the TrainerLambda.
+        """
+        dw = (1 / m) * np.dot(A_prev, (A_curr - Y).T)
+        db = (1 / m) * np.sum(A_curr - Y)
 
         # Debug
         w = from_cache(endpoint=endpoint, key=parameters['data_keys']['weights'])
