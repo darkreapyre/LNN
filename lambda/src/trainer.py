@@ -57,7 +57,7 @@ def numpy2s3(array, name, bucket):
     try:
         s3_client.put_object(Key=name, Bucket=bucket, Body=f_out.getvalue(), ACL='bucket-owner-full-control')
     except botocore.exceptions.ClientError as e:
-        sns_message = "The following error occurred while running `numpy2s3`:\n" + e
+        sns_message = "The following error occurred while running `numpy2s3`:\n" + str(e)
         publish_sns(sns_message)
         raise
 
@@ -307,7 +307,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 )
             except botocore.exceptions.ClientError as e:
                 sns_message = "Errors occurred invoking Neuron Lambda from TrainerLambda."
-                sns_message += "\nError:\n" + e
+                sns_message += "\nError:\n" + str(e)
                 sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
                 publish_sns(sns_message)
                 print(e)
@@ -346,7 +346,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 )
             except botocore.exceptions.ClientError as e:
                 sns_message = "Errors occurred invoking Neuron Lambda from TrainerLambda."
-                sns_message += "\nError:\n" + e
+                sns_message += "\nError:\n" + str(e)
                 sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
                 publish_sns(sns_message)
                 print(e)

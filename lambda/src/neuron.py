@@ -304,7 +304,7 @@ def lambda_handler(event, context):
                 )
             except botocore.exceptions.ClientError as e:
                 sns_message = "Errors occurred invoking Trainer Lambd from NeuronLambdaa."
-                sns_message += "\nError:\n" + e
+                sns_message += "\nError:\n" + str(e)
                 sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
                 publish_sns(sns_message)
                 print(e)
@@ -420,7 +420,7 @@ def lambda_handler(event, context):
                 )
             except botocore.exceptions.ClientError as e:
                 sns_message = "Errors occurred invoking Trainer Lambda from NauronLambda."
-                sns_message += "\nError:\n" + e
+                sns_message += "\nError:\n" + str(e)
                 sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
                 publish_sns(sns_message)
                 print(e)

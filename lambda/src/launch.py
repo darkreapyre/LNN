@@ -339,12 +339,12 @@ def lambda_handler(event, context):
     try:
         response = lambda_client.invoke(
             FunctionName=parameters['ARNs']['TrainerLambda'],
-            InvocationType='event',
+            InvocationType='Event',
             Payload=payloadbytes
             )
     except botocore.exceptions.ClientError as e:
         sns_message = "Errors occurred invoking TrainerLambda from LaunchLambda."
-        sns_message += "\nError:\n" + e
+        sns_message += "\nError:\n" + str(e)
         sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
         publish_sns(sns_message)
         print(e)
