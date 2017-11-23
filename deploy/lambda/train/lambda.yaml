@@ -58,7 +58,7 @@ Resources:
         - LaunchLambdaRole
         - Arn
       Runtime: python3.6
-      MemorySize: '128'
+      MemorySize: '512'
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
