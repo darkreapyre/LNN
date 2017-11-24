@@ -42,7 +42,7 @@ def create_cwe(arn, epoch):
     """
     # creating the CWE rule
     put_rule_response = cwe_client.put_rule(
-        Name='LaunchLambda-batch' + epoch,
+        Name='LaunchLambda-batch' + str(epoch),
         ScheduleExpression='rate(30 minutes)',
         State='ENABLED',
         Description='This rule fires off the LaunchLambda to start a new batch of epochs'
@@ -51,10 +51,10 @@ def create_cwe(arn, epoch):
     ruleArn = put_rule_response['RuleArn']
     # now we add the lambda target to the rule
     cwe_client.put_targets(
-        Rule='LaunchLambda-batch' + epoch,
+        Rule='LaunchLambda-batch' + str(epoch),
         Targets=[
             {
-                'Id': 'LaunchLambda-batch' + epoch,
+                'Id': 'LaunchLambda-batch' + str(epoch),
                 'Arn': arn,
                 'Input': '{"state":"continue", "epoch":"'+epoch+'"}'
             },
@@ -65,7 +65,7 @@ def create_cwe(arn, epoch):
     lambda_client = client('lambda', region_name=rgn)
     lambda_client.add_permission(
         FunctionName=arn,
-        StatementId='GivingCWEPermission',
+        StatementId='CreateCWEPermission',
         Action='lambda:InvokeFunction',
         Principal='events.amazonaws.com',
         SourceArn=ruleArn
