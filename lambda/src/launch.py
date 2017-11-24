@@ -399,7 +399,7 @@ def lambda_handler(event, context):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print(response)
+            print("TrainerLambda Invoke Response" + str(response))
 
     else:
         # This is the inital launch
@@ -467,6 +467,6 @@ def lambda_handler(event, context):
             publish_sns(sns_message)
             print(e)
             raise
-        print(response)
+        print("TrainerLambda Invoke Response: " + str(response))
 
     return

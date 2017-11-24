@@ -356,7 +356,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print("LaunchLambda Invoke Response: " + str(response))
+            print("NeuronLambda Invoke Response: " + str(response))
         
         return
     
@@ -397,7 +397,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print("LaunchLambda Invoke Response: " + str(response))
+            print("NeuronLambda Invoke Response: " + str(response))
 
             return
 
