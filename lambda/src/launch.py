@@ -343,7 +343,7 @@ def lambda_handler(event, context):
     # Determine if a new batch needs to be started or this is the initial launch
     if event.get('state') == 'continue': # CLoudWatch Event Called this
         # Get current parameters
-        epoch = event.get('epoch')
+        epoch = int(event.get('epoch'))
         parameters = from_cache(
             endpoint=endpoint,
             key=event.get('parameter_key')
@@ -357,7 +357,7 @@ def lambda_handler(event, context):
         # Determine if this is the final bact
         if epoch >= parameters['epochs'] - 1:
             # This is the last bach, therefore finalize training
-            parameter_key = event.get('parametyer_key')
+            parameter_key = event.get('parameter_key')
             finish(parameter_key=parameter_key)
         else:
             # Launch the next batch
