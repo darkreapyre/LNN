@@ -348,7 +348,7 @@ def lambda_handler(event, context):
         parameter_key = event.get('parameter_key')
         parameters = from_cache(
             endpoint=endpoint,
-            key=parameter_key)
+            key=parameter_key
         )
         # Delete calling Cloudwatch event to ensure it doesn't trigger a loop
         # Removing targets first
