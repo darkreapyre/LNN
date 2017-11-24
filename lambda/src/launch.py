@@ -344,12 +344,21 @@ def lambda_handler(event, context):
     if event.get('state') == 'continue': # CLoudWatch Event Called this
         # Get current parameters
         epoch = int(event.get('epoch'))
+        epoch_id = str(epoch)
+        parameter_key = event.get('parameter_key')
         parameters = from_cache(
             endpoint=endpoint,
-            key=event.get('parameter_key')
+            key=parameter_key)
         )
-
         # Delete calling Cloudwatch event to ensure it doesn't trigger a loop
+        # Removing targets first
+        cwe_client.remove_targets(
+            Rule='LaunchLambda-batch' + epoch_id,
+            Ids=[
+                'LaunchLambda-batch' + epoch_id,
+            ]
+        )
+        # Delete Rule
         delete_rule_response = cwe_client.delete_rule(
             Name='LaunchLambda-batch' + str(epoch)
         )

@@ -1,6 +1,6 @@
 {
     "epochs": 2000,
-    "batches": 200,
+    "batches": 250,
     "layers": 1,
     "activations": {
         "layer1": "sigmoid"
