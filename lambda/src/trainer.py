@@ -288,7 +288,7 @@ def end(parameter_key, epoch):
         publish_sns(sns_message)
         print(e)
         raise
-    print("LaunchLambda Invoke Response: " + str(response)
+    print("LaunchLambda Invoke Response: " + str(response))
 
 
     return
