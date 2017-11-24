@@ -40,6 +40,7 @@ def create_cwe(arn, epoch):
     """
     Creating the CloudWatch Event that will kick off the LaunchLambda to start the next batch
     """
+    epoch_id = str(epoch)
     # creating the CWE rule
     put_rule_response = cwe_client.put_rule(
         Name='LaunchLambda-batch' + str(epoch),
@@ -51,12 +52,12 @@ def create_cwe(arn, epoch):
     ruleArn = put_rule_response['RuleArn']
     # now we add the lambda target to the rule
     cwe_client.put_targets(
-        Rule='LaunchLambda-batch' + str(epoch),
+        Rule='LaunchLambda-batch' + epoch_id,
         Targets=[
             {
-                'Id': 'LaunchLambda-batch' + str(epoch),
+                'Id': 'LaunchLambda-batch' + epoch_id,
                 'Arn': arn,
-                'Input': '{"state":"continue", "epoch":"'+epoch+'"}'
+                'Input': '{"state":"continue", "epoch":"'+epoch_id+'"}'
             },
         ]
     )
