@@ -114,6 +114,8 @@ Resources:
             - lambda:ListEventSourceMapping
             - lambda:GetPolicy
             - lambda:ListFunctions
+            - lambda:AddPermission
+            - lambda:RemovePermission
             - ec2:DescribeInstances
             - ec2:ModifyNetworkInterfaceAttribute
             - ec2:ResetNetworkInterfaceAttribute
@@ -123,6 +125,10 @@ Resources:
             - ec2:DetachNetworkInterface
             - s3:*
             - elasticache:*
+            - events:DeleteRule
+            - events:PutRule
+            - events:PutTargets
+            - events:RemoveTargets
             Resource: '*'
 
   TrainerLambda:
@@ -194,6 +200,8 @@ Resources:
             - lambda:ListEventSourceMapping
             - lambda:GetPolicy
             - lambda:ListFunctions
+            - lambda:AddPermission
+            - lambda:RemovePermission
             - ec2:DescribeInstances
             - ec2:ModifyNetworkInterfaceAttribute
             - ec2:ResetNetworkInterfaceAttribute
@@ -201,6 +209,11 @@ Resources:
             - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
+            - events:DeleteRule
+            - events:PutRule
+            - events:PutTargets
+            - events:RemoveTargets
+
             - s3:*
             - elasticache:*
             Resource: '*'
