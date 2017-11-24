@@ -30,9 +30,10 @@ redis_client = client('elasticache', region_name=rgn)
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 #lambda_client = client('lambda', region_name=rgn) # Lambda invocations
-config = botocore.config.Config(connect_timeout=5, read_timeout=300)
+config = botocore.config.Config(connect_timeout=300, read_timeout=300)
 lambda_client = client('lambda', region_name=rgn, config=config)
 lambda_client.meta.events._unique_id_handlers['retry-config-lambda']['handler']._checker.__dict__['_max_attempts'] = 0
+cwe_client = client('events', region_name=rgn)
 
 # Helper Functions
 def get_arns(function_name):
@@ -340,7 +341,7 @@ def finish(parameter_key):
 
 def lambda_handler(event, context):
     # Determine if a new batch needs to be started or this is the initial launch
-    if event.get('state') == 'continue':
+    if event.get('state') == 'continue': # CLoudWatch Event Called this
         # Get current parameters
         epoch = event.get('epoch')
         parameters = from_cache(
@@ -348,10 +349,16 @@ def lambda_handler(event, context):
             key=event.get('parameter_key')
         )
 
+        # Delete calling Cloudwatch event to ensure it doesn't trigger a loop
+        delete_rule_response = cwe_client.delete_rule(
+            Name='LaunchLambda-batch' + epoch
+        )
+
         # Determine if this is the final bact
         if epoch >= parameters['epochs'] - 1:
-            # This is the last bach, therfore finalize training
-            finish(parameter_key=event.get('parameter_key'))
+            # This is the last bach, therefore finalize training
+            parameter_key = event.get('parametyer_key')
+            finish(parameter_key=parameter_key)
         else:
             # Launch the next batch
             # Initialize payload to `TrainerLambda`

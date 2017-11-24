@@ -30,11 +30,48 @@ redis_client = client('elasticache', region_name=rgn) # ElastiCache
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-config = botocore.config.Config(connect_timeout=5, read_timeout=300)
+config = botocore.config.Config(connect_timeout=300, read_timeout=300)
 lambda_client = client('lambda', region_name=rgn, config=config)
 lambda_client.meta.events._unique_id_handlers['retry-config-lambda']['handler']._checker.__dict__['_max_attempts'] = 0
+cwe_client = client('events', region_name=rgn)
 
 # Helper Functions
+def create_cwe(arn, epoch):
+    """
+    Creating the CloudWatch Event that will kick off the LaunchLambda to start the next batch
+    """
+    # creating the CWE rule
+    put_rule_response = cwe_client.put_rule(
+        Name='LaunchLambda-batch' + epoch,
+        ScheduleExpression='rate(30 minutes)',
+        State='ENABLED',
+        Description='This rule fires off the LaunchLambda to start a new batch of epochs'
+    )
+
+    ruleArn = put_rule_response['RuleArn']
+    # now we add the lambda target to the rule
+    cwe_client.put_targets(
+        Rule='LaunchLambda-batch' + epoch,
+        Targets=[
+            {
+                'Id': 'LaunchLambda-batch' + epoch,
+                'Arn': arn,
+                'Input': '{"state":"continue", "epoch":"'+epoch+'"}'
+            },
+        ]
+    )
+
+    # need to add invoke permission to lambda from CWE
+    lambda_client = client('lambda', region_name=rgn)
+    lambda_client.add_permission(
+        FunctionName=arn,
+        StatementId='GivingCWEPermission',
+        Action='lambda:InvokeFunction',
+        Principal='events.amazonaws.com',
+        SourceArn=ruleArn
+    )
+    print("Created Cloudwatch Rule")
+
 def publish_sns(sns_message):
     """
     Publish message to the master SNS topic.
@@ -211,13 +248,19 @@ def start_epoch(epoch, layer, last_epoch, parameter_key):
 
 def end(parameter_key, epoch):
     """
-    Finishes the current batch in the training sequence and invokes LaunchLambda to start the 
-    next batch.
+    Finishes the current batch in the training sequence and invokes a cloudwatch event
+    to start the next batch.
     
     Arguments:
     parameter_key -- The ElastiCache key for the current set of state parameters.
+    epoch -- The Current epoch
     """
     parameters = from_cache(endpoint=endpoint, key=parameter_key)
+    arn = parameters['ARNs']['LaunchLambda']
+
+    # Create the CloudWatch event
+    create_cwe(arn, epoch)
+
     # Build the TrainerLambda payload
     payload = {}
     # Add the parameters to the payload
@@ -226,7 +269,7 @@ def end(parameter_key, epoch):
     payload['epoch'] = epoch
 
     # Debug statement
-    print("Payload to be sent back to the LaunchLambda after completing a batch:\n" + dumps(payload))
+    #print("Payload to be sent back to the LaunchLambda after completing a batch:\n" + dumps(payload))
 
     # Prepare the payload for `TrainerLambda`
     payloadbytes = dumps(payload)
@@ -245,7 +288,8 @@ def end(parameter_key, epoch):
         publish_sns(sns_message)
         print(e)
         raise
-    print(response)
+    print("LaunchLambda Invoke Response: " + response)
+
 
     return
 
@@ -311,7 +355,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print(response)
+            print("LaunchLambda Invoke Response: " + response)
         
         return
     
@@ -352,7 +396,7 @@ def propogate(direction, epoch, layer, parameter_key):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print(response)
+            print("LaunchLambda Invoke Response: " + response)
 
             return
 

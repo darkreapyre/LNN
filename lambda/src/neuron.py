@@ -27,14 +27,14 @@ s3_client = client('s3', region_name=rgn) # S3 access
 s3_resource = resource('s3')
 sns_client = client('sns', region_name=rgn) # SNS
 redis_client = client('elasticache', region_name=rgn)
-#lambda_client = client('lambda', region_name=rgn) # Lambda invocations
+lambda_client = client('lambda', region_name=rgn) # Lambda invocations
 # Retrieve the Elasticache Cluster endpoint
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
-config = botocore.config.Config(connect_timeout=5, read_timeout=300)
-lambda_client = client('lambda', region_name=rgn, config=config)
-lambda_client.meta.events._unique_id_handlers['retry-config-lambda']['handler']._checker.__dict__['_max_attempts'] = 0
+#config = botocore.config.Config(connect_timeout=300, read_timeout=300)
+#lambda_client = client('lambda', region_name=rgn, config=config)
+#lambda_client.meta.events._unique_id_handlers['retry-config-lambda']['handler']._checker.__dict__['_max_attempts'] = 0
 
 # Helper Functions
 def publish_sns(sns_message):
