@@ -193,7 +193,7 @@ Resources:
                                     "ecr:*",
                                     "codecommit:*",
                                     "elasticache:*",
-                                    "cloudwatch:*".
+                                    "cloudwatch:*",
                                     "events:*",
                                     "logs:*"
                                 ],
