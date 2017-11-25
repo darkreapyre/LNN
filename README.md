@@ -1,1 +1,0 @@
-# Lambda Neural Network Version 0.2 (EPoch Batches)
