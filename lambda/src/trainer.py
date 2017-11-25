@@ -63,14 +63,14 @@ def create_cwe(arn, epoch):
     )
 
     # need to add invoke permission to lambda from CWE
-    lambda_client = client('lambda', region_name=rgn)
-    lambda_client.add_permission(
-        FunctionName=arn,
-        StatementId='CreateCWEPermission',
-        Action='lambda:InvokeFunction',
-        Principal='events.amazonaws.com',
-        SourceArn=ruleArn
-    )
+    #lambda_client = client('lambda', region_name=rgn)
+    #lambda_client.add_permission(
+    #    FunctionName=arn,
+    #    StatementId='CreateCWEPermission',
+    #    Action='lambda:InvokeFunction',
+    #    Principal='events.amazonaws.com',
+    #    SourceArn=ruleArn
+    #)
     print("Created Cloudwatch Rule")
 
 def publish_sns(sns_message):
