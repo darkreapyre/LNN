@@ -43,7 +43,7 @@ def create_cwe(arn, epoch):
     epoch_id = str(epoch)
     # creating the CWE rule
     put_rule_response = cwe_client.put_rule(
-        Name='LaunchLambda-batch' + str(epoch),
+        Name='LaunchLambda-batch' + epoch_id,
         ScheduleExpression='rate(30 minutes)',
         State='ENABLED',
         Description='This rule fires off the LaunchLambda to start a new batch of epochs'
@@ -64,13 +64,13 @@ def create_cwe(arn, epoch):
 
     # need to add invoke permission to lambda from CWE
     #lambda_client = client('lambda', region_name=rgn)
-    #lambda_client.add_permission(
-    #    FunctionName=arn,
-    #    StatementId='CreateCWEPermission',
-    #    Action='lambda:InvokeFunction',
-    #    Principal='events.amazonaws.com',
-    #    SourceArn=ruleArn
-    #)
+    lambda_client.add_permission(
+        FunctionName=arn,
+        StatementId='CreateCWEPermission' + epoch_id,
+        Action='lambda:InvokeFunction',
+        Principal='events.amazonaws.com',
+        SourceArn=ruleArn
+    )
     print("Created Cloudwatch Rule")
 
 def publish_sns(sns_message):
@@ -263,34 +263,33 @@ def end(parameter_key, epoch):
     create_cwe(arn, epoch)
 
     # Build the TrainerLambda payload
-    payload = {}
+    #payload = {}
     # Add the parameters to the payload
-    payload['state'] = 'continue'
-    payload['parameter_key'] = parameter_key
-    payload['epoch'] = epoch
+    #payload['state'] = 'continue'
+    #payload['parameter_key'] = parameter_key
+    #payload['epoch'] = epoch
 
     # Debug statement
     #print("Payload to be sent back to the LaunchLambda after completing a batch:\n" + dumps(payload))
 
     # Prepare the payload for `TrainerLambda`
-    payloadbytes = dumps(payload)
+    #payloadbytes = dumps(payload)
 
     # Invoke LaunchLambdas for next batch
-    try:
-        response = lambda_client.invoke(
-            FunctionName=parameters['ARNs']['LaunchLambda'],
-            InvocationType='Event',
-            Payload=payloadbytes
-        )
-    except botocore.exceptions.ClientError as e:
-        sns_message = "Errors occurred invoking Launch Lambda from TrainerLambda."
-        sns_message += "\nError:\n" + str(e)
-        sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
-        publish_sns(sns_message)
-        print(e)
-        raise
-    print("LaunchLambda Invoke Response: " + str(response))
-
+    #try:
+    #    response = lambda_client.invoke(
+    #        FunctionName=parameters['ARNs']['LaunchLambda'],
+    #        InvocationType='Event',
+    #        Payload=payloadbytes
+    #    )
+    #except botocore.exceptions.ClientError as e:
+    #    sns_message = "Errors occurred invoking Launch Lambda from TrainerLambda."
+    #    sns_message += "\nError:\n" + str(e)
+    #    sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+    #    publish_sns(sns_message)
+    #    print(e)
+    #    raise
+    #print("LaunchLambda Invoke Response: " + str(response))
 
     return
 
