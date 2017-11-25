@@ -1,0 +1,6 @@
+numpy
+scipy
+Pillow
+h5py
+redis
+cfn-response
