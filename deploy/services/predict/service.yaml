@@ -1,0 +1,196 @@
+Description: >
+    This is an example of a long running ECS service for the Neural Network Prediction API.
+
+Parameters: 
+
+    VPC:
+        Description: The VPC that the ECS cluster is deployed to
+        Type: AWS::EC2::VPC::Id
+        
+    Cluster:
+        Description: Please provide the ECS Cluster ID that this service should run on
+        Type: String
+
+    DesiredCount: 
+        Description: How many instances of this task should we run across our cluster?
+        Type: Number
+        Default: 1
+
+    EnvironmentName:
+        Description: An environment name that will be prefixed to resource names
+        Type: String
+
+    Subnets:
+        Description: Choose which subnets the Applicaion Load Balancer should be deployed to
+        Type: List<AWS::EC2::Subnet::Id>
+
+    SecurityGroup:
+        Description: Select the Security Group to apply to the Applicaion Load Balancer
+        Type: AWS::EC2::SecurityGroup::Id
+
+    ECRRepository:
+        Description: Container repository for mxnet development containers
+        Type: String
+        Default: deeplearning.ai
+
+Resources:
+
+    Service: 
+        Type: AWS::ECS::Service
+        DependsOn: predictListenerRule
+        Properties: 
+            Cluster: !Ref Cluster
+            Role: !Ref ServiceRole
+            DesiredCount: !Ref DesiredCount
+            TaskDefinition: !Ref TaskDefinition
+            LoadBalancers: 
+                - ContainerName: predict
+                  ContainerPort: 5000
+                  TargetGroupArn: !Ref predictTargetGroup
+
+    TaskDefinition:
+        Type: AWS::ECS::TaskDefinition
+        Properties:
+            Family: predict
+            TaskRoleArn: !GetAtt TaskRole.Arn
+            ContainerDefinitions:
+                - Name: predict
+                  Essential: true
+                  Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${ECRRepository}:app
+                  Memory: 4096
+                  PortMappings:
+                    - ContainerPort: 5000
+                  LogConfiguration:
+                    LogDriver: awslogs
+                    Options:
+                        awslogs-group: !Ref AWS::StackName
+                        awslogs-region: !Ref AWS::Region
+                        awslogs-stream-prefix: predict-app
+
+    CloudWatchLogsGroup:
+        Type: AWS::Logs::LogGroup
+        Properties: 
+            LogGroupName: !Ref AWS::StackName
+            RetentionInDays: 7
+
+    predictLoadBalancer:
+        Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+        Properties:
+            Name: !Sub ${EnvironmentName}-predict
+            Subnets: !Ref Subnets
+            SecurityGroups: 
+                - !Ref SecurityGroup
+            Tags: 
+                - Key: Name
+                  Value: !Sub ${EnvironmentName}-predict
+
+    predictTargetGroup:
+        Type: AWS::ElasticLoadBalancingV2::TargetGroup
+        Properties:
+            VpcId: !Ref VPC
+            Port: 80
+            Protocol: HTTP
+            Matcher: 
+                HttpCode: 200-299
+            HealthCheckIntervalSeconds: 10
+            HealthCheckPath: /
+            HealthCheckProtocol: HTTP
+            HealthCheckTimeoutSeconds: 5
+            HealthyThresholdCount: 2
+
+    predictListener:
+        Type: AWS::ElasticLoadBalancingV2::Listener
+        Properties:
+            LoadBalancerArn: !Ref predictLoadBalancer
+            Port: 80
+            Protocol: HTTP 
+            DefaultActions: 
+                - Type: forward
+                  TargetGroupArn: !Ref predictTargetGroup
+
+    predictListenerRule:
+        Type: AWS::ElasticLoadBalancingV2::ListenerRule
+        Properties:
+            ListenerArn: !Ref predictListener
+            Priority: 1
+            Conditions:
+                - Field: path-pattern
+                  Values: 
+                    - /
+            Actions:
+                - TargetGroupArn: !Ref predictTargetGroup
+                  Type: forward
+
+    # This IAM Role grants the service access to register/unregister with the 
+    # Application Load Balancer (ALB). It is based on the default documented here:
+    # http://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
+    
+    ServiceRole: 
+        Type: AWS::IAM::Role
+        Properties: 
+            RoleName: !Sub ecs-service-predict
+            Path: /
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                        "Action": [ "sts:AssumeRole" ]
+                    }]
+                }
+            Policies: 
+                - PolicyName: !Sub ecs-service-predict
+                  PolicyDocument: 
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "ec2:AuthorizeSecurityGroupIngress",
+                                    "ec2:Describe*",
+                                    "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                                    "elasticloadbalancing:Describe*",
+                                    "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                                    "elasticloadbalancing:DeregisterTargets",
+                                    "elasticloadbalancing:DescribeTargetGroups",
+                                    "elasticloadbalancing:DescribeTargetHealth",
+                                    "elasticloadbalancing:RegisterTargets",
+                                    "elasticloadbalancing:CreateTargetGroup",
+                                    "elasticloadbalancing:DeleteTargetGroup"
+                                ],
+                                "Resource": "*"
+                        }]
+                    }
+
+    TaskRole: 
+        Type: AWS::IAM::Role
+        Properties: 
+            RoleName: !Sub ecs-task-predict
+            Path: /
+            AssumeRolePolicyDocument: |
+                {
+                    "Statement": [{
+                        "Effect": "Allow",
+                        "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                        "Action": [ "sts:AssumeRole" ]
+                    }]
+                }
+            Policies: 
+                - PolicyName: !Sub ecs-task-predict
+                  PolicyDocument: 
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [{
+                                "Effect": "Allow",
+                                "Action": [
+                                    "s3:*"
+                                ],
+                                "Resource": "*"
+                        }]
+                    }
+
+Outputs:
+
+    ServiceUrl:
+        Description: The URL of the Prediction App
+        Value: !Join ["/", ["http:/", !GetAtt predictLoadBalancer.DNSName, "image?image="]]
