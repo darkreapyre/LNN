@@ -351,12 +351,12 @@ def lambda_handler(event, context):
             key=parameter_key
         )
         # Delete calling Cloudwatch event to ensure it doesn't trigger a loop
-        arn = parameters['ARNs']['LaunchLambda']
+        #arn = parameters['ARNs']['LaunchLambda']
         # Remove Permission
-        lambda_client.remove_permission(
-            FunctionName=arn,
-            StatementId='CreateCWEPermission' + epoch_id
-        )
+        #lambda_client.remove_permission(
+        #    FunctionName=arn,
+        #    StatementId='CreateCWEPermission' + epoch_id
+        #)
         # Removing targets 
         cwe_client.remove_targets(
             Rule='LaunchLambda-batch-' + epoch_id,
