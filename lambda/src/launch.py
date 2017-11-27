@@ -29,8 +29,50 @@ redis_client = client('elasticache', region_name=rgn)
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 lambda_client = client('lambda', region_name=rgn) # Lambda invocations
+dynamo_client = client('dynamodb', region_name=rgn)
+dynamo_resource = resource('dynamodb', region_name=rgn)
+
 
 # Helper Functions
+def inv_counter(name, invID, task):
+    """
+    Manages the Counter assigned to a unique Lambda Invocation ID, by
+    either setting it to 0, updating it to 1 or querying the value.
+   
+    Arguments:
+    name -- The Name of the function being invoked
+    invID -- The unique invocation ID created for the specific invokation
+    task -- Task to perfoirm: set | get | update
+    """
+    table = dynamo_resource.Table(name)
+    if task == 'set':
+        table.put_item(
+            Item={
+                'invID': invID,
+                'cnt': 0
+            }
+        )
+        
+    elif task == 'get':
+        task_response = table.get_item(
+            Key={
+                'invID': invID
+            }
+        )
+        item = task_response['Item'] 
+        return int(item['cnt'])
+        
+    elif task == 'update':
+        task_response = table.update_item(
+            Key={
+                'invID': invID
+            },
+            UpdateExpression='SET cnt = :val1',
+            ExpressionAttributeValues={
+                ':val1': 1
+            }
+        )
+
 def get_arns(function_name):
     """
     Return the ARN for the LNN Functions.
@@ -282,6 +324,30 @@ def initialize_data(endpoint, parameters):
         layer_name = 'layer' + str(l)
         grads[layer_name] = {}
     data_keys['grads'] = to_cache(endpoint=endpoint, obj=grads, name='grads')
+
+    # Initialize DynamoDB Tables for tracking invocations
+    table_list = ['TrainerLambda', 'NeuronLambda']
+    for t in table_list:
+        table = dynamo_resource.create_table(
+            TableName=t,
+            KeySchema=[
+                {
+                    'AttributeName': 'invID',
+                    'KeyType': 'HASH'
+                },
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'invID',
+                    'AttributeType': 'S'
+                },
+            ],
+            ProvisionedThroughput={
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
+            }
+        )
+        table.meta.client.get_waiter('table_exists').wait(TableName=t)
         
     return data_keys, [j for i in a_names for j in i], dims
 
@@ -326,7 +392,14 @@ def lambda_handler(event, context):
     payload['state'] = 'start'
     # Dump the parameters to ElastiCache
     payload['parameter_key'] = to_cache(endpoint, obj=parameters, name='parameters')
-    #payload['endpoint'] = endpoint
+
+    # Crate an Invokation ID to ensure no duplicate funcitons are launched
+    invID = str(uuid.uuid4()).split('-')[0]
+    name = 'TrainerLambda'
+    task = 'set'
+    inv_counter(name, invID, task)
+    payload['invID'] = invID
+    
     # Prepare the payload for `TrainerLambda`
     payloadbytes = dumps(payload)
     

@@ -34,6 +34,45 @@ endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
 
 # Helper Functions
+def inv_counter(name, invID, task):
+    """
+    Manages the Counter assigned to a unique Lambda Invocation ID, by
+    either setting it to 0, updating it to 1 or querying the value.
+   
+    Arguments:
+    name -- The Name of the function being invoked
+    invID -- The unique invocation ID created for the specific invokation
+    task -- Task to perfoirm: set | get | update
+    """
+    table = dynamo_resource.Table(name)
+    if task == 'set':
+        table.put_item(
+            Item={
+                'invID': invID,
+                'cnt': 0
+            }
+        )
+        
+    elif task == 'get':
+        task_response = table.get_item(
+            Key={
+                'invID': invID
+            }
+        )
+        item = task_response['Item'] 
+        return int(item['cnt'])
+        
+    elif task == 'update':
+        task_response = table.update_item(
+            Key={
+                'invID': invID
+            },
+            UpdateExpression='SET cnt = :val1',
+            ExpressionAttributeValues={
+                ':val1': 1
+            }
+        )
+
 def publish_sns(sns_message):
     """
     Publish message to the master SNS topic.
@@ -248,6 +287,17 @@ def lambda_handler(event, context):
     This Lambda Funciton simulates a single Perceptron for both 
     forward and backward propogation.
     """
+    # Ensure that this is not a duplicate invokation
+    invID = event.get('InvID')
+    name = "NeuronLambda" #Name of the current Lambda function
+    task = 'get'
+    cnt = inv_counter(name, invID, task) #should be 0 for a new function invoked
+    if cnt == 0:
+        task = 'update'
+        inv_counter(name, invID, task)
+    else:
+        sns_message = "Invocation ID Already Exists: " + str(invID)
+        publish_sns(sns_message)
     
     # Get the Neural Network parameters from Elasticache
     parameters = from_cache(endpoint, key=event.get('parameter_key'))
@@ -292,6 +342,13 @@ def lambda_handler(event, context):
             payload['state'] = 'forward'
             payload['epoch'] = epoch
             payload['layer'] = layer + 1
+
+            # Crate an Invokation ID to ensure no duplicate funcitons are launched
+            invID = str(uuid.uuid4()).split('-')[0]
+            name = "TrainerLambda" #Name of the Lambda fucntion to be invoked
+            task = 'set'
+            inv_counter(name, invID, task)
+            payload['invID'] = invID
             payloadbytes = dumps(payload)
             print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
@@ -408,6 +465,13 @@ def lambda_handler(event, context):
             payload['state'] = 'backward'
             payload['epoch'] = epoch
             payload['layer'] = layer - 1
+
+            # Crate an Invokation ID to ensure no duplicate funcitons are launched
+            invID = str(uuid.uuid4()).split('-')[0]
+            name = "TrainerLambda" #Name of the Lambda fucntion to be invoked
+            task = 'set'
+            inv_counter(name, invID, task)
+            payload['invID'] = invID
             payloadbytes = dumps(payload)
             print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 

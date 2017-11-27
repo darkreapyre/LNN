@@ -32,6 +32,45 @@ endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
 
 # Helper Functions
+def inv_counter(name, invID, task):
+    """
+    Manages the Counter assigned to a unique Lambda Invocation ID, by
+    either setting it to 0, updating it to 1 or querying the value.
+   
+    Arguments:
+    name -- The Name of the function being invoked
+    invID -- The unique invocation ID created for the specific invokation
+    task -- Task to perfoirm: set | get | update
+    """
+    table = dynamo_resource.Table(name)
+    if task == 'set':
+        table.put_item(
+            Item={
+                'invID': invID,
+                'cnt': 0
+            }
+        )
+        
+    elif task == 'get':
+        task_response = table.get_item(
+            Key={
+                'invID': invID
+            }
+        )
+        item = task_response['Item'] 
+        return int(item['cnt'])
+        
+    elif task == 'update':
+        task_response = table.update_item(
+            Key={
+                'invID': invID
+            },
+            UpdateExpression='SET cnt = :val1',
+            ExpressionAttributeValues={
+                ':val1': 1
+            }
+        )
+
 def publish_sns(sns_message):
     """
     Publish message to the master SNS topic.
@@ -42,7 +81,6 @@ def publish_sns(sns_message):
 
     print("Publishing message to SNS topic...")
     sns_client.publish(TargetArn=environ['SNSArn'], Message=sns_message)
-    return
 
 def numpy2s3(array, name, bucket):
     """
@@ -250,8 +288,6 @@ def end(parameter_key):
     sns_message = "Training Completed Successfully!\n" + dumps(final_results)
     publish_sns(sns_message)
 
-    return
-
 def propogate(direction, epoch, layer, parameter_key):
     """
     Determines the amount of "hidden" units based on the layer and loops
@@ -295,6 +331,13 @@ def propogate(direction, epoch, layer, parameter_key):
             else:
                 payload['last'] = "False"
             payload['activation'] = parameters['activations']['layer' + str(layer)]
+
+            # Crate an Invokation ID to ensure no duplicate funcitons are launched
+            invID = str(uuid.uuid4()).split('-')[0]
+            name = "NeuronLambda" #Name of the Lambda fucntion to be invoked
+            task = 'set'
+            inv_counter(name, invID, task)
+            payload['invID'] = invID
             payloadbytes = dumps(payload)
             print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
@@ -313,8 +356,6 @@ def propogate(direction, epoch, layer, parameter_key):
                 print(e)
                 raise
             print(response)
-        
-        return
     
     elif direction == 'backward':
         # Launch Lambdas to propogate backward        
@@ -334,6 +375,13 @@ def propogate(direction, epoch, layer, parameter_key):
             else:
                 payload['last'] = "False"
             payload['activation'] = parameters['activations']['layer' + str(layer)]
+            
+            # Crate an Invokation ID to ensure no duplicate funcitons are launched
+            invID = str(uuid.uuid4()).split('-')[0]
+            name = "NeuronLambda" #Name of the Lambda fucntion to be invoked
+            task = 'set'
+            inv_counter(name, invID, task)
+            payload['invID'] = invID
             payloadbytes = dumps(payload)
             print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
@@ -353,12 +401,9 @@ def propogate(direction, epoch, layer, parameter_key):
                 raise
             print(response)
 
-            return
-
     else:
         sns_message = "Errors processing `propogate()` function."
         publish_sns(sns_message)
-        raise
 
 
 def lambda_handler(event, context):
@@ -366,7 +411,20 @@ def lambda_handler(event, context):
     Processes the `event` vaiables from the various Lambda functions that call it, 
     i.e. `TrainerLambda` and `NeuronLambda`. Determines the "current" state and
     then directs the next steps.
-    """    
+    """
+    # Ensure that this is not a duplicate invokation
+    invID = event.get('InvID')
+    name = "TrainerLambda" #Name of the current Lambda function
+    task = 'get'
+    cnt = inv_counter(name, invID, task) #should be 0 for a new function invoked
+    if cnt == 0:
+        task = 'update'
+        inv_counter(name, invID, task)
+    else:
+        sns_message = "Invocation ID Already Exists: " + str(invID)
+        publish_sns(sns_message)
+
+    # If this is an origional invocation,
     # Get the current state from the invoking lambda
     state = event.get('state')
     global parameters
