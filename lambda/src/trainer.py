@@ -341,7 +341,9 @@ def propogate(direction, epoch, layer, parameter_key):
             inv_counter(name, invID, task)
             payload['invID'] = invID
             payloadbytes = dumps(payload)
-            print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+
+            # Debug statement
+            #print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
             # Invoke NeuronLambdas for next layer
             try:
@@ -385,7 +387,9 @@ def propogate(direction, epoch, layer, parameter_key):
             inv_counter(name, invID, task)
             payload['invID'] = invID
             payloadbytes = dumps(payload)
-            print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+
+            # Debug Statement
+            #print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
             # Invoke NeuronLambdas for next layer
             try:

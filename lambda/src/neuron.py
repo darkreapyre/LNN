@@ -351,7 +351,9 @@ def lambda_handler(event, context):
             inv_counter(name, invID, task)
             payload['invID'] = invID
             payloadbytes = dumps(payload)
-            print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+
+            # Debug Statement
+            #print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
             # Invoke TrainerLambda to process activations
             try:
@@ -474,7 +476,9 @@ def lambda_handler(event, context):
             inv_counter(name, invID, task)
             payload['invID'] = invID
             payloadbytes = dumps(payload)
-            print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+
+            # Debug Statement
+            #print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
             # Invoke NeuronLambdas for next layer
             try:
