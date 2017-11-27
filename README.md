@@ -1,1 +1,1 @@
-# Lambda Neural Network Version 0.1.3 (Mutant Lambda Functions)
+# Lambda Neural Network Version 0.1.3 (Idempotent Lambda Functions)
