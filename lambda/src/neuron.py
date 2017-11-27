@@ -298,8 +298,7 @@ def lambda_handler(event, context):
         task = 'update'
         inv_counter(name, invID, task)
     else:
-        sns_message = "Invocation ID Already Exists: " + str(invID)
-        publish_sns(sns_message)
+        return
     
     # Get the Neural Network parameters from Elasticache
     parameters = from_cache(endpoint, key=event.get('parameter_key'))

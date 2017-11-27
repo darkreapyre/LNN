@@ -423,8 +423,7 @@ def lambda_handler(event, context):
         task = 'update'
         inv_counter(name, invID, task)
     else:
-        sns_message = "Invocation ID Already Exists: " + str(invID)
-        publish_sns(sns_message)
+        return
 
     # If this is an origional invocation,
     # Get the current state from the invoking lambda
