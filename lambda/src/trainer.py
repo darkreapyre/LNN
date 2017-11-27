@@ -415,7 +415,7 @@ def lambda_handler(event, context):
     then directs the next steps.
     """
     # Ensure that this is not a duplicate invokation
-    invID = event.get('InvID')
+    invID = event.get('invID')
     name = "TrainerLambda" #Name of the current Lambda function
     task = 'get'
     cnt = inv_counter(name, invID, task) #should be 0 for a new function invoked

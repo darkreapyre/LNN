@@ -290,7 +290,7 @@ def lambda_handler(event, context):
     forward and backward propogation.
     """
     # Ensure that this is not a duplicate invokation
-    invID = event.get('InvID')
+    invID = event.get('invID')
     name = "NeuronLambda" #Name of the current Lambda function
     task = 'get'
     cnt = inv_counter(name, invID, task) #should be 0 for a new function invoked
