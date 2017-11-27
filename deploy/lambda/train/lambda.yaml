@@ -123,7 +123,7 @@ Resources:
             - ec2:DetachNetworkInterface
             - s3:*
             - elasticache:*
-            - 
+            - dynamodb:*
             Resource: '*'
 
   TrainerLambda:
@@ -197,7 +197,7 @@ Resources:
             - ec2:DetachNetworkInterface
             - s3:*
             - elasticache:*
-            - dynamodb*
+            - dynamodb:*
             Resource: '*'
 
   NeuronLambda:
