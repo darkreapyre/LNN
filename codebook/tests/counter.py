@@ -1,10 +1,10 @@
 # Libraries
 import uuid
-from boto3 import resource
+#from boto3 import resource
 
 # Global Variables
-dynamo_client = client('dynamodb', region_name=rgn)
-dynamo_resource = resource('dynamodb', region_name=rgn)
+#dynamo_client = client('dynamodb', region_name=rgn)
+#dynamo_resource = resource('dynamodb', region_name=rgn)
 
 # 
 def inv_counter(name, invID, task):
