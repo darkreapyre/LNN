@@ -118,7 +118,7 @@ Resources:
             - ec2:ModifyNetworkInterfaceAttribute
             - ec2:ResetNetworkInterfaceAttribute
             - ec2:CreateNetworkInterface
-            - ec2:DescribeNetworkInterfacesdynamodb:*
+            - ec2:DescribeNetworkInterfaces
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
             - s3:*
