@@ -118,11 +118,12 @@ Resources:
             - ec2:ModifyNetworkInterfaceAttribute
             - ec2:ResetNetworkInterfaceAttribute
             - ec2:CreateNetworkInterface
-            - ec2:DescribeNetworkInterfaces
+            - ec2:DescribeNetworkInterfacesdynamodb:*
             - ec2:DeleteNetworkInterface
             - ec2:DetachNetworkInterface
             - s3:*
             - elasticache:*
+            - 
             Resource: '*'
 
   TrainerLambda:
@@ -196,6 +197,7 @@ Resources:
             - ec2:DetachNetworkInterface
             - s3:*
             - elasticache:*
+            - dynamodb*
             Resource: '*'
 
   NeuronLambda:
@@ -269,6 +271,7 @@ Resources:
             - ec2:DetachNetworkInterface
             - s3:*
             - elasticache:*
+            - dynamodb:*
             Resource: '*'
   
 #  S3Notify:
