@@ -30,6 +30,8 @@ redis_client = client('elasticache', region_name=rgn) # ElastiCache
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
+dynamo_client = client('dynamodb', region_name=rgn)
+dynamo_resource = resource('dynamodb', region_name=rgn)
 
 # Helper Functions
 def inv_counter(name, invID, task):
@@ -375,7 +377,7 @@ def propogate(direction, epoch, layer, parameter_key):
             else:
                 payload['last'] = "False"
             payload['activation'] = parameters['activations']['layer' + str(layer)]
-            
+
             # Crate an Invokation ID to ensure no duplicate funcitons are launched
             invID = str(uuid.uuid4()).split('-')[0]
             name = "NeuronLambda" #Name of the Lambda fucntion to be invoked

@@ -32,6 +32,8 @@ lambda_client = client('lambda', region_name=rgn) # Lambda invocations
 cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
 endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
 cache = redis(host=endpoint, port=6379, db=0)
+dynamo_client = client('dynamodb', region_name=rgn)
+dynamo_resource = resource('dynamodb', region_name=rgn)
 
 # Helper Functions
 def inv_counter(name, invID, task):
