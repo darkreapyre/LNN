@@ -7,6 +7,7 @@ activation function for the current layer.
 """
 
 # Import Libraries needed by the Lambda Function
+import sys
 import numpy as np
 import h5py
 import scipy
@@ -85,7 +86,6 @@ def publish_sns(sns_message):
 
     print("Publishing message to SNS topic...")
     sns_client.publish(TargetArn=environ['SNSArn'], Message=sns_message)
-    return
 
 def to_cache(endpoint, obj, name):
     """
@@ -298,7 +298,7 @@ def lambda_handler(event, context):
         task = 'update'
         inv_counter(name, invID, task)
     else:
-        return
+        sys.exit()
     
     # Get the Neural Network parameters from Elasticache
     parameters = from_cache(endpoint, key=event.get('parameter_key'))
@@ -369,7 +369,7 @@ def lambda_handler(event, context):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print(response)
+            #print(response)
 
         return
 
@@ -480,7 +480,7 @@ def lambda_handler(event, context):
             # Debug Statement
             #print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
 
-            # Invoke NeuronLambdas for next layer
+            # Invoke TrainerLambda for next layer
             try:
                 response = lambda_client.invoke(
                     FunctionName=parameters['ARNs']['TrainerLambda'],
@@ -494,7 +494,7 @@ def lambda_handler(event, context):
                 publish_sns(sns_message)
                 print(e)
                 raise
-            print(response)
+            #print(response)
 
         return
 

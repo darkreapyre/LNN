@@ -5,6 +5,7 @@ forward and backward propogation.
 """
 
 # Import Libraries needed by the Lambda Function
+import sys
 import numpy as np
 import h5py
 import scipy
@@ -427,7 +428,7 @@ def lambda_handler(event, context):
         task = 'update'
         inv_counter(name, invID, task)
     else:
-        return
+        sys.exit()
 
     # If this is an origional invocation,
     # Get the current state from the invoking lambda
