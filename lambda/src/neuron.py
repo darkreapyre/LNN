@@ -370,6 +370,7 @@ def lambda_handler(event, context):
                 print(e)
                 raise
             #print(response)
+            print("Completed Forward Propogation for epoch {}, layer {}".format(str(epoch), str(layer)))
 
         return
 
@@ -495,6 +496,7 @@ def lambda_handler(event, context):
                 print(e)
                 raise
             #print(response)
+            print("Completed Back Propogation for epoch {}, layer {}".format(str(epoch), str(layer)))
 
         return
 
