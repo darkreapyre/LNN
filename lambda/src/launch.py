@@ -328,6 +328,15 @@ def initialize_data(endpoint, parameters):
     # Initialize DynamoDB Tables for tracking invocations
     table_list = ['TrainerLambda', 'NeuronLambda']
     for t in table_list:
+        # Check to see if the table already exists
+        list_response = dynamo_client.list_tables()
+        if t in list_response['TableNames']:
+            # Delete the existing table
+            dynamo_client.delete_table(TableName=t)
+            waiter = dynamo_client.get_waiter('table_not_exists')
+            waiter.wait(TableName=t)
+        
+        # Create a "fresh" table
         table = dynamo_resource.create_table(
             TableName=t,
             KeySchema=[
