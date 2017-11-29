@@ -277,23 +277,23 @@ Resources:
   S3Trigger:
     Type: Custom::S3Trigger
     Properties:
-      ServiceToken: !GetAtt ConfigLambda.Arn
+      ServiceToken: !GetAtt S3TriggerLambda.Arn
       Region: !Ref AWS::Region
       AccountNumber: !Ref AWS::AccountId
       Bucket: !Ref S3Bucket
       FunctionArn: !GetAtt LaunchLambda.Arn
 
-  ConfigLambda:
+  S3TriggerLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: ConfigLambda
+      FunctionName: S3TriggerLambda
       Description: Custom Resource to configure S3 Event Trigger
       Code:
         S3Bucket: !Ref S3Bucket
         S3Key: deploy/lambda/train/package.zip
-      Handler: config.lambda_handler
+      Handler: S3Trigger.lambda_handler
       Role: !GetAtt 
-        - ConfigLambdaRole
+        - S3TriggerLambdaRole
         - Arn
       Runtime: python3.6
       MemorySize: '128'
@@ -307,11 +307,11 @@ Resources:
 #            - LaunchLambda
 #            - Arn
     DependsOn:
-      - ConfigLambdaRole
+      - S3TriggerLambdaRole
       - LaunchLambda
       - TrainerLambda
 
-  ConfigLambdaRole:
+  S3TriggerLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -325,7 +325,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Policies:
-        - PolicyName: ConfigLambda-AssumeRole
+        - PolicyName: S3TriggerLambda-AssumeRole
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
