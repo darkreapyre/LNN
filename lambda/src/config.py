@@ -1,78 +1,65 @@
 #!/usr/bin/python
+"""
+Lambda Function that applies a Trigger Event to the S3 Bucket. this funciton is used to the 
+LNN CloudFormation depployments.
+"""
 
-import boto3
-from cfnresponse import send, SUCCESS, FAILED
+# Import necessary Libraries
+#import os
+#from os import environ
+import json
+from json import dumps, loads
+from boto3 import client, resource, Session
+import botocore
+import uuid
 
-AVAILABLE_CONFIGURATIONS = (
-    'LambdaFunctionConfigurations'
-)
-
-def register_permission(self, template):
-        template.add_resource(
-            awslambda.Permission(
-                utils.valid_cloudformation_name(
-                    self.bucket_notification_configuration.name,
-                    self.id,
-                    'permission'
-                ),
-                Action="lambda:InvokeFunction",
-                FunctionName=self.get_destination_arn(),
-                Principal="s3.amazonaws.com",
-                SourceAccount=troposphere.Ref(troposphere.AWS_ACCOUNT_ID),
-                SourceArn=self.bucket_notification_configuration.get_bucket_arn()
-            )
-        )
-def get_destination_arn(self):
-    return troposphere.Ref(
-        self.bucket_notification_configuration.project.reference(
-        utils.lambda_friendly_name_to_grn(
-            self.settings['lambda']
-        )
-    )
-)
-
-
-
-
-def handler(event, context):
-    """
-    Bucket notifications configuration.
-    """
+def lambda_handler(event, context):
     properties = event['ResourceProperties']
-    buckent_name = properties['Bucket']
-    physical_resource_id = '{}-bucket-notification-configuration'.format(buckent_name)
+    bucket_name = properties['Bucket']
+    rgn = properties['Region']
+    s3_cleint = client('s3', region_name=rgn)
+    lambda_client = client('lambda', region_name=rgn)
 
-    client = boto3.client('s3')
-    existing_notifications = client.get_bucket_notification_configuration(
-        Bucket=buckent_name
-    )
-
-    # Clean existing configurations
+    # Define notification confugration
     configuration = {}
     if event['RequestType'] != 'Delete':
-
-        arn_name_map = {
-            'LambdaFunctionConfigurations': 'LambdaFunctionArn'
-        }
-
-        for _type in AVAILABLE_CONFIGURATIONS:
-            configuration[_type] = []
-            for notification in properties.get(_type, []):
-                data = {
-                    arn_name_map.get(_type): notification['DestinationArn'],
-                    'Events': notification['Events'],
-                }
-                if notification['KeyFilters']:
-                    data['Filter'] = {
-                        'Key': {
-                            'FilterRules': notification['KeyFilters']
-                        }
+        configuration['LambdaFunctionConfigurations'] = [
+            {
+                'LambdaFunctionArn': properties['FunctionArn'],
+                'Events': [
+                    's3:ObjectCreated:Put'
+                ],
+                'Filter': {
+                    'Key': {
+                        'FilterRules': [
+                            {
+                                'Name': 'suffix',
+                                'Value': 'h5'
+                            },
+                            {
+                                'Name': 'prefix',
+                                'Value': 'training_input/'
+                            }
+                        ]
                     }
-                configuration[_type].append(data)
+                }
+            }
+        ]
 
-    client.put_bucket_notification_configuration(
-        Bucket=buckent_name,
+    # Create Permission to trigger the LaunchLambda
+    lambda_response = lambda_client.add_permission(
+        FunctionName=properties['FunctionArn'],
+        StatementId = str(uuid.uuid4()),
+        Action='lambda:InvokeFunction',
+        Principal='s3.amazonaws.com',
+        SourceArn='arn:aws:s3:::' + bucket_name,
+        SourceAccount=properties['AccountNumber'],
+    )
+    print(lambda_response)
+    
+    # Create Notification
+    s3_response = s3_client.put_bucket_notification_configuration(
+        Bucket=bucket_name,
         NotificationConfiguration=configuration
     )
-
-    send(event, context, SUCCESS, physical_resource_id=physical_resource_id)
+    print(s3_response)
