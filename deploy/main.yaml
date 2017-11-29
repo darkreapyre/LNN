@@ -8,7 +8,7 @@ Parameters:
     TemplateBucket:
         Type: String
         Description: S3 Bucket containing CloudFormation Templates
-        Default: lnn
+        Default: lnn-dev
 
     InstanceType:
         Type: String
@@ -21,7 +21,7 @@ Parameters:
     ECRRepository:
         Type: String
         Description: Container repository for mxnet development containers
-        Default: deeplearning.ai
+        Default: deeplearning
     
     ClusterNodeType:
         Description: ElastiCache Node type

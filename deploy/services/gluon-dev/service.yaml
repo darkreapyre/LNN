@@ -31,7 +31,7 @@ Parameters:
     ECRRepository:
         Description: Container repository for mxnet development containers
         Type: String
-        Default: deeplearning.ai
+        Default: deeplearning
 
 Resources:
 
