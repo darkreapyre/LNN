@@ -18,7 +18,7 @@ def lambda_handler(event, context):
     properties = event['ResourceProperties']
     bucket_name = properties['Bucket']
     rgn = properties['Region']
-    s3_cleint = client('s3', region_name=rgn)
+    s3_client = client('s3', region_name=rgn)
     lambda_client = client('lambda', region_name=rgn)
 
     # Define notification configuration
@@ -59,12 +59,17 @@ def lambda_handler(event, context):
         print(lambda_response)
     
     # Create Notification
-    s3_response = s3_client.put_bucket_notification_configuration(
-        Bucket=bucket_name,
-        NotificationConfiguration=configuration
-    )
-    print(s3_response)
+    try:
+        s3_response = s3_client.put_bucket_notification_configuration(
+            Bucket=bucket_name,
+            NotificationConfiguration=configuration
+        )
+        print(s3_response)
+        responseData = {}
+        responseData['Data'] = configuration
+        return cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+    except Exception as e:
+        print(str(e))
+        return cfnresponse.send(event, context, cfnresponse.FAILED, None)
     
-    responseData = {}
-    responseData['Data'] = configuration
-    return cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
+    
