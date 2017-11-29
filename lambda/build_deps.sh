@@ -3,7 +3,7 @@ virtualenv -p /usr/local/bin/python --always-copy --no-site-packages deps
 source deps/bin/activate
 
 pip install --upgrade pip wheel
-pip install numpy scipy Pillow redis cfn-response
+pip install numpy scipy Pillow redis requests
 
 libdir="$VIRTUAL_ENV/lib/python3.6/site-packages/"
 mkdir -p $libdir/lib || true
