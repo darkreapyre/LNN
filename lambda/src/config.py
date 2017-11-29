@@ -45,17 +45,17 @@ def lambda_handler(event, context):
                 }
             }
         ]
-
-    # Create Permission to trigger the LaunchLambda
-    lambda_response = lambda_client.add_permission(
-        FunctionName=properties['FunctionArn'],
-        StatementId = str(uuid.uuid4()),
-        Action='lambda:InvokeFunction',
-        Principal='s3.amazonaws.com',
-        SourceArn='arn:aws:s3:::' + bucket_name,
-        SourceAccount=properties['AccountNumber'],
-    )
-    print(lambda_response)
+        
+        # Create Permission to trigger the LaunchLambda
+        lambda_response = lambda_client.add_permission(
+            FunctionName=properties['FunctionArn'],
+            StatementId = str(uuid.uuid4()),
+            Action='lambda:InvokeFunction',
+            Principal='s3.amazonaws.com',
+            SourceArn='arn:aws:s3:::' + bucket_name,
+            SourceAccount=properties['AccountNumber'],
+        )
+        print(lambda_response)
     
     # Create Notification
     s3_response = s3_client.put_bucket_notification_configuration(

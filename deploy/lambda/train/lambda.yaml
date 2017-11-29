@@ -275,7 +275,7 @@ Resources:
             Resource: '*'
   
   S3Trigger:
-    Type: Custom:S3Trigger
+    Type: Custom::S3Trigger
     Properties:
       ServiceToken: !GetAtt ConfigLambda.Arn
       Region: !Ref AWS::Region
