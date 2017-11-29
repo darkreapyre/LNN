@@ -6,6 +6,7 @@ forward and backward propogation.
 
 # Import Libraries needed by the Lambda Function
 import sys
+import datetime
 import numpy as np
 import h5py
 import scipy
@@ -267,7 +268,7 @@ def end(parameter_key):
     )
     # Upload the final results to S3
     bucket = parameters['s3_bucket']
-    results_obj = s3_resource.Object(bucket,'training_results/results.json')
+    results_obj = s3_resource.Object(bucket,'training_results/results-' + str(datetime.datetime.now()) + '.json')
     try:
         results_obj.put(Body=json.dumps(final_results))
     except botocore.exceptions.ClientError as e:
