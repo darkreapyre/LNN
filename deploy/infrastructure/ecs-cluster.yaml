@@ -107,7 +107,7 @@ Resources:
                 - !Ref SecurityGroup
             IamInstanceProfile: !Ref ECSInstanceProfile
             BlockDeviceMappings:
-                # Change the default 'root' volume size to 32g
+                # Change the default 'root' volume size to 64g
                 - DeviceName: "/dev/xvda"
                   Ebs:
                       VolumeSize: "64"

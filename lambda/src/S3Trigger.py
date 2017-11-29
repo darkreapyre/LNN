@@ -100,8 +100,8 @@ def lambda_handler(event, context):
             Bucket=bucket_name,
             NotificationConfiguration=configuration
         )
-        print("Create Notification Response: \n" + str(s3_response))
+        print("Create S3 Notification Response: \n" + str(s3_response))
         return send(event, context, SUCCESS, responseData, "CustomResourcePhysicalID")
     except Exception as e:
-        print("Error Creating Notification: \n" + str(e))
+        print("Error Creating S3 Notification: \n" + str(e))
         return send(event, context, FAILED, responseData, "CustomResourcePhysicalID")
