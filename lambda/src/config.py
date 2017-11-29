@@ -12,6 +12,7 @@ from json import dumps, loads
 from boto3 import client, resource, Session
 import botocore
 import uuid
+import cfnresponse
 
 def lambda_handler(event, context):
     properties = event['ResourceProperties']
@@ -20,7 +21,7 @@ def lambda_handler(event, context):
     s3_cleint = client('s3', region_name=rgn)
     lambda_client = client('lambda', region_name=rgn)
 
-    # Define notification confugration
+    # Define notification configuration
     configuration = {}
     if event['RequestType'] != 'Delete':
         configuration['LambdaFunctionConfigurations'] = [
@@ -63,3 +64,7 @@ def lambda_handler(event, context):
         NotificationConfiguration=configuration
     )
     print(s3_response)
+    
+    responseData = {}
+    responseData['Data'] = configuration
+    return cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
