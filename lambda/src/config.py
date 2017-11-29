@@ -65,11 +65,8 @@ def lambda_handler(event, context):
             NotificationConfiguration=configuration
         )
         print(s3_response)
-        responseData = {}
-        responseData['Data'] = configuration
+        responseData = {'Data': 'OK'}
         return cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData)
     except Exception as e:
         print(str(e))
-        return cfnresponse.send(event, context, cfnresponse.FAILED, None)
-    
-    
+        return cfnresponse.send(event, context, cfnresponse.FAILED, responseData)
