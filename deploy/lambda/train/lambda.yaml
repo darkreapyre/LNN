@@ -70,9 +70,6 @@ Resources:
         Variables:
           Region: !Ref 'AWS::Region'
           SNSArn: !Ref SNSTopic
-#          TrainerLambda: !GetAtt 
-#            - TrainerLambda
-#            - Arn
     DependsOn: LaunchLambdaRole
 
   LaunchLambdaRole:
@@ -151,9 +148,6 @@ Resources:
         Variables:
           Region: !Ref 'AWS::Region'
           SNSArn: !Ref SNSTopic
-#          NeuronLambda: !GetAtt 
-#            - NeuronLambda
-#            - Arn
     DependsOn: TrainerLambdaRole
 
   TrainerLambdaRole:
@@ -225,9 +219,6 @@ Resources:
         Variables:
           Region: !Ref 'AWS::Region'
           SNSArn: !Ref SNSTopic
-#          TrainerLambda: !GetAtt 
-#            - TrainerLambda
-#            - Arn
     DependsOn: NeuronLambdaRole
 
   NeuronLambdaRole:
@@ -298,14 +289,6 @@ Resources:
       Runtime: python3.6
       MemorySize: '128'
       Timeout: '300'
-#      Environment:
-#        Variables:
-#          Region: !Ref 'AWS::Region'
-#          Bucket: !Ref S3Bucket
-#          Account: !Ref 'AWS::AccountId'
-#          DestinationArn: !GetAtt
-#            - LaunchLambda
-#            - Arn
     DependsOn:
       - S3TriggerLambdaRole
       - LaunchLambda
