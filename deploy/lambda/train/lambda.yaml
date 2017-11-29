@@ -281,7 +281,7 @@ Resources:
       Region: !Ref AWS::Region
       AccountNumber: !Ref AWS::AccountId
       Bucket: !Ref S3Bucket
-      FunctionArn: !Ref LaunchLambda.Arn
+      FunctionArn: !GetAtt LaunchLambda.Arn
 
   ConfigLambda:
     Type: AWS::Lambda::Function
