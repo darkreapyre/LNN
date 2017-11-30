@@ -1,4 +1,4 @@
-BUCKET = lnn-dev
+BUCKET = lnn
 FOLDER = deploy
 REGION = us-west-2
 
