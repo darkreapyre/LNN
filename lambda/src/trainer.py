@@ -289,7 +289,10 @@ def end(parameter_key):
     numpy2s3(array=weights, name='predict_input/weights', bucket=bucket)
     numpy2s3(array=bias, name='predict_input/bias', bucket=bucket)
 
-    sns_message = "Training Completed Successfully!\n" + dumps(final_results)
+    # Get the last results entry to publish to SNS
+    final_cost = final_results['epoch' + str(parameters['epochs']-1)]
+
+    sns_message = "Training Completed Successfully!\n" + dumps(final_cost)
     publish_sns(sns_message)
 
 def propogate(direction, epoch, layer, parameter_key):
