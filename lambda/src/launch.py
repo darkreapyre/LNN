@@ -295,7 +295,7 @@ def initialize_data(endpoint, parameters):
         # Append the array dimensions to the list
         dims[str(a_names[j][0])] = a_list[j].shape
     
-    # Initialize A0 and Y names from `train_setx`` and train_set_y`
+    # Initialize A0 and Y names from `train_setx` and `train_set_y`
     data_keys['A0'] = to_cache(endpoint=endpoint, obj=train_set_x, name='A0')
     data_keys['Y'] = to_cache(endpoint=endpoint, obj=train_set_y, name='Y')
     
