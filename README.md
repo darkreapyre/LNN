@@ -11,22 +11,21 @@ Each version is mean to enhance the functionality of the implementation to start
     - DynamoDB does not store float data types and thus we have to serialize ductionary content to `decimal` which cases significant programming complexity.
 - Version 0.1: Single Neuron Logistic Regression - Elasticache. (**Obsolete**)
     >**Notes:**
-    - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-execute, thus causing epochs repeating. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
-    - Multiple Techniques were applied:
+    - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-invoke, thus causing epochs to repeat. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
+    - Multiple Techniques were applied, with little to no effect.:
         1. Increasing the `connect_timeout` and `read_timeout` by applying the following `Boto` configuration parameter:
         ```python
         config = botocore.config.Config(connect_timeout=300, read_timeout=300)
         Lambda_client = boto3.client(‘lambda’, region_name=rgn, config=config)
         ```
-        2. 
+        2. Disabling the `retry` value so that should a timeout occur, the Lambda function will not execute. This was done by changing the meta data of the lambda client as follows:
         ```python
         lambda_client.meta.events._unique_id_handlers[‘retry-config-lambda’][‘handler’]._checker.__dict__[‘_max_attempts’] = 0
         ```
-
-
-        2. asdsa 
 - Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches (**Obsolete**)
 - Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events (**Obsolete**)
+    >**Notes:**
+    
 - Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Under Investigation**)
 - Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
 - Version 0.3: Optimization.
