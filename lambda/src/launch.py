@@ -272,6 +272,10 @@ def initialize_data(endpoint, parameters):
     input_data -- Reference for the Input data extracted for the h5 file
     dims -- Referenece to the dimensions of the input data
     """
+    # Initialize the results tracking object
+    results = {}
+    results['Start'] = str(datetime.datetime.now())
+    data_keys['results'] = to_cache(endpoint, obj=results, name='results')
     
     # Load main dataset
     dataset = h5py.File('/tmp/datasets.h5', "r")
@@ -322,10 +326,6 @@ def initialize_data(endpoint, parameters):
         # Store the initial weights and bias in ElastiCache
         data_keys['W'+str(l)] = to_cache(endpoint=endpoint, obj=W, name='W'+str(l))
         data_keys['b'+str(l)] = to_cache(endpoint=endpoint, obj=b, name='b'+str(l))
-
-    # Initialize the results tracking object
-    results = {}
-    data_keys['results'] = to_cache(endpoint, obj=results, name='results')
 
     # Initialize DynamoDB Tables for tracking invocations
     table_list = ['TrainerLambda', 'NeuronLambda']

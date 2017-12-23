@@ -267,6 +267,10 @@ def end(parameter_key):
         endpoint=endpoint,
         key=parameters['data_keys']['results']
     )
+
+    # Add the end time to the results
+    final_results['End'] = str(datetime.datetime.now())
+
     # Upload the final results to S3
     bucket = parameters['s3_bucket']
     results_obj = s3_resource.Object(bucket,'training_results/results-' + str(datetime.datetime.now()) + '.json')
