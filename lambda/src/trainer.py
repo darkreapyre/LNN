@@ -282,12 +282,24 @@ def end(parameter_key):
     
     # Get the final weights and bias for each layer and upload them to S3 for
     # use by the prediction app
+    #for l in range(1, parameters['layers']+1):
+    #    W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
+    #    b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(l)])
+    #    # Put the weights and bias onto S3 for prediction
+    #    numpy2s3(array=W, name='predict_input/W'+str(l), bucket=bucket)
+    #    numpy2s3(array=b, name='predict_input/b'+str(l), bucket=bucket)
+
+    # Create dictionary of model parameters for prediction app
+    params = {}
     for l in range(1, parameters['layers']+1):
-        W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
-        b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(l)])
-        # Put the weights and bias onto S3 for prediction
-        numpy2s3(array=W, name='predict_input/W'+str(l), bucket=bucket)
-        numpy2s3(array=b, name='predict_input/b'+str(l), bucket=bucket)
+        params['W'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
+        params['b'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['b']+str(l))
+    # Create a model parameters file for use by prediction app
+    with h5py.File('params.h5', 'w') as h5file:
+        for key in params:
+            h5file['/' + key] = params[key]
+    # Upload model parameters file to S3
+    s3_resource.Object(bucket, 'predict_input/params.h5').put(Body=open('/params.h5', 'rb'))
 
     # Get the last results entry to publish to SNS
     final_cost = final_results['epoch' + str(parameters['epochs']-1)]
