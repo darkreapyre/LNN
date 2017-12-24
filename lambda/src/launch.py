@@ -6,6 +6,7 @@ an S3 training data upload.
 
 # Import Libraries needed by the Lambda Function
 import numpy as np
+import datetime
 import h5py
 import scipy
 import os
