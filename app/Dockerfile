@@ -26,6 +26,7 @@ RUN pip3 install \
   numpy \
   matplotlib \
   scipy \
+  scikit-image \
   Pillow \
   boto3 \
   Jinja2 \

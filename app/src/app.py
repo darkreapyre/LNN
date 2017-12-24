@@ -15,6 +15,7 @@ from json import dumps, loads
 from boto3 import client, resource, Session
 from PIL import Image
 from scipy import ndimage, misc
+from skimage import transform
 from model import *
 
 app = Flask(__name__)
@@ -32,21 +33,26 @@ def image():
     url = request.args.get('image')
     print(url)
 
-    # Get data from S3
-    w = s3numpy(bucket, 'weights')
-    b = s3numpy(bucket, 'bias')
+    y = [1] # Truth Label for cat image
+    classes = ("non-cat", "cat")
+    # Open Model parameters file
+    with h5py.File('params.h5', 'r') as h5file:
+        parameters = {}
+        for key, item in h5file['/'].items():
+            parameters[key] = item.value
 
     # Pre-process the image
     req = urllib.request.Request(url)
     res = urllib.request.urlopen(req).read()
     fname = BytesIO(res)
-    img = np.array(ndimage.imread(fname, flatten=False))
-    #img = np.array(ndimage.imread(fname, mode='RGB', flatten=False))
-    #img = np.array(misc.imread(fname, flatten=False))
-    image = misc.imresize(img, size=(64, 64)).reshape((1, 64*64*3)).T
+    #img = np.array(ndimage.imread(fname, flatten=False))
+    img = plt.imread(fname)
+    #image = misc.imresize(img, size=(64, 64)).reshape((1, 64*64*3)).T
+    image = transform.resize(image, (num_px, num_px), mode='constant').reshape((num_px * num_px * 3, 1))
 
     # Prediction
-    prediction = predict(w, b, image)
+    Y_pred = predict(image, y, parameters)
+    prediction = str(classes[int(np.squeeze(Y_pred))])
 
     # Return prediction and image
     figfile = BytesIO()
