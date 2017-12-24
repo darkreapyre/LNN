@@ -272,12 +272,7 @@ def initialize_data(endpoint, parameters):
     data_keys -- Hash keys for the various numpy arrays
     input_data -- Reference for the Input data extracted for the h5 file
     dims -- Referenece to the dimensions of the input data
-    """
-    # Initialize the results tracking object
-    results = {}
-    results['Start'] = str(datetime.datetime.now())
-    data_keys['results'] = to_cache(endpoint, obj=results, name='results')
-    
+    """    
     # Load main dataset
     dataset = h5py.File('/tmp/datasets.h5', "r")
     
@@ -360,6 +355,11 @@ def initialize_data(endpoint, parameters):
             }
         )
         table.meta.client.get_waiter('table_exists').wait(TableName=t)
+    
+    # Initialize the results tracking object
+    results = {}
+    results['Start'] = str(datetime.datetime.now())
+    data_keys['results'] = to_cache(endpoint, obj=results, name='results')
         
     return data_keys, [j for i in a_names for j in i], dims
 
