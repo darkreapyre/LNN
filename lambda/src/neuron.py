@@ -250,7 +250,7 @@ def relu(z):
     """
     a = np.maximum(0, z)
     # Debug statement
-    #assert(A.shape == z.shape)
+    #assert(a.shape == z.shape)
     return a
 
 def relu_backward(dA, z):
