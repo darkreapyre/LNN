@@ -17,6 +17,7 @@ Parameters:
         AllowedValues:
             - t2.large
             - t2.xlarge
+            - m4.16xlarge
 
     ECRRepository:
         Type: String
