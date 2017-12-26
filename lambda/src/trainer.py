@@ -86,24 +86,6 @@ def publish_sns(sns_message):
     print("Publishing message to SNS topic...")
     sns_client.publish(TargetArn=environ['SNSArn'], Message=sns_message)
 
-def numpy2s3(array, name, bucket):
-    """
-    Serialize a Numpy array to S3 without using local copy
-    
-    Arguments:
-    array -- Numpy array of any shape
-    name -- filename on S3
-    bucket -- S3 bucket
-    """
-    f_out = io.BytesIO()
-    np.save(f_out, array)
-    try:
-        s3_client.put_object(Key=name, Bucket=bucket, Body=f_out.getvalue(), ACL='bucket-owner-full-control')
-    except botocore.exceptions.ClientError as e:
-        sns_message = "The following error occurred while running `numpy2s3`:\n" + str(e)
-        publish_sns(sns_message)
-        raise
-
 def to_cache(endpoint, obj, name):
     """
     Serializes multiple data type to ElastiCache and returns
@@ -280,15 +262,6 @@ def end(parameter_key):
         print(e)
         raise
     
-    # Get the final weights and bias for each layer and upload them to S3 for
-    # use by the prediction app
-    #for l in range(1, parameters['layers']+1):
-    #    W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
-    #    b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(l)])
-    #    # Put the weights and bias onto S3 for prediction
-    #    numpy2s3(array=W, name='predict_input/W'+str(l), bucket=bucket)
-    #    numpy2s3(array=b, name='predict_input/b'+str(l), bucket=bucket)
-
     # Create dictionary of model parameters for prediction app
     params = {}
     for l in range(1, parameters['layers']+1):
@@ -300,7 +273,6 @@ def end(parameter_key):
             h5file['/' + key] = params[key]
     # Upload model parameters file to S3
     s3_resource.Object(bucket, 'predict_input/params.h5').put(Body=open('/tmp/params.h5', 'rb'))
-    #s3_client.put_object(Key='predict_input/params.h5', Bucket=bucket, Body=open('/params.h5', 'rb'), ACL='bucket-owner-full-control')
 
     # Get the last results entry to publish to SNS
     final_cost = final_results['epoch' + str(parameters['epochs']-1)]
