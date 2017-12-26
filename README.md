@@ -12,6 +12,8 @@ Each version is mean to enhance the functionality of the implementation to start
 - Version 0.1: Single Neuron Logistic Regression - Elasticache. (**Obsolete**)
     >**Notes:**
     - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-invoke, thus causing epochs to repeat. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
+- Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches (**Obsolete**)
+    >**Notes:**
     - Multiple Techniques were applied, with little to no effect.:
         1. Increasing the `connect_timeout` and `read_timeout` by applying the following `Boto` configuration parameter:
         ```python
@@ -22,15 +24,26 @@ Each version is mean to enhance the functionality of the implementation to start
         ```python
         lambda_client.meta.events._unique_id_handlers[‘retry-config-lambda’][‘handler’]._checker.__dict__[‘_max_attempts’] = 0
         ```
-- Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches (**Obsolete**)
+    - Disabling the `retry` value didn't seem to have the desired effect,  not only on the "mutant" Lambda Functions, but if an error occured, the Lambda Funcitons still tried to retry, except on random errors that couldnb't be reproduced.
 - Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events (**Obsolete**)
     >**Notes:**
-    
-- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Under Investigation**)
+    - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execurte the next 100 epochs.
+    - The event didn't triogger ons schedule some times and other times, the event ewas not even created and btraining process si,ply continued.
+- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Successfulew Completion**)
+    >**Notes:**
+    - 
 - Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
-- Version 0.3: Optimization.
-    - Batch Gradient Decent
-    - Adam Optmization
-    - Hold-out
+    >**Notes:**
+    - ** MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.
+- Version 0.2.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB (**TBD**)
+- Version 0.2.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate (**TBD**)
+- Version 0.2.3: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
+    >**Notes:**
+    - [To test](https://www.cloudshiftstrategies.com/flasklambdalab.html)
+- Version 0.3: Optmization 
+    >**Note:** In order to improve the overall error **without** inreasing the number of Epochs, the following processes will be tested. Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
+- Version 0.3.1: Optimization - Batch Gradient Decent (**TBD**)
+- Version 0.3.2: Optimization - Adam Optmization (**TBD**)
+- Version 0.3.3: Optimization - Hold-out (**TBD**)
 
 The various versions are loosely based on the [deepelarning.ai](https://www.coursera.org/specializations/deep-learning) Coursera specialization.
