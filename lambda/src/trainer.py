@@ -295,12 +295,12 @@ def end(parameter_key):
         params['W'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
         params['b'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(l)])
     # Create a model parameters file for use by prediction app
-    with h5py.File('params.h5', 'w') as h5file:
+    with h5py.File('/tmp/params.h5', 'w') as h5file:
         for key in params:
             h5file['/' + key] = params[key]
     # Upload model parameters file to S3
-    #s3_resource.Object(bucket, 'predict_input/params.h5').put(Body=open('/params.h5', 'rb'))
-    s3_client.put_object(Key='predict_input/params.h5', Bucket=bucket, Body=open('/params.h5', 'rb'), ACL='bucket-owner-full-control')
+    s3_resource.Object(bucket, 'predict_input/params.h5').put(Body=open('/tmp/params.h5', 'rb'))
+    #s3_client.put_object(Key='predict_input/params.h5', Bucket=bucket, Body=open('/params.h5', 'rb'), ACL='bucket-owner-full-control')
 
     # Get the last results entry to publish to SNS
     final_cost = final_results['epoch' + str(parameters['epochs']-1)]
