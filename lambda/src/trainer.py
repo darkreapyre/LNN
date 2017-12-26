@@ -493,6 +493,11 @@ def lambda_handler(event, context):
 
             print("Cost after epoch {0}: {1}".format(epoch, cost))
 
+            # Send status updates for large epochs every 100 epochs
+            if epoch % 100 == 0:
+                sns_message = "Training update!\n Cost after epoch {} = {}".format(epoch, cost)
+                publish_sns(sns_message)
+
             # Initialize backprop
             # Calculate the derivative of the Cost with respect to the last activation
             # Ensure that `Y` is the correct shape as the last activation
