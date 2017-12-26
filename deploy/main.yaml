@@ -10,19 +10,19 @@ Parameters:
         Description: S3 Bucket containing CloudFormation Templates
         Default: lnn
 
-#    InstanceType:
-#        Type: String
-#        Description: Instance supporting the compute type for Jupyter
-#        Default: t2.large
-#        AllowedValues:
-#            - t2.large
-#            - t2.xlarge
-#            - m4.16xlarge
+    InstanceType:
+        Type: String
+        Description: Instance supporting the compute type for Jupyter
+        Default: t2.large
+        AllowedValues:
+            - t2.large
+            - t2.xlarge
+            - m4.16xlarge
 
-#    ECRRepository:
-#        Type: String
-#        Description: Container repository for mxnet development containers
-#        Default: deeplearning
+    ECRRepository:
+        Type: String
+        Description: Container repository for mxnet development containers
+        Default: deeplearning
     
     ClusterNodeType:
         Description: ElastiCache Node type
@@ -42,14 +42,14 @@ Metadata:
 
     AWS::CloudFormation::Interface:
         ParameterLabels:
-#            InstanceType:
-#                default: "InstanceType"
+            InstanceType:
+                default: "InstanceType"
             TemplateBucket:
                 default: "TemplateBucket"
             ClusterNodeType:
                 default: "ClusterNodeType"
-#            ECRRepository:
-#                default: "ECRRepository"
+            ECRRepository:
+                default: "ECRRepository"
             TopicEmail:
                 default: "TopicEmail"
 
@@ -57,13 +57,13 @@ Metadata:
             - Label:
                 default: Infrastructure Configuration
               Parameters:
-#                  - InstanceType
+                  - InstanceType
                   - ClusterNodeType
             - Label:
                 default: Training Pipline Configuration
               Parameters:
                   - TemplateBucket
-#                  - ECRRepository
+                  - ECRRepository
                   - TopicEmail
 
 Resources:
@@ -88,43 +88,43 @@ Resources:
                 EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
 
-#    ECS:
-#        Type: AWS::CloudFormation::Stack
-#        Properties:
-#            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/ecs-cluster.yaml
-#            Parameters:
-#                EnvironmentName: !Ref AWS::StackName
-#                InstanceType: !Ref InstanceType
-#                ClusterSize: 2
-#                VPC: !GetAtt VPC.Outputs.VPC
-#                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
-#                Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+    ECS:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://s3.amazonaws.com/lnn/deploy/infrastructure/ecs-cluster.yaml
+            Parameters:
+                EnvironmentName: !Ref AWS::StackName
+                InstanceType: !Ref InstanceType
+                ClusterSize: 2
+                VPC: !GetAtt VPC.Outputs.VPC
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
+                Subnets: !GetAtt VPC.Outputs.PrivateSubnets
 
-#    lambdaDevService:
-#        Type: AWS::CloudFormation::Stack
-#        Properties:
-#            TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/lambda-dev/service.yaml
-#            Parameters:
-#                VPC: !GetAtt VPC.Outputs.VPC
-#                Cluster: !GetAtt ECS.Outputs.Cluster
-#                DesiredCount: 1
-#                EnvironmentName: !Ref AWS::StackName
-#                ECRRepository: !Ref ECRRepository
-#                Subnets: !GetAtt VPC.Outputs.PublicSubnets
-#                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+    lambdaDevService:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/lambda-dev/service.yaml
+            Parameters:
+                VPC: !GetAtt VPC.Outputs.VPC
+                Cluster: !GetAtt ECS.Outputs.Cluster
+                DesiredCount: 1
+                EnvironmentName: !Ref AWS::StackName
+                ECRRepository: !Ref ECRRepository
+                Subnets: !GetAtt VPC.Outputs.PublicSubnets
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
 
-#    predictService:
-#        Type: AWS::CloudFormation::Stack
-#        Properties:
-#            TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/predict/service.yaml
-#            Parameters:
-#                VPC: !GetAtt VPC.Outputs.VPC
-#                Cluster: !GetAtt ECS.Outputs.Cluster
-#                DesiredCount: 1
-#                EnvironmentName: !Ref AWS::StackName
-#                ECRRepository: !Ref ECRRepository
-#                Subnets: !GetAtt VPC.Outputs.PublicSubnets
-#                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+    predictService:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://s3.amazonaws.com/lnn/deploy/services/predict/service.yaml
+            Parameters:
+                VPC: !GetAtt VPC.Outputs.VPC
+                Cluster: !GetAtt ECS.Outputs.Cluster
+                DesiredCount: 1
+                EnvironmentName: !Ref AWS::StackName
+                ECRRepository: !Ref ECRRepository
+                Subnets: !GetAtt VPC.Outputs.PublicSubnets
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
     
     Redis:
         Type: AWS::CloudFormation::Stack
@@ -149,12 +149,12 @@ Resources:
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
                 PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
 
-#Outputs:
+Outputs:
 
-#    lambdaDevServiceUrl:
-#        Description: The URL endpoint for the Lambda Development Environment
-#        Value: !Join [ ":", [ !GetAtt lambdaDevService.Outputs.ServiceUrl, "8888"]]
+    lambdaDevServiceUrl:
+        Description: The URL endpoint for the Lambda Development Environment
+        Value: !Join [ ":", [ !GetAtt lambdaDevService.Outputs.ServiceUrl, "8888"]]
 
-#    predictServiceUrl:
-#        Description: The URL endpoint for the Prediction App
-#        Value: !GetAtt predictService.Outputs.ServiceUrl
+    predictServiceUrl:
+        Description: The URL endpoint for the Prediction App
+        Value: !GetAtt predictService.Outputs.ServiceUrl
