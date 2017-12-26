@@ -299,7 +299,8 @@ def end(parameter_key):
         for key in params:
             h5file['/' + key] = params[key]
     # Upload model parameters file to S3
-    s3_resource.Object(bucket, 'predict_input/params.h5').put(Body=open('/params.h5', 'rb'))
+    #s3_resource.Object(bucket, 'predict_input/params.h5').put(Body=open('/params.h5', 'rb'))
+    s3_client.put_object(Key='predict_input/params.h5', Bucket=bucket, Body=open('/params.h5', 'rb'), ACL='bucket-owner-full-control')
 
     # Get the last results entry to publish to SNS
     final_cost = final_results['epoch' + str(parameters['epochs']-1)]
