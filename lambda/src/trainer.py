@@ -293,7 +293,7 @@ def end(parameter_key):
     params = {}
     for l in range(1, parameters['layers']+1):
         params['W'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
-        params['b'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['b']+str(l))
+        params['b'+str(l)] = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(l))]
     # Create a model parameters file for use by prediction app
     with h5py.File('params.h5', 'w') as h5file:
         for key in params:
