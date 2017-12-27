@@ -24,13 +24,16 @@ Each version is mean to enhance the functionality of the implementation to start
         ```python
         lambda_client.meta.events._unique_id_handlers[‘retry-config-lambda’][‘handler’]._checker.__dict__[‘_max_attempts’] = 0
         ```
+        3. Switching from *Asynchronous* to *Synchronous* Lambda invocations in the hopes that no duplicate Lambda functions would be spawned 
     - Disabling the `retry` value didn't seem to have the desired effect,  not only on the "mutant" Lambda Functions, but if an error occured, the Lambda Funcitons still tried to retry, except on random errors that couldnb't be reproduced.
+    - Ching the invocation type had an unexpected side effect in that new Lambda functions were spawned as opposed to re-used, thus causing each to require a dedicated **ENI**. Unfortunately, the limit for ENI’s* on the VPC is 300, therefore the processes halted as ENI’s limits were saturated quickly.
 - Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events (**Obsolete**)
     >**Notes:**
     - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execurte the next 100 epochs.
-    - The event didn't triogger ons schedule some times and other times, the event ewas not even created and btraining process si,ply continued.
+    - The event didn't triogger ons schedule some times and other times, the event was not even created and training process simply continued.
 - Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Successfulew Completion**)
     >**Notes:**
+    - After doing significant research, it seems that other users had found similar issues with Lambda Functions spawning “mutant”
     - [To Add](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/)
 - Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
     >**Notes:**
