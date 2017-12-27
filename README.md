@@ -31,7 +31,7 @@ Each version is mean to enhance the functionality of the implementation to start
     - The event didn't triogger ons schedule some times and other times, the event ewas not even created and btraining process si,ply continued.
 - Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Successfulew Completion**)
     >**Notes:**
-    - 
+    - [To Add](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/)
 - Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
     >**Notes:**
     - ** MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.
