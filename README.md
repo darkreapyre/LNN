@@ -43,10 +43,10 @@ Each version is mean to enhance the functionality of the implementation to start
 - Version 0.2.3: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
     >**Notes:**
     - [To test](https://www.cloudshiftstrategies.com/flasklambdalab.html)
-- Version 0.3: Optmization 
-    >**Note:** In order to improve the overall error **without** inreasing the number of Epochs, the following processes will be tested. Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
-- Version 0.3.1: Optimization - Batch Gradient Decent (**TBD**)
-- Version 0.3.2: Optimization - Adam Optmization (**TBD**)
-- Version 0.3.3: Optimization - Hold-out (**TBD**)
+- Version 0.3: Optmization - Batch Gradient Decent (**TBD**)
+    >**Side Note:**  Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
+    >**Notes:**
+    - In order to improve the overall error **without** inreasing the number of Epochs, *Regularization* and *Mini-Batch* Gradient Descent are tested, with the goal of integrating the training process with the final *CI/CD* Pipeline from Version 0.2.x.
+- Version 0.3.1: Optimization - Adam Optmization (**TBD**)
 
 The various versions are loosely based on the [deepelarning.ai](https://www.coursera.org/specializations/deep-learning) Coursera specialization.
