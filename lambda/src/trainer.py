@@ -487,7 +487,7 @@ def lambda_handler(event, context):
             # Get the results object
             cost2results = from_cache(endpoint=endpoint, key=parameters['data_keys']['results'])
             # Append the cost to results object
-            cost2results['epoch' + str(epoch)]['cost'] = cost
+            cost2results['epoch' + str(epoch)]['cost'] = float(cost)
             # Update results key in ElastiCache
             parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
 
@@ -657,17 +657,18 @@ def lambda_handler(event, context):
             # Location is still within the backprop process, therefore calculate 
             # the derivative of the current layer's activations with respect to the 
             # Cost as well as perform gradient decent to get and new weights and bias
-            dA = np.dot(W.T, dZ)
-            dA_name = 'dA' + str(layer)
-            parameters['data_keys'][dA_name] = to_cache(endpoint=endpoint, obj=dA, name=dA_name)
-
             # Get relavent parameters for backprop
             W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
             learning_rate = parameters['learning_rate']
+            dA = np.dot(W.T, dZ)
+            dA_name = 'dA' + str(layer)
+            parameters['data_keys'][dA_name] = to_cache(endpoint=endpoint, obj=dA, name=dA_name)
+
             # Run Gradient Descent
             W = W - learning_rate * dW
             b = b - learning_rate * db
+
             # Update ElastiCache with the new Weights and new Bias to be used as the inputs for
             # the next epoch
             parameters['data_keys']['W'+str(layer+1)] = to_cache(
