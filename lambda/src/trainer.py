@@ -523,11 +523,6 @@ def lambda_handler(event, context):
         epoch = event.get('epoch')
         layer = event.get('layer')
 
-        # Get relavent parameters for bacprop
-        W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
-        b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
-        learning_rate = parameters['learning_rate']
-
         # Vectorize the derivatives
         """
         Note: Need to create a function to do this later, but want to test the functionality
@@ -602,6 +597,10 @@ def lambda_handler(event, context):
         # Determine the location within backprop
         if epoch == parameters['epochs']-1 and layer == 0:
             # Location is at the end of the final epoch
+            # Get relavent parameters for backprop
+            W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
+            b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
+            learning_rate = parameters['learning_rate']
             # Run Gradient Descent
             W = W - learning_rate * dW
             b = b - learning_rate * db
@@ -627,6 +626,10 @@ def lambda_handler(event, context):
             
         elif epoch < parameters['epochs']-1 and layer == 0:
             # Location is at the end of the current epoch and backprop is finished
+            # Get relavent parameters for backprop
+            W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
+            b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
+            learning_rate = parameters['learning_rate']
             # Run Gradient Descent
             W = W - learning_rate * dW
             b = b - learning_rate * db
@@ -654,6 +657,11 @@ def lambda_handler(event, context):
             # Location is still within the backprop process, therefore calculate 
             # the derivative of the current layer's activations with respect to the 
             # Cost as well as perform gradient decent to get and new weights and bias
+
+            # Get relavent parameters for backprop
+            W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
+            b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
+            learning_rate = parameters['learning_rate']
             dA = np.dot(W.T, dZ)
             dA_name = 'dA' + str(layer)
             parameters['data_keys'][dA_name] = to_cache(endpoint=endpoint, obj=dA, name=dA_name)
