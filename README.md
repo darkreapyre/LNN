@@ -37,7 +37,9 @@ Each version is mean to enhance the functionality of the implementation to start
     - [To Add](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/)
 - Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
     >**Notes:**
-    - ** MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.
+    - ** MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*. **
+    - ** `np.sqrt` ?????? **
+    - ** `bias * 0.075`**
 - Version 0.2.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB (**TBD**)
 - Version 0.2.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate (**TBD**)
 - Version 0.2.3: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
