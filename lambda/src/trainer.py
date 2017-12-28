@@ -491,11 +491,11 @@ def lambda_handler(event, context):
             # Update results key in ElastiCache
             parameters['data_keys']['results'] = to_cache(endpoint=endpoint, obj=cost2results, name='results')
 
-            print("Cost after epoch {0}: {1}".format(epoch, cost))
+            print("Cost after epoch {0}: {1}".format(epoch, float(cost)))
 
             # Send status updates for large epochs every 100 epochs
             if epoch % 100 == 0:
-                sns_message = "Training update!\n Cost after epoch {} = {}".format(epoch, cost)
+                sns_message = "Training update!\n Cost after epoch {} = {}".format(epoch, float(cost))
                 publish_sns(sns_message)
 
             # Initialize backprop
