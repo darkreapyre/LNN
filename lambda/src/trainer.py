@@ -478,8 +478,8 @@ def lambda_handler(event, context):
             
             # Calculate the Cost
             #cost = -1 / m * np.sum(np.multiply(Y, np.log(A)) + np.multiply((1 - Y), np.log(1 - A))) #from ste-by-step
-            #cost = (1./m) * (-np.dot(Y, np.log(A).T) - np.dor(1 - Y, np.log(1 - A).T)) #from application
-            cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A))) #from S-Layer
+            cost = (1. / m) * (-np.dot(Y, np.log(A).T) - np.dot(1 - Y, np.log(1 - A).T)) #from application
+            #cost = (-1 / m) * np.sum(Y * (np.log(A)) + ((1 - Y) * np.log(1 - A))) #from S-Layer
             cost = np.squeeze(cost)
             assert(cost.shape == ())
 
@@ -657,15 +657,14 @@ def lambda_handler(event, context):
             # Location is still within the backprop process, therefore calculate 
             # the derivative of the current layer's activations with respect to the 
             # Cost as well as perform gradient decent to get and new weights and bias
+            dA = np.dot(W.T, dZ)
+            dA_name = 'dA' + str(layer)
+            parameters['data_keys'][dA_name] = to_cache(endpoint=endpoint, obj=dA, name=dA_name)
 
             # Get relavent parameters for backprop
             W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
             learning_rate = parameters['learning_rate']
-            dA = np.dot(W.T, dZ)
-            dA_name = 'dA' + str(layer)
-            parameters['data_keys'][dA_name] = to_cache(endpoint=endpoint, obj=dA, name=dA_name)
-
             # Run Gradient Descent
             W = W - learning_rate * dW
             b = b - learning_rate * db
