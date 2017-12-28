@@ -314,11 +314,12 @@ def initialize_data(endpoint, parameters):
     # Multiple layer weight and bias initialization
     for l in range(1, parameters['layers']+1):
         if l == 1:
-            W = np.random.randn(parameters['neurons']['layer'+str(l)], train_set_x.shape[0]) / np.sqrt(train_set_x.shape[0]) #* parameters['weight']
-            b = np.zeros((parameters['neurons']['layer'+str(l)], 1)) #* parameters['bias']
+            #W = np.random.randn(parameters['neurons']['layer'+str(l)], train_set_x.shape[0]) * parameters['weight']
+            W = np.random.randn(parameters['neurons']['layer'+str(l)], train_set_x.shape[0]) / np.sqrt(train_set_x.shape[0]) 
         else:
-            W = np.random.randn(parameters['neurons']['layer'+str(l)], parameters['neurons']['layer'+str(l-1)]) /np.sqrt(parameters['neurons']['layer'+str(l-1)]) #* parameters['weight']
-            b = np.zeros((parameters['neurons']['layer'+str(l)], 1)) #* parameters['bias']
+            #W = np.random.randn(parameters['neurons']['layer'+str(l)], parameters['neurons']['layer'+str(l-1)]) * parameters['weight']
+            W = np.random.randn(parameters['neurons']['layer'+str(l)], parameters['neurons']['layer'+str(l-1)]) / np.sqrt(parameters['neurons']['layer'+str(l-1)])
+        b = np.zeros((parameters['neurons']['layer'+str(l)], 1))
         # Store the initial weights and bias in ElastiCache
         data_keys['W'+str(l)] = to_cache(endpoint=endpoint, obj=W, name='W'+str(l))
         data_keys['b'+str(l)] = to_cache(endpoint=endpoint, obj=b, name='b'+str(l))
