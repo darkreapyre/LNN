@@ -222,6 +222,10 @@ def vectorizer(search_criteria, search_layer):
     r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
     search_results = []
     # Compile a list of all the neurons in the search layer based on the search criteria
+    """
+    Note: This list returned below is not ordered and therefore the resultant matrix
+    is a mismatch to what the matrix would like like if run on a single machine.
+    """
     for n in range(1, parameters['neurons']['layer'+str(search_layer)]+1):
         tmp = r.keys('layer'+str(search_layer)+'_'+str(search_criteria)+'_'+str(n)+'|*')
         search_results.append(tmp)
@@ -655,6 +659,7 @@ def lambda_handler(event, context):
             W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
             learning_rate = parameters['learning_rate']
+
             # Run Gradient Descent
             W = W - learning_rate * dW
             b = b - learning_rate * db
@@ -684,6 +689,7 @@ def lambda_handler(event, context):
             W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
             learning_rate = parameters['learning_rate']
+
             # Run Gradient Descent
             W = W - learning_rate * dW
             b = b - learning_rate * db
@@ -709,12 +715,12 @@ def lambda_handler(event, context):
             
         else:
             # Location is still within the backprop process, therefore calculate 
-            # the derivative of the current layer's activations with respect to the 
-            # Cost as well as perform gradient decent to get and new weights and bias
             # Get relavent parameters for backprop
             W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(endpoint=endpoint, key=parameters['data_keys']['b'+str(layer+1)])
             learning_rate = parameters['learning_rate']
+
+            # Calculate current layer's activations with respect to the Cost
             dA = np.dot(W.T, dZ)
             dA_name = 'dA' + str(layer)
             parameters['data_keys'][dA_name] = to_cache(endpoint=endpoint, obj=dA, name=dA_name)
