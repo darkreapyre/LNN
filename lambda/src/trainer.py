@@ -206,6 +206,48 @@ def from_cache(endpoint, key):
         print("The Object is not a supported de-serialization type")
         raise
 
+def vectorizer(search_criteria, search_layer):
+    """
+    Creates a matrix of the individual neuron output for better vectorization
+    
+    Arguments:
+    search_criteria -- ElastiCache key to search for the data from `NeuronLambda`
+                        e.g. 'a' for activations; 'dw' for Weight Derivatives
+    search_layer -- Layer to search for neuron output that need to vectorized
+    
+    Returns:
+    result -- Matrix matching the size for the entire layer
+    """
+    # Use the following Redis command to ensure a pure string is return for the key
+    r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
+    search_results = []
+    # Compile a list of all the neurons in the search layer based on the search criteria
+    for n in range(1, parameters['neurons']['layer'+str(search_layer)]+1):
+        tmp = r.keys('layer'+str(search_layer)+'_'+str(search_criteria)+'_'+str(n)+'|*')
+        search_results.append(tmp)
+    # Created an ordered list of neuron data keys
+    key_list = []
+    for result in search_results:
+        key_list.append(result[0])
+    # Create a dictionary of neuron data
+    Dict = {}
+    for data in key_list:
+        Dict[data] = from_cache(endpoint=endpoint, key=data)
+    # Number of Neuron Activations for the search layer
+    num_neurons = parameters['neurons']['layer'+str(search_layer)]
+    # Create a numpy array of the results, depending on the number
+    # of neurons (a Matrix of Activations)
+    result = np.array([arr.tolist() for arr in Dict.values()])
+    if num_neurons == 1:
+        # Single Neuron Activation
+        dims = (key_list[0].split('|')[1].split('#')[1:])
+        result = result.reshape(int(dims[0]), int(dims[1]))
+    else:
+        # Multiple Neuron Activcations
+        result = np.squeeze(result)
+    
+    return result
+
 def start_epoch(epoch, layer, parameter_key):
     """
     Starts a new epoch and configures the necessary state tracking objcts.
@@ -435,6 +477,8 @@ def lambda_handler(event, context):
         layer = event.get('layer')
 
         # First pre-process the Activations from the "previous" layer
+        A = vectorizer(search_criteria='a', search_layer=layer-1)
+        """
         # Use the following Redis command to ensure a pure string is return for the key
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
         key_list = []
@@ -461,6 +505,7 @@ def lambda_handler(event, context):
             # Multiple Neuron Activcatoins
             A = np.squeeze(A)
             assert(A.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
+        """
 
         # Add the `A` Matrix to `data_keys` for later Neuron use
         A_name = 'A' + str(layer-1)
@@ -524,10 +569,11 @@ def lambda_handler(event, context):
         layer = event.get('layer')
 
         # Vectorize the derivatives
+        dZ = vectorizer(search_criteria='dZ', search_layer=layer+1)
         """
         Note: Need to create a function to do this later, but want to test the functionality
         first by manuall creting the vectors
-        """
+
         # First pre-process the derivative of the linear activation
         # Use the following Redis command to ensure a pure string is return for the key
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
@@ -551,8 +597,11 @@ def lambda_handler(event, context):
             else:
                 # Multiple Neurons
                 dZ = np.squeeze(dZ)
+        """
         
         # Next pre-process the derivative of the weights
+        dw = vectorizer(search_criteria='dw', search_layer=layer+1)
+        """
         # Use the following Redis command to ensure a pure string is return for the key
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
         key_list = []
@@ -575,8 +624,12 @@ def lambda_handler(event, context):
             else:
                 # Multiple Neurons
                 dW = np.squeeze(dW)
+        """
         
-        # pre-process the derivatives of the bias
+        # Pre-process the derivative of the bias
+        db = vectorizer(search_criteria='db', search_layer=layer+1)
+        db = db.reshape(db.shape[0], 1)
+        """
         # Use the following Redis command to ensure a pure string is return for the key
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
         key_list = []
@@ -593,6 +646,7 @@ def lambda_handler(event, context):
             # of hidden units (a Matrix of derivatives `dZ`)
             db = np.array([arr.tolist() for arr in db_dict.values()])
             db = db.reshape(db.shape[0], 1)
+        """
         
         # Determine the location within backprop
         if epoch == parameters['epochs']-1 and layer == 0:
