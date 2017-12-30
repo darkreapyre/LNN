@@ -600,7 +600,7 @@ def lambda_handler(event, context):
         """
         
         # Next pre-process the derivative of the weights
-        dw = vectorizer(search_criteria='dw', search_layer=layer+1)
+        dW = vectorizer(search_criteria='dw', search_layer=layer+1)
         """
         # Use the following Redis command to ensure a pure string is return for the key
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
@@ -615,7 +615,7 @@ def lambda_handler(event, context):
             # Number of Neuron Activations
             num_activations = len(key_list)
             # Create a numpy array of the results, depending on the number
-            # of hidden units (a Matrix of derivatives `dZ`)
+            # of hidden units (a Matrix of derivatives `dW`)
             dW = np.array([arr.tolist() for arr in dW_dict.values()])
             if num_activations == 1:
                 # Single Neuron
