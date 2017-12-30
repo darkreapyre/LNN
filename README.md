@@ -40,13 +40,13 @@ Each version is mean to enhance the functionality of the implementation to start
     - ** MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*. **
     - ** `np.sqrt` **
     - ** `bias * 0.075`**
-    - ** Incorrect Cost function **
+    - ** Incorrect Cost function -> 0.30319607531996434 **
     - ** Vectorization ordering ??? **
 - Version 0.2.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB (**TBD**)
 - Version 0.2.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate (**TBD**)
 - Version 0.2.3: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
     >**Notes:**
-    - [To test](https://www.cloudshiftstrategies.com/flasklambdalab.html)
+    - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
 - Version 0.3: Optmization - Batch Gradient Decent (**TBD**)
     >**Side Note:**  Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
     >**Notes:**
