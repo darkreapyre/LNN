@@ -1,13 +1,17 @@
 {
-    "epochs": 10,
-    "layers": 2,
+    "epochs": 2500,
+    "layers": 4,
     "activations": {
         "layer1": "relu",
-        "layer2": "sigmoid"
+        "layer2": "relu",
+        "layer3": "relu",
+        "layer4": "sigmoid"
     },
     "neurons": {
-        "layer1": 3,
-        "layer2": 1
+        "layer1": 20,
+        "layer2": 7,
+        "layer3": 5,
+        "layer4": 1
     },
     "weight": 0.01,
     "bias": 0.01,

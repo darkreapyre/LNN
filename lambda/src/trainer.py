@@ -206,14 +206,14 @@ def from_cache(endpoint, key):
         print("The Object is not a supported de-serialization type")
         raise
 
-def vectorizer(search_criteria, search_layer):
+def vectorizer(Outputs, Layer):
     """
     Creates a matrix of the individual neuron output for better vectorization
     
     Arguments:
-    search_criteria -- ElastiCache key to search for the data from `NeuronLambda`
-                        e.g. 'a' for activations; 'dw' for Weight Derivatives
-    search_layer -- Layer to search for neuron output that need to vectorized
+    Outputs -- ElastiCache key to search for the data from `NeuronLambda`
+               e.g. 'a' for activations; 'dw' for Weight Derivatives
+    Layer -- Layer to search for neuron output that need to vectorized
     
     Returns:
     result -- Matrix matching the size for the entire layer
@@ -226,8 +226,8 @@ def vectorizer(search_criteria, search_layer):
     Note: This list returned below is not ordered and therefore the resultant matrix
     is a mismatch to what the matrix would like like if run on a single machine.
     """
-    for n in range(1, parameters['neurons']['layer'+str(search_layer)]+1):
-        tmp = r.keys('layer'+str(search_layer)+'_'+str(search_criteria)+'_'+str(n)+'|*')
+    for n in range(1, parameters['neurons']['layer'+str(Layer)]+1):
+        tmp = r.keys('layer'+str(Layer)+'_'+str(Outputs)+'_'+str(n)+'|*')
         search_results.append(tmp)
     # Created an ordered list of neuron data keys
     key_list = []
@@ -238,7 +238,7 @@ def vectorizer(search_criteria, search_layer):
     for data in key_list:
         Dict[data] = from_cache(endpoint=endpoint, key=data)
     # Number of Neuron Activations for the search layer
-    num_neurons = parameters['neurons']['layer'+str(search_layer)]
+    num_neurons = parameters['neurons']['layer'+str(Layer)]
     # Create a numpy array of the results, depending on the number
     # of neurons (a Matrix of Activations)
     result = np.array([arr.tolist() for arr in Dict.values()])
@@ -481,35 +481,7 @@ def lambda_handler(event, context):
         layer = event.get('layer')
 
         # First pre-process the Activations from the "previous" layer
-        A = vectorizer(search_criteria='a', search_layer=layer-1)
-        """
-        # Use the following Redis command to ensure a pure string is return for the key
-        r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
-        key_list = []
-        # Compile a list of activations
-        for key in r.scan_iter(match='layer'+str(layer-1)+'_a_*'):
-            key_list.append(key)
-        # Create a dictionary of activation results
-        A_dict = {}
-        for i in key_list:
-            A_dict[i] = from_cache(endpoint=endpoint, key=i)
-        # Number of Neuron Activations
-        num_activations = len(key_list)
-        # Create a numpy array of the results, depending on the number
-        # of hidden units (a Matrix of Activations)
-        A = np.array([arr.tolist() for arr in A_dict.values()])
-        if num_activations == 1:
-            # Single Neuron Activation
-            dims = (key_list[0].split('|')[1].split('#')[1:])
-            #debug
-            #print("Dimensions to reshape single hidden unit activations: " + str(dims))
-            A = A.reshape(int(dims[0]), int(dims[1]))
-            assert(A.shape == (parameters['dims']['train_set_y'][0], parameters['dims']['train_set_y'][1]))
-        else:
-            # Multiple Neuron Activcatoins
-            A = np.squeeze(A)
-            assert(A.shape == (parameters['neurons']['layer'+str(layer-1)], parameters['dims']['train_set_x'][1]))
-        """
+        A = vectorizer(Outputs='a', Layer=layer-1)
 
         # Add the `A` Matrix to `data_keys` for later Neuron use
         A_name = 'A' + str(layer-1)
@@ -573,84 +545,14 @@ def lambda_handler(event, context):
         layer = event.get('layer')
 
         # Vectorize the derivatives
-        dZ = vectorizer(search_criteria='dZ', search_layer=layer+1)
-        """
-        Note: Need to create a function to do this later, but want to test the functionality
-        first by manuall creting the vectors
-
-        # First pre-process the derivative of the linear activation
-        # Use the following Redis command to ensure a pure string is return for the key
-        r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
-        key_list = []
-        # Compile a list of dertivatives
-        for key in r.scan_iter(match='layer'+str(layer+1)+'_dZ_*'):
-            key_list.append(key)
-        # Create a dictionary of activation results
-        dZ_dict = {}
-        for i in key_list:
-            dZ_dict[i] = from_cache(endpoint=endpoint, key=i)
-            # Number of Neuron Activations
-            num_activations = len(key_list)
-            # Create a numpy array of the results, depending on the number
-            # of hidden units (a Matrix of derivatives `dZ`)
-            dZ = np.array([arr.tolist() for arr in dZ_dict.values()])
-            if num_activations == 1:
-                # Single Neuron
-                dims = (key_list[0].split('|')[1].split('#')[1:])
-                dZ = dZ.reshape(int(dims[0]), int(dims[1]))
-            else:
-                # Multiple Neurons
-                dZ = np.squeeze(dZ)
-        """
+        dZ = vectorizer(Outputs='dZ', Layer=layer+1)
         
         # Next pre-process the derivative of the weights
-        dW = vectorizer(search_criteria='dw', search_layer=layer+1)
-        """
-        # Use the following Redis command to ensure a pure string is return for the key
-        r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
-        key_list = []
-        # Compile a list of dertivatives
-        for key in r.scan_iter(match='layer'+str(layer+1)+'_dw_*'):
-            key_list.append(key)
-        # Create a dictionary of activation results
-        dW_dict = {}
-        for i in key_list:
-            dW_dict[i] = from_cache(endpoint=endpoint, key=i)
-            # Number of Neuron Activations
-            num_activations = len(key_list)
-            # Create a numpy array of the results, depending on the number
-            # of hidden units (a Matrix of derivatives `dW`)
-            dW = np.array([arr.tolist() for arr in dW_dict.values()])
-            if num_activations == 1:
-                # Single Neuron
-                dims = (key_list[0].split('|')[1].split('#')[1:])
-                dW = dW.reshape(int(dims[0]), int(dims[1]))
-            else:
-                # Multiple Neurons
-                dW = np.squeeze(dW)
-        """
+        dW = vectorizer(Outputs='dw', Layer=layer+1)
         
         # Pre-process the derivative of the bias
-        db = vectorizer(search_criteria='db', search_layer=layer+1)
+        db = vectorizer(Outputs='db', Layer=layer+1)
         db = db.reshape(db.shape[0], 1)
-        """
-        # Use the following Redis command to ensure a pure string is return for the key
-        r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
-        key_list = []
-        # Compile a list of dertivatives
-        for key in r.scan_iter(match='layer'+str(layer+1)+'_db_*'):
-            key_list.append(key)
-        # Create a dictionary of activation results
-        db_dict = {}
-        for i in key_list:
-            db_dict[i] = from_cache(endpoint=endpoint, key=i)
-            # Number of Neuron Activations
-            num_activations = len(key_list)
-            # Create a numpy array of the results, depending on the number
-            # of hidden units (a Matrix of derivatives `dZ`)
-            db = np.array([arr.tolist() for arr in db_dict.values()])
-            db = db.reshape(db.shape[0], 1)
-        """
         
         # Determine the location within backprop
         if epoch == parameters['epochs']-1 and layer == 0:

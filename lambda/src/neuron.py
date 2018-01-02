@@ -405,7 +405,7 @@ def lambda_handler(event, context):
         # Get necessary parameters
         r = redis(host=endpoint, port=6379, db=0, charset="utf-8", decode_responses=True)
         z_key = []
-        for z in r.scan_iter(match='layer'+str(layer)+'_z_'+str(ID)+'*'):
+        for z in r.scan_iter(match='layer'+str(layer)+'_z_'+str(ID)+'|*'):
             z_key.append(z)
         z = from_cache(endpoint=endpoint, key=z_key[0])
         m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
