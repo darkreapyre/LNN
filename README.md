@@ -31,7 +31,7 @@ Each version is mean to enhance the functionality of the implementation to start
     >**Notes:**
     - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execurte the next 100 epochs.
     - The event didn't triogger ons schedule some times and other times, the event was not even created and training process simply continued.
-- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Successfulew Completion**)
+- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Complete**)
     >**Notes:**
     - After doing significant research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations.
     - [To Add](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/)
