@@ -37,20 +37,20 @@ Each version is mean to enhance the functionality of the implementation to start
     - [To Add](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/)
 - Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
     >**Notes:**
-    - ** MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*. **
-    - ** `np.sqrt` **
-    - ** `bias * 0.075`**
-    - ** Incorrect Cost function -> 0.30319607531996434 **
-    - ** Vectorization ordering ??? **
-- Version 0.2.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB (**TBD**)
-- Version 0.2.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate (**TBD**)
-- Version 0.2.3: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
-    >**Notes:**
-    - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
-- Version 0.3: Optmization - Batch Gradient Decent (**TBD**)
+    - **MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.**
+    - **`np.sqrt`**
+    - **`bias * 0.075`**
+    - **Incorrect Cost function --> 0.30319607531996434**
+    - **Vectorization ordering ??? --> 0.07576201861014191**
+- Version 0.2.1: L-Layer Logistic Regression - Batch Gradient Decent Optimization (**TBD**)
     >**Side Note:**  Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
     >**Notes:**
-    - In order to improve the overall error **without** inreasing the number of Epochs, *Regularization* and *Mini-Batch* Gradient Descent are tested, with the goal of integrating the training process with the final *CI/CD* Pipeline from Version 0.2.x.
-- Version 0.3.1: Optimization - Adam Optmization (**TBD**)
+    - In order to improve the overall error **without** inreasing the number of Epochs, *Regularization* and *Mini-Batch* Gradient Descent is tested, with the goal of integrating the training process with the final *CI/CD* Pipeline from Version 0.2.x.
+- Version 0.2.2:  L-Layer Logistic Regression - Adam Optmization (**TBD**)
+- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB (**TBD**)
+- Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate (**TBD**)
+- Version 0.3.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
+    >**Notes:**
+    - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
 
 The various versions are loosely based on the [deepelarning.ai](https://www.coursera.org/specializations/deep-learning) Coursera specialization.
