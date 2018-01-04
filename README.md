@@ -40,8 +40,9 @@ Each version is mean to enhance the functionality of the implementation to start
     - **MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.**
     - **`np.sqrt`**
     - **`bias * 0.075`**
-    - **Incorrect Cost function --> 0.30319607531996434**
-    - **Vectorization ordering ??? --> 0.07576201861014191**
+    - **Incorrect Cost function --> 0.30319607531996434 after 2500 Epochs**
+    - **Vectorization ordering ??? --> 0.07576201861014191 after 3000 Epochs**
+    - **Further refinement of Linear Activation ordering??? --> 0.03160055117435485 adter 1577 Epochs**
 - Version 0.2.1: L-Layer Logistic Regression - Batch Gradient Decent Optimization (**TBD**)
     >**Side Note:**  Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
     >**Notes:**
