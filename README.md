@@ -12,7 +12,7 @@ Each version is mean to enhance the functionality of the implementation to start
 - Version 0.1: Single Neuron Logistic Regression - Elasticache. (**Obsolete**)
     >**Notes:**
     - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-invoke, thus causing epochs to repeat. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
-- Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches (**Obsolete**)
+- Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches. (**Obsolete**)
     >**Notes:**
     - Multiple Techniques were applied, with little to no effect.:
         1. Increasing the `connect_timeout` and `read_timeout` by applying the following `Boto` configuration parameter:
@@ -26,31 +26,32 @@ Each version is mean to enhance the functionality of the implementation to start
         ```
         3. Switching from *Asynchronous* to *Synchronous* Lambda invocations, in the hopes that no duplicate Lambda functions would be spawned, by changing the `InvocationType=‘Event’` to `InvocationType=‘RequestResponse’` on each Lambda invocation.
     - Disabling the `retry` value didn't seem to have the desired effect,  not only on the "mutant" Lambda Functions, but if an error occured, the Lambda Funcitons still tried to retry, except on random errors that couldnb't be reproduced.
-    - Ching the invocation type had an unexpected side effect in that new Lambda functions were spawned as opposed to re-used, thus causing each to require a dedicated **ENI**. Unfortunately, the limit for ENI’s* on the VPC is 300, therefore the processes halted as ENI’s limits were saturated quickly.
-- Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events (**Obsolete**)
+    - Changing the invocation type had an unexpected side effect in that new Lambda functions were spawned as opposed to re-used, thus causing each to require a dedicated **ENI**. Unfortunately, the limit for ENI’s* on the VPC is 300, therefore the processes halted as ENI’s limits were saturated quickly.
+- Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events. (**Obsolete**)
     >**Notes:**
-    - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execurte the next 100 epochs.
-    - The event didn't triogger ons schedule some times and other times, the event was not even created and training process simply continued.
-- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking/DynamoDB (**Complete**)
+    - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execute the next 100 epochs.
+    - The event didn't triogger on schedule some times and other times, the event was not even created and training process simply continued.
+- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking with DynamoDB. (**Complete**)
     >**Notes:**
-    - After doing significant research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations.
-    - [To Add](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/)
-- Version 0.2: L-Layer Logistic Regression. (**On Hold due to Issues with Backprop**)
+    - After doing research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations, see [here](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/) for more information. To address this, 
+- Version 0.2: L-Layer Logistic Regression. (**Complete**)
     >**Notes:**
+    As with `Version 0.1.3`, 
+    >**TEMP Notes:**
     - **MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.**
     - **`np.sqrt`**
     - **`bias * 0.075`**
     - **Incorrect Cost function --> 0.30319607531996434 after 2500 Epochs**
     - **Vectorization ordering ??? --> 0.07576201861014191 after 3000 Epochs**
-    - **Further refinement of Linear Activation ordering??? --> 0.03160055117435485 adter 1577 Epochs**
-- Version 0.2.1: L-Layer Logistic Regression - Batch Gradient Decent Optimization (**TBD**)
+    - **Further refinement of Linear Activation ordering??? --> 0.011273672815000354 after 2500 Epochs**
+- Version 0.2.1: L-Layer Logistic Regression - Batch Gradient Decent Optimization. (**TBD**)
     >**Side Note:**  Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
     >**Notes:**
     - In order to improve the overall error **without** inreasing the number of Epochs, *Regularization* and *Mini-Batch* Gradient Descent is tested, with the goal of integrating the training process with the final *CI/CD* Pipeline from Version 0.2.x.
-- Version 0.2.2:  L-Layer Logistic Regression - Adam Optmization (**TBD**)
-- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB (**TBD**)
-- Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate (**TBD**)
-- Version 0.3.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway (**TBD**)
+- Version 0.2.2:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
+- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB. (**TBD**)
+- Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate. (**TBD**)
+- Version 0.3.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway. (**TBD**)
     >**Notes:**
     - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
 
