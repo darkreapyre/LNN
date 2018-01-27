@@ -1,1 +1,1 @@
-# Lambda Neural Network Version 0.1.3 (Idempotent Lambda Functions)
+# Lambda Neural Network Version 0.2.1 (Xavier Initialization with L2 Regularization)
