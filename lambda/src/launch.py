@@ -314,15 +314,21 @@ def initialize_data(endpoint, parameters):
     # Multiple layer weight and bias initialization using Xavier Initialization for the ReLU neurons
     for l in range(1, parameters['layers']+1):
         if l == 1:
-            # Standard Weight initialization
+            """
+            Note: This assumes Layer 1 uses ReLU Activation.
+            """
             W = np.random.randn(parameters['neurons']['layer'+str(l)], train_set_x.shape[0]) * np.sqrt((2.0 / train_set_x.shape[0]))
         else:
             # Standard Weight initialization
             #W = np.random.randn(parameters['neurons']['layer'+str(l)], parameters['neurons']['layer'+str(l-1)]) / np.sqrt(parameters['neurons']['layer'+str(l-1)])
             if parameters['activations']['layer'+str(l)] == 'sigmoid':
+                # Standard Weight initilization for Sigmoid Activation
+                """
+                Note: This assumes the last layer uses Sigmoid Activation.
+                """
                 W = np.random.randn(parameters['neurons']['layer'+str(l)], parameters['neurons']['layer'+str(l-1)]) / np.sqrt(parameters['neurons']['layer'+str(l-1)])
             else:
-                # Xavier Weight initialization for a ReLU neuron
+                # Xavier Weight initialization for a ReLU layer
                 W = np.random.randn(parameters['neurons']['layer'+str(l)], parameters['neurons']['layer'+str(l-1)]) * np.sqrt((2.0 / parameters['neurons']['layer'+str(l-1)]))
         # Standard Bias initialization
         b = np.zeros((parameters['neurons']['layer'+str(l)], 1))

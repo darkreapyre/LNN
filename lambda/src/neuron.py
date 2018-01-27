@@ -410,6 +410,7 @@ def lambda_handler(event, context):
         z = from_cache(endpoint=endpoint, key=z_key[0])
         m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
         A_prev = from_cache(endpoint=endpoint, key=parameters['data_keys']['A'+str(layer-1)])
+        l2 = parameters['lambda']
 
         # Get the derivative of the current layer's activation,
         # based on the size of the layer.
@@ -437,7 +438,9 @@ def lambda_handler(event, context):
         to_cache(endpoint=endpoint, obj=dZ, name='layer'+str(layer)+'_dZ_'+str(ID))
         
         # Calculate the derivatives of the weights
-        dw = 1 / m * np.dot(dZ, A_prev.T)
+        #dw = 1 / m * np.dot(dZ, A_prev.T)
+        # Calculate the derivatives of the weights with L2 Regularization
+        dw = 1 / m * (np.dot(dZ, A_prev.T) + l2 * W)
         # Upload the derivative of the weights to ElastiCache for use by `TrainerLambda`
         to_cache(endpoint=endpoint, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
         

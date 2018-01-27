@@ -496,9 +496,19 @@ def lambda_handler(event, context):
             # Get the training examples data and no. examples (`Y` and `m`)
             Y = from_cache(endpoint=endpoint, key=parameters['data_keys']['Y'])
             m = from_cache(endpoint=endpoint, key=parameters['data_keys']['m'])
+
+            # Calculate the Cross-Entropy Cost
+            l2 = parameters['lambda']
+            cross_entropy_cost = (1./m) * (-np.dot(Y, np.log(A).T) - np.dot(1 - Y, np.log(1 - A).T))
+
+            # Calculate L2 Cost
+            l2_cost = 0
+            for l in range(1, parameters['layers']+1):
+                W = from_cache(endpoint=endpoint, key=parameters['data_keys']['W'+str(l)])
+                l2_cost += np.sum(np.square(W))
             
-            # Calculate the Cross-entropy Cost
-            cost = (1. / m) * (-np.dot(Y, np.log(A).T) - np.dot(1 - Y, np.log(1 - A).T)) #from application
+            # Final Cost with L2 Regularization
+            cost = cross_entropy_cost + (l2 / (2 * m)) * l2_cost
             cost = np.squeeze(cost)
             assert(cost.shape == ())
 
