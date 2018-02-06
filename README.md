@@ -36,7 +36,7 @@ Each version is mean to enhance the functionality of the implementation to start
     - After doing research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations, see [here](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/) for more information. To address this, 
 - Version 0.2: L-Layer Logistic Regression. (**Complete**)
     >**Notes:**
-    As with `Version 0.1.3`, 
+    Unlike  `Version 0.1.3`, where **20,000** Epochs produces a good set of optimal paramaters, **2,500** Epochs is a good startong point for training iterations on `Version 0.2`. But due to the fact that 
     >**TEMP Notes:**
     - **MORE THEN 2500 EPOCHS??????, therefore separation of training and *CI/CD Pipeline*.**
     - **`np.sqrt`**
@@ -44,14 +44,22 @@ Each version is mean to enhance the functionality of the implementation to start
     - **Incorrect Cost function --> 0.30319607531996434 after 2500 Epochs**
     - **Vectorization ordering ??? --> 0.07576201861014191 after 3000 Epochs**
     - **Further refinement of Linear Activation ordering??? --> 0.011273672815000354 after 2500 Epochs**
-- Version 0.2.1: L-Layer Logistic Regression - Batch Gradient Decent Optimization. (**TBD**)
-    >**Side Note:**  Should they succeed, the training process will integrate with the *CI/CD Pipeline*.
+- Version 0.2.1: L-Layer Logistic Regression - Xavier Initialization with L2 Regularization. (**Complete**)
     >**Notes:**
-    - In order to improve the overall error **without** inreasing the number of Epochs, *Regularization* and *Mini-Batch* Gradient Descent is tested, with the goal of integrating the training process with the final *CI/CD* Pipeline from Version 0.2.x.
-- Version 0.2.2:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
-- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with dedicated ELB. (**TBD**)
-- Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipleline with Fargate. (**TBD**)
-- Version 0.3.2: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway. (**TBD**)
+    - Should this or subsequent versions succeed, the training process will integrate with the *CI/CD Pipeline* (`Version 0.3.x`).
+    - blah blah blah
+    - This Branch was used to create the [itsacat](https://github.com/darkreapyre/itsacat) demo.
+- Version 0.2.2: L-Layer Logistic Regression - Mini-Batch Gradient Decent Optimization. (**TBD**)
+    >**Notes:**
+    - In order to improve the overall error **without** inreasing the number of Epochs, *Mini-Batch* Gradient Descent is tested. This process requires a complete reworking of the architecture:
+        - The `LaunchLambda` now controls the overall iterations/epochs, while the mini-batches are controlled by the `TrainerLambda`.
+- Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
+- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**TBD**)
+    >**Notes:**
+    - This version merges [itsacat](https://github.com/darkreapyre/itsacat) demo with Prediction API *CI/CD Pipeline*. 
+    - In order for the Pipeline to leverage [AWS Fargate](https://aws.amazon.com/fargate/), the solution is tested using the `us-east-1` Region and therefore levergaes a dedicated *S3* Bucket (**LNN**) in that Region.
+    - In order to clean out the Buvket for a fresh deployment of the Pipeline infreastructure code, **Versioning** must be disabled.
+- Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway. (**TBD**)
     >**Notes:**
     - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
 
