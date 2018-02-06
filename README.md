@@ -1,62 +1,163 @@
-# Lambda Neural Network (Work in progress)
-This repository comtains various branches that depict leveraging AWS Lambda Functions as Neurons for various Neural Networks. The objective to learn how to build Deep Neural Networks from scratch without leveraging frameworks like TensorFlow, Caffe, Theano etc. Additionally the object is to ensure a better , more advanced, understanding about what is happenning within each Layer and each Hidden Unit. The various versions (branches) are loosely based on the [deepelarning.ai](https://www.coursera.org/specializations/deep-learning) Coursera specialization.
+# Serverless Neural Network for Image Classification - Prediction API Pipeline Demo
 
-Each version is meant to enhance the functionality of the implementation to start from a basic Perceptron and evolve into more compleicated funcitonality that includes Regularization, Optmization and Gradient Checking techniques as well as deeper network architectures. The version branches are as follows:
+![alt text](https://github.com/darkreapyre/itsacat/blob/master/artifacts/images/Prediction_Architecture.png "Architecture")
 
-- Version 0.0: Single Neuron Logistic Regression - DynamoDB. (**Obsolete**)
-    >**Notes:**
-    - DynamoDB does not offer sufficient flexability to store Numpy Arrays, thus forced to store the data on S3.
-    - DynamoDB does not offer sufficient flexability to store the network settings as it does not serialize JSON files or dictionaries very well.
-    - DynamoDB does not store float data types and thus we have to serialize ductionary content to `decimal` which cases significant programming complexity.
-- Version 0.1: Single Neuron Logistic Regression - Elasticache. (**Obsolete**)
-    >**Notes:**
-    - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-invoke, thus causing epochs to repeat. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
-- Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches. (**Obsolete**)
-    >**Notes:**
-    - Multiple Techniques were applied, with little to no effect.:
-        1. Increasing the `connect_timeout` and `read_timeout` by applying the following `Boto` configuration parameter:
-        ```python
-        config = botocore.config.Config(connect_timeout=300, read_timeout=300)
-        Lambda_client = boto3.client(‘lambda’, region_name=rgn, config=config)
-        ```
-        2. Disabling the `retry` value so that should a timeout occur, the Lambda function will not execute. This was done by changing the meta data of the lambda client as follows:
-        ```python
-        lambda_client.meta.events._unique_id_handlers[‘retry-config-lambda’][‘handler’]._checker.__dict__[‘_max_attempts’] = 0
-        ```
-        3. Switching from *Asynchronous* to *Synchronous* Lambda invocations, in the hopes that no duplicate Lambda functions would be spawned, by changing the `InvocationType=‘Event’` to `InvocationType=‘RequestResponse’` on each Lambda invocation.
-    - Disabling the `retry` value didn't seem to have the desired effect,  not only on the "mutant" Lambda Functions, but if an error occured, the Lambda Funcitons still tried to retry, except on random errors that couldnb't be reproduced.
-    - Changing the invocation type had an unexpected side effect in that new Lambda functions were spawned as opposed to re-used, thus causing each to require a dedicated **ENI**. Unfortunately, the limit for ENI’s* on the VPC is 300, therefore the processes halted as ENI’s limits were saturated quickly.
-- Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events. (**Obsolete**)
-    >**Notes:**
-    - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execute the next 100 epochs.
-    - The event didn't triogger on schedule some times and other times, the event was not even created and training process simply continued.
-- Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking with DynamoDB. (**Complete**)
-    >**Notes:**
-    - After doing research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations, see [here](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/) for more information. To address this, the code now initializes [AWS DynamoDB](https://aws.amazon.com/dynamodb/) Tables (one for each Lambda Function) and ensure that each invocation is assigned a unique ID. If any duplicate functions are spawned, there is a conflict with the unique ID and the duplicate funciton immediatley terminates.
-- Version 0.2: L-Layer Logistic Regression. (**Complete**)
-    >**Notes:**
-    - Unlike  `Version 0.1.3`, where **20,000** Epochs produces a good set of optimal paramaters, **2,500** Epochs is a good startong point for training iterations on `Version 0.2`. But due to the fact that it takes a significant amnount of time to train an L-Layer Network (approx. 40 hours), the development infrastructure has been removed from the *CloudFormation* deployment.
-    - Initially, the code (`LaunchLambda`) initialized the **Weights** and **Bias** with a `0.075` constraint. This significantly impacted the **Cost** function. It was further realized that the intitialization should be $\frac{1}{\sqrt{n}}$ and the **Bias** initialized to zero.
-    - Based on the above, it was further realized that the **Cost Function** calculation was incorrect, **0.30319607531996434** after **2,500** Epochs. After applying the correct [cross-entropy cost function](http://neuralnetworksanddeeplearning.com/chap3.html#introducing_the_cross-entropy_cost_function), this was significantly improved upon.
-    - Another issue that was discovered was the fact that when the various Activations a compiled into a single Matrix after eacch layer invocation, by the `TrainerLambda`, the sequence retuned by *ElastiCache* is **not** in numerical order. This basically means that the vectorized implementaiton of how the *Weights* apply to the output is out of order. After ensuring the correct numerical sequence was returned to construct the correct Matrix, the final **Cost** was **0.07576201861014191** after **3,000** Epochs.
-    - Additionally it is noted that the ordering of the individual **Liner Activations** that are returned from *ElastiCache* and used in the backward propogation step were also out of sequence.
-    - To address both of the above issues, a `vectorizer()` function was created to returned an ordered list of individual neuron outputs in both the forward and backward propogation steps. Applying this resulted in a final **Cost** of **0.011273672815000354** after **2,500** Epochs.
-    - This Branch was used to create the [itsacat](https://github.com/darkreapyre/itsacat) demo, and prototyped the usage of [Xavier Glorot](http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) initialization as well as the [ReLU](https://arxiv.org/pdf/1502.01852v1.pdf) initializations.
-- Version 0.2.1: L-Layer Logistic Regression - Xavier Initialization with L2 Regularization. (**Complete**)
-    >**Notes:**
-    - Should this or subsequent versions succeed, the training process will integrate with the *CI/CD Pipeline* (`Version 0.3.x`).
-    - Although introducing *Xavier* initialization for the **Weights** shows significant improvement (final **Cost** of **0.00658138016613162** after **2,500** Epochs), adding **L2 Regularization** does not solve the **Exploding Gradient** problem and in fact produces final **Cost** that is worse, **0.12014227975111075** after **2,500** Epochs. 
-    - It is also important to note that runnning the network without *Xavier* initialization produces an overall accuracy of $78%$ after **3,000** Epochs. Using **Xavier** initialization (without **L2 Regularization**) produces an accuracy of $74%$ after **2,500** Epochs. It is the hope to see an improvement by increasing this to **3,000** Epochs. As a side notw, the network leveraging **Xavier** initialization as well as **L2 Regularization** only produces a $68%$ accuracy.
-    - To try and reduce the exploding gradient issue, the next release will investigate different optimizers and mini-batch gradient descent.
-- Version 0.2.2: L-Layer Logistic Regression - Mini-Batch Gradient Decent Optimization. (**TBD**)
-    >**Notes:**
-    - In order to improve the overall error **without** inreasing the number of Epochs, *Mini-Batch* Gradient Descent is tested. This process requires a complete reworking of the architecture:
-        - The `LaunchLambda` now controls the overall iterations/epochs, while the mini-batches are controlled by the `TrainerLambda`.
-- Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
-- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**TBD**)
-    >**Notes:**
-    - This version merges [itsacat](https://github.com/darkreapyre/itsacat) demo with Prediction API *CI/CD Pipeline*. 
-    - In order for the Pipeline to leverage [AWS Fargate](https://aws.amazon.com/fargate/), the solution is tested using the `us-east-1` Region and therefore levergaes a dedicated *S3* Bucket (**lnn**) in that Region.
-- Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway. (**TBD**)
-    >**Notes:**
-    - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
+## Pre-Requisites
+1. This demo uses the [AWS CLI](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html). If the AWS CLI isn't installed,  follow [these](http://docs.aws.amazon.com/cli/latest/userguide/installing.html) instructions. The CLI [configuration](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html) needs `PowerUserAccess` and `IAMFullAccess` [IAM policies](http://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html) associated. To verify that the AWS CLI is installed and up to date, run the following:
+```console
+    $ aws --version
+```
+2. Clone the repo.
+```console
+    $ git checout 0.3.0
+``` 
+
+## Deployment
+
+1. Make any changes to the Neural Network configuraiton parameters file (`parameters.json`) before running the deployment.
+2. To deploy the environment, change to the *deploy* directory. An easy to use deployment script has been created to automatically deploy the environment. Start the process by running `./deploy.sh`. You will be prompted for the following information:
+```console
+    Enter the AWS Region to use > <<AWS REGION>>
+    Enter the S3 bucket to create > <<UNIQUE S3 BUCKET>>
+    Enter the name of the Stack to deploy > <<UNIQUE CLOUDFOMRATION STACK NAME>>
+    Enter the e-mail address to send training update > <<E-MAIL ADDRESS>>
+```
+
+3. The `deploy.sh` script creates the an *S3* Bucket; copies the necessary *CloudFormation* templates to the Bucket; creates the *Lambda* deployment package and uploads it to the Bucket and lastly, it creates the CloudFormation *Stack*. Once completed, the following message is displayed:
+
+```console
+    "Successfully created/updated stack - <<Stack Name>>"
+```
+
+>**Note:** During the deployment, and e-mail will be sent to the address specified in the `deploy.sh` script. Make sure to confirm the subscription to the SNS Topic.
+
+## Integration with SageMaker Notebook Instance
+Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazon.com/sagemaker/) into the stack to start reviewing the Demo content by using the following steps:
+
+1. Open the SageMaker [console](https://console.aws.amazon.com/sagemaker).
+2. Create notebook instance.
+3. Notebook instance settings.
+    - Notebook instance name.
+    - Notebook instance type -> ml.t2.medium.
+    - IAM Role -> Create new role.
+    - Specific S3 Bucket -> "UNIQUE BUCKET NAME" -> Create Role.
+    - VPC -> "UNIQUE STACK NAME" .
+    - Subnet -> select any of the subnets marked "Private".
+    - Security group(s) -> HostSecurityGroup.
+    - Create notebook instance.
+3. You should see Status -> Pending.
+4. Configure Service Access role.
+    - IAM Console -> Role -> "AmazonSageMaker-ExecutionRole-...".
+    - Policy name -> "AmazonSageMaker-ExecutionPolicy-..." -> Edit policy.
+    - Visual editor tab -> Add additional permissions.
+        - Service -> Choose a service -> ElastiCache.
+        - Action -> Select and action -> All ElastiCache actions (elasticache:*) .
+        - Review Policy.
+        - Save changes.
+    - The final Policy should look similar to this:
+    ```json
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "VisualEditor0",
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:ListBucket",
+                        "s3:DeleteObject"
+                    ],
+                    "Resource": "arn:aws:s3:::*"
+                },
+                {
+                    "Sid": "VisualEditor1",
+                    "Effect": "Allow",
+                    "Action": "elasticache:*",
+                    "Resource": "*"
+                }
+            ]
+        }
+    ```
+5. Return to the SageMaker console and confirm the Notebook instance is created. Under "Actions" -> Select "Open".
+6. After the Jupyter Interface has opened, Configure the Python Libraries:
+    - Select the "Conda" tab -> under "Conda environments" -> select "python3".
+    - Under "Available packages" -> Click the "Search" -> enter "redis". The following two "redis" packages should be available. 
+        - redis
+        - redis-py
+    - Select both packages and click the "->" button to install the packages.
+    - Confirm to "Install" on the pop-up.
+7. Clone the "itsacat" Code.
+    - Under the "Files" tab -> Click "New" -> "Terminal".
+    - Under the Shell run the following commands:
+    ```shell
+        $ cd SageMaker
+        $ git clone https://github.com/darkreapyre/itsacat
+        $ exit
+    ```
+    - Go back to the "Files" tab -> click "itsacat" -> click "artifacts" -> select `Introduction.ipynb`
+
+## Jupyter Notebooks
+### `Introduction.ipynb` Notebook
+The **Introduction** provides an overview of the *Architecture*, *Why* and *How* the *Serverless Neural Network* is implemented.
+
+### `Codebook.ipynb` Notebook
+The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that is integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network using the code within the Notebook to get an understanding of the full training process will be executed.
+
+## Training the Classifier
+To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
+>**Note:** A pre-configured `parameters.json` file has already been created. To change the Neural Network configuration parameters, before running the training process, change this file and upload it to the `training_iput` folder of the S3 Bucket before uploading the data set.
+
+Once the data file has been uploaded, an S3 Bucket Event will automatically trigger the training process. Should trigger process be successful, an automatic message will be sent to the e-mail address configured during deployment. The message should look as follows:
+```text
+    Training update!
+    Cost after epoch 0 = 0.7012303687667679
+```
+In-depth insight to the training process can be viewed through the **CloudWatch** console.
+
+If a message is not received after *5 minutes*, refer to the **Troubleshooting** section.
+
+## Analyzing the Results
+Once the training process has successfully completed, an e-mail will be sent to the address configured during the deployment. To analyze the results of the testing and to determine if the trained model is production-worthy, using the same *SageMaker* instance used for the *Codebook*, navigate to the `artifacts` directory and launch the `Analysis.ipynb` notebook.
+
+Work through the various code cells to see:
+1. Results fo the training.
+2. How well the model performs against the **Test** dataset.
+3. How well the model performs against new images.
+
+>**Note:** Ensure to add the name of the S3 Bucket and AWS Region used during deployment to get the correct results files created during the training process.
+
+## Troubleshooting
+Since the framework launches a significant amount to Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may show the following error:
+
+```python
+    list index out of range: IndexError
+    Traceback (most recent call last):
+    File "/var/task/trainer.py", line 484, in lambda_handler
+    A = vectorizer(Outputs='a', Layer=layer-1)
+    File "/var/task/trainer.py", line 235, in vectorizer
+    key_list.append(result[0])
+    IndexError: list index out of range
+```
+
+To address this, simply delete the data set from the S3 Bucket and re-upload it to re-launch the training process.
+
+## Cleanup
+
+1. Delete the CloudFormnation Stack.
+    - Open the CloudFormation Service console.
+    - Select the "bottom" stack in the **Stack Name** column.
+    - Actions -> Delete Stack -> "Yes, Delete".
+2. Delete DynamoDB Tables.
+    - Open DynamoDB Service console.
+    - Select "Tables" in the navigation panel.
+    - Check *NeuronLambda* -> Delete table -> Delete.
+    - Repeat the above process for the *TrainerLambda* table.
+3. Delete the CloudWatch Logs.
+    - Open the CloudWatch Service console.
+    - Select "Logs" in the navigation panel.
+    - Check */aws/lambda/LaunchLambda* -> Actions -> Delete log group -> Yes, Delete.
+    - Repeat the above process for */aws/lambda/NeuronLambda*, */aws/lambda/S3TriggerLambda*, and */aws/lambda/S3TriggerLambda*.
+4. Delete the S3 Bucket.
+    - Open the S3 Service console.
+    - Highlite the bucket -> Delete bucket.
