@@ -1,0 +1,69 @@
+Description: >
+  This template illustrates the demo architecture for a Blue/Green Deployment on ECS using the "itsacat" Prediction API.
+
+Parameters:
+  CodeCommitRepo:
+    Type: String
+    Default: itsacat-demo-app
+    Description: The repo name of the Prediction API.
+    AllowedPattern: "[A-Za-z0-9_.-]*"
+    MaxLength: 50
+
+  CodeCommitBranch:
+    Type: String
+    Default: master
+    Description: The branch of the repo to continuously deploy.
+
+  TemplateBucket:
+    Type: String
+    Description: >
+      S3 Bucket used for nested templates
+  
+  EmailAddress:
+    Description: Email Address for Approval
+    Type: String
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      CodeCommitRepo:
+        default: "Repo"
+      CodeCommitBranch:
+        default: "Branch"
+    ParameterGroups:
+      - Label:
+          default: CodeCommit Configuration
+        Parameters:
+          - CodeCommitRepo
+          - CodeCommitBranch
+
+Resources:
+  DeploymentPipeline:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/deployment-pipeline.yaml
+      Parameters:
+        CodeCommitRepo: !Ref CodeCommitRepo
+        CodeCommitBranch: !Ref CodeCommitBranch
+        TemplateBucket: !Ref TemplateBucket
+        Subnet1: !GetAtt VPC.Outputs.Subnet1
+        Subnet2: !GetAtt VPC.Outputs.Subnet2
+        VpcId: !GetAtt VPC.Outputs.VpcId
+        VpcCIDR: 10.215.0.0/16
+        EmailAddress: !Ref EmailAddress
+
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/vpc.yaml
+      Parameters:
+        Name: !Ref AWS::StackName
+        VpcCIDR: 10.215.0.0/16
+        Subnet1CIDR: 10.215.10.0/24
+        Subnet2CIDR: 10.215.20.0/24
+
+
+Outputs:
+  PipelineUrl:
+    Description: The continuous deployment pipeline in the AWS Management Console.
+    Value: !GetAtt DeploymentPipeline.Outputs.PipelineUrl
