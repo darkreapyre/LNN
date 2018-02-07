@@ -31,4 +31,4 @@ aws s3 cp --recursive templates/ "s3://${bucket}/templates" --acl public-read
 aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read
 aws s3 cp parameters.json "s3://${bucket}/training_input/" --acl public-read
 aws s3api put-bucket-versioning --bucket "${bucket}" --versioning-configuration Status=Enabled
-aws cloudformation deploy --stack-name $stackname --template-file main.yaml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides TemplateBucket=$bucket EmailAddress=$email GitHubUser=$GitHubUser GitHubToken=$GithubToken
+aws cloudformation deploy --stack-name $stackname --template-file main.yaml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides TemplateBucket=$bucket EmailAddress=$email GitHubUser=$GitHubUser GitHubToken=$GithubToken --region us-east-1

@@ -115,7 +115,6 @@ Resources:
                   - elasticloadbalancing:*
                   - autoscaling:*
                   - logs:*
-                  - codecommit:*
 
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
@@ -196,11 +195,6 @@ Resources:
                 Action:
                   - codebuild:StartBuild
                   - codebuild:BatchGetBuilds
-                  - codecommit:GetBranch
-                  - codecommit:GetCommit
-                  - codecommit:UploadArchive
-                  - codecommit:GetUploadArchiveStatus
-                  - codecommit:CancelUploadArchive
                   - cloudformation:*
                   - lambda:*
                   - iam:PassRole
@@ -285,7 +279,7 @@ Resources:
           - Name: AWS_DEFAULT_REGION
             Value: !Ref AWS::Region
           - Name: ELB_NAME
-            Value: !Ref CodeCommitRepo
+            Value: !Ref GitHubRepo
       Name: !Sub ${AWS::StackName}-discoveryproject
       ServiceRole: !Ref CodeBuildServiceRole
 
@@ -302,12 +296,14 @@ Resources:
             - Name: App
               ActionTypeId:
                 Category: Source
-                Owner: AWS
+                Owner: ThirdParty
                 Version: 1
-                Provider: CodeCommit
+                Provider: GitHub
               Configuration:
-                RepositoryName: !Ref CodeCommitRepo
-                BranchName: !Ref CodeCommitBranch
+                Owner: !Ref GitHubUser
+                Repo: !Ref GitHubRepo
+                Branch: !Ref GitHubBranch
+                OAuthToken: !Ref GitHubToken
               OutputArtifacts:
                 - Name: App
               RunOrder: 1
@@ -335,6 +331,18 @@ Resources:
               Configuration:
                 S3Bucket: !Ref TemplateBucket
                 S3ObjectKey: scripts.zip
+            - Name: Parameters
+              ActionTypeId:
+                Catagoty: Dource
+                Owner: AWS
+                Version: 1
+                Provuder: S3
+              OutputArtifacts:
+                - Name: Parameters
+              RunOrder: 1
+              Configuration:
+                S3Bucket: !Ref TemplateBucket
+                S3ObjectKey: predict_input/params.h5
         - Name: Build
           Actions:
             - Name: Build
@@ -419,7 +427,7 @@ Resources:
                 FunctionName: !Ref FlipLambda
                 UserParameters: !Sub |
                   {
-                    "ElbName": "${CodeCommitRepo}"
+                    "ElbName": "${GitHubRepo}"
                   }
               RunOrder: 1
 

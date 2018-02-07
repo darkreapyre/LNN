@@ -97,3 +97,6 @@ Resources:
 Outputs:
   ClusterName:
       Value: !Ref Cluster
+  
+  ServiceURL:
+      Value: !GetAtt LoadBalancer.Outputs.ServiceUrl
