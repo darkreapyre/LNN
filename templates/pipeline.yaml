@@ -342,7 +342,7 @@ Resources:
                 Catagory: Source
                 Owner: AWS
                 Version: 1
-                Provuder: S3
+                Provider: S3
               OutputArtifacts:
                 - Name: Parameters
               RunOrder: 1

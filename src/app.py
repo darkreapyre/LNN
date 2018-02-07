@@ -18,6 +18,12 @@ from PIL import Image
 from scipy import ndimage, misc
 from skimage import transform
 
+# global Variables
+rgn = 'us-east-1'
+S3_Bucket = 'lnn-030-00'
+s3_client = boto3.client('s3', region_name=rgn)
+s3_resource = boto3.resource('s3')
+
 def sigmoid(z):
     """
     Computes the sigmoid of z
@@ -111,13 +117,28 @@ def image():
     y = [1] # Truth Label for cat image
     classes = ("NON-CAT", "CAT")
     # Open Neural Network parameters file
+    parameters_content = s3_resource.Object(S3_Bucket, 'training_input/parameters.json')
+    parameters_file = parameters_content.get()['Body'].read().decode('utf-8')
+    NN_parameters = loads(paramneters_file)
+    """
+    Note: The code below is for local parmaters
     with open("/app/parameters.json","r") as f:
         NN_parameters = json.load(f)
+    """
     # Open Model parameters file
+    input_bucket = s3_resource.Bucket(S3_Bucket)
+    input_bucket.download_file('predict_input/params.h5', '/tmp/params.h5')
+    with h5py.File('/tmp/params.h5', 'r') as h5file:
+        trained_parameters = {}
+        for key, item in h5file['/'].items():
+            trained_parameters[key] = item.value
+    """
+    Note: The code below is for local parameters
     with h5py.File('/app/params.h5', 'r') as h5file:
         trained_parameters = {}
         for key, item in h5file['/'].items():
             trained_parameters[key] = item.value
+    """
 
     # Pre-process the image
     req = urllib.request.Request(url)
