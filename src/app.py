@@ -119,7 +119,7 @@ def image():
     # Open Neural Network parameters file
     parameters_content = s3_resource.Object(S3_Bucket, 'training_input/parameters.json')
     parameters_file = parameters_content.get()['Body'].read().decode('utf-8')
-    NN_parameters = loads(paramneters_file)
+    NN_parameters = loads(parameters_file)
     """
     Note: The code below is for local parmaters
     with open("/app/parameters.json","r") as f:
