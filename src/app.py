@@ -20,7 +20,7 @@ from skimage import transform
 
 # global Variables
 rgn = 'us-east-1'
-S3_Bucket = 'lnn-030-00'
+S3_Bucket = 'lnn-030-000'
 s3_client = boto3.client('s3', region_name=rgn)
 s3_resource = boto3.resource('s3')
 
