@@ -339,12 +339,12 @@ Resources:
                 S3ObjectKey: scripts.zip
             - Name: Parameters
               ActionTypeId:
-                Catagory: Source
+                Category: Source
                 Owner: AWS
                 Version: 1
                 Provider: S3
               OutputArtifacts:
-                - Name: Parameters
+                - Name: params
               RunOrder: 1
               Configuration:
                 S3Bucket: !Ref TemplateBucket
