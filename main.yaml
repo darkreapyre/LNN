@@ -2,40 +2,78 @@ Description: >
   This template illustrates the demo architecture for a Blue/Green Deployment on ECS using the "itsacat" Prediction API.
 
 Parameters:
-  CodeCommitRepo:
+  GitHubUser:
     Type: String
-    Default: itsacat-demo-app
+    Description: GitHub username.
+
+  GitHubRepo:
+    Type: String
+    Default: LNN
     Description: The repo name of the Prediction API.
     AllowedPattern: "[A-Za-z0-9_.-]*"
     MaxLength: 50
 
-  CodeCommitBranch:
+  GitHubBranch:
     Type: String
-    Default: master
+    Default: "0.3.0"
     Description: The branch of the repo to continuously deploy.
+
+  GitHubToken:
+    Type: String
+    Description: >
+      Token for the user specified above. (https://github.com/settings/tokens)
 
   TemplateBucket:
     Type: String
-    Description: >
-      S3 Bucket used for nested templates
+    Description: S3 Bucket used for nested templates.
   
   EmailAddress:
-    Description: Email Address for Approval
+    Description: Email Address for Approval.
     Type: String
+
+  ClusterNodeType:
+    Description: ElastiCache node type.
+    Type: String
+    Default: cache.t2.small
+    AllowedValues:
+      - cache.t2.small
+      - cache.t2.medium
+      - cache.m4.large
 
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
-      CodeCommitRepo:
+      GitHubUser:
+        default: "User"
+      GitHubRepo:
         default: "Repo"
-      CodeCommitBranch:
+      GitHubBranch:
         default: "Branch"
+      GitHubToken:
+        default: "Personal Access Token"
+      TemplateBucket:
+        default: "Template Bucket"
+      ClusterNodeType:
+        default: "Cluster Node Type"
+      EmailAddress:
+        default: "Email Address"
     ParameterGroups:
       - Label:
-          default: CodeCommit Configuration
+          default: GitHub Configuration
         Parameters:
-          - CodeCommitRepo
-          - CodeCommitBranch
+          - GitHubRepo
+          - GitHubBranch
+          - GitHubUser
+          - GitHubToken
+      - Label:
+          default: ElastiCache Configuration
+        Parameters:
+          - ClusterNodeType
+      - Label:
+          default: Machine Lernning Pipline Configuration
+        Parameters:
+          - TemplateBucket
+          - EmailAddress
 
 Resources:
   DeploymentPipeline:
