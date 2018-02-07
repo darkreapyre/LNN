@@ -67,10 +67,10 @@ Resources:
                 EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
     
-    Redis:
+    ElastiCache:
         Type: AWS::CloudFormation::Stack
         Properties:
-            TemplateURL: https://s3.amazonaws.com/${BUCKET}/deploy/infrastructure/redis.yaml
+            TemplateURL: https://s3.amazonaws.com/${BUCKET}/deploy/infrastructure/elasticache.yaml
             Parameters:
                 EnvironmentName: !Ref AWS::StackName
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1

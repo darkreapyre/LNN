@@ -22,7 +22,9 @@ Parameters:
   EnvironmentName:
     Description: An environment name that will be prefixed to resource names
     Type: String
-
+  
+  VpcCIDR:
+    Type: String
 
 Resources:
 
@@ -47,13 +49,13 @@ Resources:
     RedisClusterSecurityGroup:
         Type: AWS::EC2::SecurityGroup
         Properties:
-            GroupDescription: Elasticache Security Group
+            GroupDescription: Elasticache Security Group allowing all traffic withing the VPC
             VpcId: !Ref VPC
             SecurityGroupIngress:
               - IpProtocol: tcp
                 FromPort: 6379
                 ToPort: 6379
-                CidrIp: 0.0.0.0/0
+                CidrIp: !Ref VpcCIDR
             Tags:
               - Key: Name
                 Value: !Sub ${EnvironmentName}-Redis

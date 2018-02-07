@@ -27,12 +27,18 @@ Parameters:
   PrivateSubnet2:
     Description: Private Subnet 2
     Type: 'AWS::EC2::Subnet::Id'
+  
+  VPC:
+    Type: AWS::EC2::VPC::Id
+  
+  VpcCIDR:
+    Type: String
 
-  SecurityGroup:
-    Description: >-
-      The security groups IDs in the VPC that includes the resources to which
-      the Lambda function requires access.
-    Type: 'AWS::EC2::SecurityGroup::Id'
+#  SecurityGroup:
+#    Description: >-
+#      The security groups IDs in the VPC that includes the resources to which
+#      the Lambda function requires access.
+#    Type: 'AWS::EC2::SecurityGroup::Id'
 
 Resources:
   SNSTopic:
@@ -44,6 +50,15 @@ Resources:
         - Endpoint: !Ref TopicEmail
           Protocol: email
       TopicName: !Sub ${EnvironmentName}-SNN-SNS
+  
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      GroupDescription: Access from anywhere in the VPC
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: !Ref VpcCIDR
 
   LaunchLambda:
     Type: 'AWS::Lambda::Function'
@@ -325,3 +340,8 @@ Resources:
                   - lambda:AddPermission
                   - lambda:RemovePermission
                 Resource: '*'
+  
+Outputs:
+  SNSTopic:
+    Description: Publish Errors, Neural Network Training Status and CodePipeline Approval Messages.
+    Value: !Ref SNSTopic

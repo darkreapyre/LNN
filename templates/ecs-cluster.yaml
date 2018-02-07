@@ -33,7 +33,7 @@ Parameters:
   Repository:
     Type: String
 
-  CodeCommitRepo:
+  GitHubRepo:
     Type: String
 
   TemplateBucket:
@@ -56,7 +56,7 @@ Resources:
         Subnet2 : !Ref Subnet2
         VpcId: !Ref VpcId
         VpcCIDR: !Ref VpcCIDR
-        Name: !Ref CodeCommitRepo
+        Name: !Ref GitHubRepo
 
   GreenService:
     Type: AWS::CloudFormation::Stack

@@ -22,18 +22,11 @@ Parameters:
 
   VpcCIDR:
     Type: String
-  
-  EmailAddress:
-    Type: String
+
+  SNSTopic:
+    Type: AWS::SNS::Topic  
 
 Resources:
-  SNSTopic:
-    Type: 'AWS::SNS::Topic'
-    Properties:
-      Subscription:
-        - Endpoint: !Ref EmailAddress
-          Protocol: email
-
   FlipLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -394,7 +387,7 @@ Resources:
                       "Code1" : { "Fn::GetParam" : [ "DiscoveryOutput", "cf_inputs.json", "Code1" ] },
                       "Code2" : { "Fn::GetParam" : [ "DiscoveryOutput", "cf_inputs.json", "Code2" ] },
                       "Repository": "${Repository}",
-                      "CodeCommitRepo": "${CodeCommitRepo}",
+                      "GitHubRepo": "${GitHubRepo}",
                       "TemplateBucket": "${TemplateBucket}"
                   }
               InputArtifacts:
