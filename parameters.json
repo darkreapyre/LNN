@@ -1,5 +1,5 @@
 {
-    "epochs": 3000,
+    "epochs": 2500,
     "layers": 4,
     "activations": {
         "layer1": "relu",

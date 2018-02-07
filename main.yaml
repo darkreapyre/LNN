@@ -15,7 +15,7 @@ Parameters:
 
   GitHubBranch:
     Type: String
-    Default: "0.3.0"
+    Default: 0.3.0
     Description: The branch of the repo to continuously deploy.
 
   GitHubToken:
