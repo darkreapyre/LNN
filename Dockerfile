@@ -33,7 +33,7 @@ RUN pip3 install \
 
 # Configure API Endpoint
 ADD ./src /app
-ADD ./config /config
+ADD ./src/config /config
 EXPOSE 80
 
 # Launch Flask App
