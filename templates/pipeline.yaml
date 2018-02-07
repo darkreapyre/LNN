@@ -2,10 +2,10 @@ Description: >
   This Template creates the CodePipeline and CodeBuild resources for Blue/Green Deployment of the Prediciton API on ECS.
 
 Parameters:
-  CodeCommitRepo:
+  GitHubRepo:
     Type: String
 
-  CodeCommitBranch:
+  GitHubBranch:
     Type: String
 
   TemplateBucket:
@@ -30,10 +30,10 @@ Resources:
   FlipLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub lambda-${CodeCommitRepo}-flip
+      FunctionName: !Sub lambda-${GitHubRepo}-flip
       Handler: flip.handler
       Runtime: python2.7
-      Description: !Sub lambda-${CodeCommitRepo}-blue-green-swap
+      Description: !Sub lambda-${GitHubRepo}-blue-green-swap
       Code:
         S3Bucket: !Ref TemplateBucket
         S3Key: scripts.zip
@@ -44,7 +44,7 @@ Resources:
   FlipLambdaRole:
       Type: AWS::IAM::Role
       Properties:
-        #RoleName: !Sub lambda-${CodeCommitRepo}-blue-green-swap-role
+        #RoleName: !Sub lambda-${GitHubRepo}-blue-green-swap-role
         AssumeRolePolicyDocument:
           Version: "2012-10-17"
           Statement:
@@ -60,7 +60,7 @@ Resources:
   FlipLambdaPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub lambda-${CodeCommitRepo}-blue-green-swap-policy
+      PolicyName: !Sub lambda-${GitHubRepo}-blue-green-swap-policy
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
