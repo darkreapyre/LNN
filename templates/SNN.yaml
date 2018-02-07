@@ -45,7 +45,7 @@ Resources:
     Type: 'AWS::SNS::Topic'
     Description: Publish Errors, Neural Network Training Status and CodePipeline Approval Messages
     Properties:
-      DisplayName: Serverless Neural Network Status Message
+      DisplayName: Serverless Neural Network Pipeline Status Message
       Subscription:
         - Endpoint: !Ref TopicEmail
           Protocol: email
@@ -342,6 +342,6 @@ Resources:
                 Resource: '*'
   
 Outputs:
-  SNSTopic:
+  SNSTopicArn:
     Description: Publish Errors, Neural Network Training Status and CodePipeline Approval Messages.
     Value: !Ref SNSTopic

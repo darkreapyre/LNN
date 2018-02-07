@@ -2,10 +2,16 @@ Description: >
   This Template creates the CodePipeline and CodeBuild resources for Blue/Green Deployment of the Prediciton API on ECS.
 
 Parameters:
+  GitHubUser:
+    Type: String
+
   GitHubRepo:
     Type: String
 
   GitHubBranch:
+    Type: String
+  
+  GitHubToken:
     Type: String
 
   TemplateBucket:
@@ -24,7 +30,7 @@ Parameters:
     Type: String
 
   SNSTopic:
-    Type: AWS::SNS::Topic  
+    Type: String 
 
 Resources:
   FlipLambda:
@@ -333,7 +339,7 @@ Resources:
                 S3ObjectKey: scripts.zip
             - Name: Parameters
               ActionTypeId:
-                Catagoty: Dource
+                Catagory: Source
                 Owner: AWS
                 Version: 1
                 Provuder: S3

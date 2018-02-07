@@ -81,7 +81,7 @@ Resources:
     Properties:
       TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/vpc.yaml
       Parameters:
-        Name: !Ref AWS::StackName
+        EnvironmentName: !Ref AWS::StackName
         VpcCIDR: 10.215.0.0/16
         PublicSubnet1CIDR: 10.215.10.0/24
         PublicSubnet2CIDR: 10.215.11.0/24
@@ -127,8 +127,7 @@ Resources:
         Subnet2: !GetAtt VPC.Outputs.PublicSubnet2
         VpcId: !GetAtt VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
-        SNSTopic: !GetAtt SNN.Outputs.SNSTopic
-
+        SNSTopic: !GetAtt SNN.Outputs.SNSTopicArn
 
 Outputs:
   PipelineUrl:
