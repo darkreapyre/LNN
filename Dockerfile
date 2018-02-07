@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
   libatlas-base-dev \
   gfortran \
   gcc \
-  wget \Dockerfile
+  wget \
   nginx \
   supervisor && \
   rm -rf /var/lib/apt/lists/*
