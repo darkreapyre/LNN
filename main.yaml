@@ -76,22 +76,6 @@ Metadata:
           - EmailAddress
 
 Resources:
-  DeploymentPipeline:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/pipeline.yaml
-      Parameters:
-        GitHubUser: !Ref GitHubUser
-        GitHubToken: !Ref GitHubtoken
-        GitHubRepo: !Ref GitHubRepo
-        GitHubBranch: !Ref GithubBranch
-        TemplateBucket: !Ref TemplateBucket
-        Subnet1: !GetAtt VPC.Outputs.PublicSubnet1
-        Subnet2: !GetAtt VPC.Outputs.PublicSubnet2
-        VpcId: !GetAtt VPC.Outputs.VPC
-        VpcCIDR: 10.215.0.0/16
-        SNSTopic: !GetAtt SNN.Outputs.SNSTopic
-
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -123,11 +107,28 @@ Resources:
       TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/elasticache.yaml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
-        PrivateSubnet1: !Ref VPC>Outputs.PrivateSubnet1
+        PrivateSubnet1: !Ref VPC.Outputs.PrivateSubnet1
         PrivateSubnet2: !Ref VPC.Outputs.PrivateSubnet2
         ClusterNodeType: !Ref ClusterNodeType
         VPC: !Ref VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
+
+  DeploymentPipeline:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/pipeline.yaml
+      Parameters:
+        GitHubUser: !Ref GitHubUser
+        GitHubToken: !Ref GitHubtoken
+        GitHubRepo: !Ref GitHubRepo
+        GitHubBranch: !Ref GithubBranch
+        TemplateBucket: !Ref TemplateBucket
+        Subnet1: !GetAtt VPC.Outputs.PublicSubnet1
+        Subnet2: !GetAtt VPC.Outputs.PublicSubnet2
+        VpcId: !GetAtt VPC.Outputs.VPC
+        VpcCIDR: 10.215.0.0/16
+        SNSTopic: !GetAtt SNN.Outputs.SNSTopic
+
 
 Outputs:
   PipelineUrl:
