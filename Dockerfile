@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Flask API Libraries
 RUN pip3 install --upgrade pip
+Run pip3 install --user --upgrade awscli
 RUN pip3 install \
   uwsgi \
   Flask \
