@@ -235,8 +235,8 @@ Resources:
             pre_build:
               commands:
                 - printenv
-                - aws s3 cp s3://${TemplateBucket}/predict_input/params.h5 src/params.h5
-                - aws s3 cp s3://${TemplateBucket}/training_input/parameters.json src/parameters.json
+                - aws s3 cp s3://${TemplateBucket}/predict_input/params.h5 ./src/params.h5
+                - aws s3 cp s3://${TemplateBucket}/training_input/parameters.json ./src/parameters.json
                 - echo -n "$CODEBUILD_LOG_PATH" > /tmp/build_id.out
                 - printf "%s:%s" "$REPOSITORY_URI" "$(cat /tmp/build_id.out)" > /tmp/build_tag.out
                 - printf '{"tag":"%s"}' "$(cat /tmp/build_id.out)" > /tmp/build.json
