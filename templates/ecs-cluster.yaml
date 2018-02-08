@@ -98,5 +98,6 @@ Outputs:
   ClusterName:
       Value: !Ref Cluster
   
-  ServiceURL:
+  ApplicationURL:
       Value: !GetAtt LoadBalancer.Outputs.ServiceUrl
+      Description: Prediction API URL for Productions (Blue)
