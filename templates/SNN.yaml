@@ -51,7 +51,7 @@ Resources:
           Protocol: email
       TopicName: !Sub ${EnvironmentName}-SNN-SNS
   
-  SecurityGroup:
+  ComputeSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref VPC
@@ -77,7 +77,7 @@ Resources:
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
-          - !Ref SecurityGroup
+          - !Ref ComputeSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
           - !Ref PrivateSubnet2
@@ -155,7 +155,7 @@ Resources:
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
-          - !Ref SecurityGroup
+          - !Ref ComputeSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
           - !Ref PrivateSubnet2
@@ -226,7 +226,7 @@ Resources:
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
-          - !Ref SecurityGroup
+          - !Ref ComputeSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
           - !Ref PrivateSubnet2
