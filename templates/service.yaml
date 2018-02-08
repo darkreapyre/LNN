@@ -88,43 +88,6 @@ Resources:
           - "*"
       ListenerArn: !Ref LoadBalancerListener
       Priority: 1
-  
-#  ServiceRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#        RoleName: !Sub ecs-service-predict
-#        Path: /
-#        AssumeRolePolicyDocument: |
-#          {
-#              "Statement": [{
-#                  "Effect": "Allow",
-#                  "Principal": { "service": [ "ecs.amazonaws.com" ]},
-#                  "Action": [ "sts.AssumeRole" ]
-#              }]
-#          }
-#        Policies:
-#            - PolicyName: !Sub ecs-service-predict
-#            - PolicyDocument:
-#                {
-#                    "Version": "2012-19-17",
-#                    "Statement": [{
-#                            "Effect": "Allow",
-#                            "Action": [
-#                                "ec2:AuthorizeSecurityGroupIngress",
-#                                "ec2:Describe*",
-#                                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
-#                                "elasticloadbalancing:Describe*",
-#                                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
-#                                "elasticloadbalancing:DeregisterTargets",
-#                                "elasticloadbalancing:DescribeTargetGroups",
-#                                "elasticloadbalancing:DescribeTargetHealth",
-#                                "elasticloadbalancing:RegisterTargets",
-#                                "elasticloadbalancing:CreateTargetGroup",
-#                                "elasticloadbalancing:DeleteTargetGroup"
-#                            ],
-#                            "Resources": "*"
-#                    }]
-#                }
 
   TaskRole:
     Type: AWS::IAM::Role
@@ -138,28 +101,9 @@ Resources:
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
-#      Policies:
-#        - PolicyName: test-ecs-task-policy
-#          PolicyDocument:
-#            {
-#              "Version": "2012-10-17",
-#              "Statement": [{
-#                      "Effect": "Allow",
-#                      "Action": [
-#                          "s3:*",
-#                          "ecr:*",
-#                          "logs:*",
-#                          "ec2:*",
-#                          "ecs:*",
-#                          "iam:*"
-#                      ],
-#                      "Resource": "*"
-#              }]
-#            }
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
