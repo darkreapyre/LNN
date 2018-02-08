@@ -224,7 +224,7 @@ Resources:
         Type: CODEPIPELINE
       Source:
         Type: CODEPIPELINE
-        BuildSpec: |
+        BuildSpec: !Sub |
           version: 0.2
           phases:
             install:
@@ -233,7 +233,7 @@ Resources:
                 - pip install --upgrade python
                 - pip install --upgrade awscli
             pre_build:
-              commands:
+              commands: 
                 - printenv
                 - aws s3 cp s3://${TemplateBucket}/predict_input/params.h5 ./src/params.h5
                 - aws s3 cp s3://${TemplateBucket}/training_input/parameters.json ./src/parameters.json
