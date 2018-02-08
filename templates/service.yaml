@@ -138,6 +138,24 @@ Resources:
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
+#      Policies:
+#        - PolicyName: test-ecs-task-policy
+#          PolicyDocument:
+#            {
+#              "Version": "2012-10-17",
+#              "Statement": [{
+#                      "Effect": "Allow",
+#                      "Action": [
+#                          "s3:*",
+#                          "ecr:*",
+#                          "logs:*",
+#                          "ec2:*",
+#                          "ecs:*",
+#                          "iam:*"
+#                      ],
+#                      "Resource": "*"
+#              }]
+#            }
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
