@@ -31,10 +31,6 @@ RUN pip3 install \
   requests \
   h5py
 
-RUN pip3 install --user --upgrade awscli
-
-ENV PATH /root/.local/bin:$PATH
-
 # Configure API Endpoint
 ADD ./src /app
 ADD ./src/config /config
