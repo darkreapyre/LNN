@@ -22,7 +22,7 @@ from skimage import transform
 rgn = 'us-east-1'
 S3_Bucket = 'lnn-030-000'
 s3_client = boto3.client('s3', region_name=rgn)
-s3_resource = boto3.resource('s3')
+s3_resource = boto3.resource('s3', region_name=rgn)
 
 def sigmoid(z):
     """
