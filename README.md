@@ -44,19 +44,24 @@ Each version is meant to enhance the functionality of the implementation to star
     - This Branch was used to create the [itsacat](https://github.com/darkreapyre/itsacat) demo, and prototyped the usage of [Xavier Glorot](http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) initialization as well as the [ReLU](https://arxiv.org/pdf/1502.01852v1.pdf) initializations.
 - Version 0.2.1: L-Layer Logistic Regression - Xavier Initialization with L2 Regularization. (**Complete**)
     >**Notes:**
-    - Should this or subsequent versions succeed, the training process will integrate with the *CI/CD Pipeline* (`Version 0.3.x`).
+    - Should this or subsequent versions succeed, the training process will integrate with the *CI/CD Pipeline* (`Version 0.3.x`). Currently the Pipeline has been de-coupled to only lerage the services required by the Lambda functions, namely:
+        - VPC
+        - Security Groups
+        - ElastiCache
     - Although introducing *Xavier* initialization for the **Weights** shows significant improvement (final **Cost** of **0.00658138016613162** after **2,500** Epochs), adding **L2 Regularization** does not solve the **Exploding Gradient** problem and in fact produces final **Cost** that is worse, **0.12014227975111075** after **2,500** Epochs. 
-    - It is also important to note that runnning the network without *Xavier* initialization produces an overall accuracy of $78%$ after **3,000** Epochs. Using **Xavier** initialization (without **L2 Regularization**) produces an accuracy of $74%$ after **2,500** Epochs. It is the hope to see an improvement by increasing this to **3,000** Epochs. As a side notw, the network leveraging **Xavier** initialization as well as **L2 Regularization** only produces a $68%$ accuracy.
+    - It is also important to note that runnning the network without *Xavier* initialization produces an overall Accuracy Score of **$78%$** after **3,000** Epochs. Using **Xavier** initialization (without **L2 Regularization**) produces an Accuracy Score of **$74%$** after **2,500** Epochs. It is the hope to see an improvement by increasing this to **3,000** Epochs. As a side note, the network leveraging **Xavier** initialization as well as **L2 Regularization** only produces a **$68%$** Accuracy Score.
     - To try and reduce the exploding gradient issue, the next release will investigate different optimizers and mini-batch gradient descent.
-- Version 0.2.2: L-Layer Logistic Regression - Mini-Batch Gradient Decent Optimization. (**TBD**)
+- Version 0.2.2: L-Layer Logistic Regression - Mini-Batch Gradient Decent Optimization. (**Under Investigation**)
     >**Notes:**
     - In order to improve the overall error **without** inreasing the number of Epochs, *Mini-Batch* Gradient Descent is tested. This process requires a complete reworking of the architecture:
-        - The `LaunchLambda` now controls the overall iterations/epochs, while the mini-batches are controlled by the `TrainerLambda`.
+        - The `LaunchLambda` now controls the overall iterations/epochs.
+        - Mini-batch training is controlled by the `TrainerLambda`.
 - Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
-- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**TBD**)
+- Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**Complete**)
     >**Notes:**
-    - This version merges [itsacat](https://github.com/darkreapyre/itsacat) demo with Prediction API *CI/CD Pipeline*. 
+    - This version merges [itsacat](https://github.com/darkreapyre/itsacat) demo (derived from Version 0.2.1 **without** L2 Regularization) with the Prediction API *CI/CD Pipeline*. 
     - In order for the Pipeline to leverage [AWS Fargate](https://aws.amazon.com/fargate/), the solution is tested using the `us-east-1` Region and therefore levergaes a dedicated *S3* Bucket (**lnn**) in that Region.
+    - As a side note, the Training Pipeline produced an Accuracy Score of **$78%$** using [2500](https://github.com/darkreapyre/LNN/blob/0.3.0/artifacts/Analysis-MMD.ipynb) Epochs and an Accuracy Score of **$82%$** using [3000](https://github.com/darkreapyre/LNN/blob/0.3.0/artifacts/Analysis-MMM.ipynb) Epochs.
 - Version 0.3.1: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with API Gateway. (**TBD**)
     >**Notes:**
     - [To test](https://www.96cloudshiftstrategies.com/flasklambdalab.html)
