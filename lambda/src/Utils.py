@@ -17,8 +17,7 @@ import redis
 from redis import StrictRedis as redis
 
 # Global Variables
-#rgn = environ['Region']
-rgn = 'us-west-2'
+rgn = environ['Region']
 s3_client = client('s3', region_name=rgn) # S3 access
 s3_resource = resource('s3')
 sns_client = client('sns', region_name=rgn) # SNS
