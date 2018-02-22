@@ -37,7 +37,7 @@ echo -n "Uploading Cloudformation Templates to S3..."
 rm -rf tmp
 mkdir tmp
 zip tmp/templates.zip main.yaml infrastructure/*
-aws s3 mb "s3://${bucket}"
+aws s3 mb "s3://${bucket}" --region "${region}"
 aws s3 cp tmp/templates.zip "s3://${bucket}/deploy/" --region "${region}"
 aws s3 cp main.yaml "s3://${bucket}/deploy/" --region "${region}"
 aws s3 cp --recursive infrastructure/ "s3://${bucket}/deploy/infrastructure" --region "${region}"
