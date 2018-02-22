@@ -56,6 +56,7 @@ Each version is meant to enhance the functionality of the implementation to star
     - In order to improve the overall error **without** inreasing the number of Epochs, *Mini-Batch* Gradient Descent is tested. This process requires a complete reworking of the architecture:
         - The `LaunchLambda` now controls the overall iterations/epochs.
         - Mini-batch training is controlled by the `TrainerLambda`.
+    - The re-worked architecture specifies a dedicated ElastiCache database for each mini-batch. The "master" database for paramaters is by default hard-coded to **15** as a single Redis server can only support **16** databases. This means that for the solution to work, no more than **15** mini-batches can be used.
 - Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
 - Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**Complete**)
     >**Notes:**
