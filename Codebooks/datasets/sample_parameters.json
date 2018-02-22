@@ -10,5 +10,6 @@
         "layer2": 1
     },
     "learning_rate": 0.0075,
-    "lambda": 0.7
+    "optimizer": "gd",
+    "batch_size": 64
 }
