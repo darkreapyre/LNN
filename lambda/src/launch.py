@@ -7,11 +7,7 @@ an S3 training data upload and managed training Epochs.
 # Import Libraries and Global variablesneeded by the Lambda Function
 from Utils import *
 
-# Find and retrieve the Elasticache Cluster endpoint
-cc = redis_client.describe_cache_clusters(ShowCacheNodeInfo=True)
-endpoint = cc['CacheClusters'][0]['CacheNodes'][0]['Endpoint']['Address']
-cache = redis(host=endpoint, port=6379, db=15) # Connect Python to Redis Cluster
-
+# Lambda Handler
 def lambda_handler(event, context):
     # Determine if this is the initial launch of the funciton
     if not event.get('state') == 'next':
