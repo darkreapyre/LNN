@@ -18,6 +18,10 @@ from redis import StrictRedis as redis
 
 # Global Variables
 #rgn = environ['Region']
+"""
+Note: The Region is specifically declared for
+the 2-Layer Sample
+"""
 rgn = 'us-west-2'
 s3_client = client('s3', region_name=rgn) # S3 access
 s3_resource = resource('s3')
@@ -233,6 +237,66 @@ def from_cache(db, key):
         print("The Object is not a supported de-serialization type")
         raise
 
+def sigmoid(z):
+    """
+    Computes the sigmoid of z.
+    
+    Arguments:
+    z -- A scalar or numpy array of any size
+    Return:
+    sigmoid(z)
+    """
+    return 1. / (1. + np.exp(-z))
+
+def relu(z):
+    """
+    Implement the ReLU function.
+    
+    Arguments:
+    z -- Output of the linear layer, of any shape
+    Returns:
+    a -- Post-activation parameter, of the same shape as z
+    """
+    a = np.maximum(0, z)
+    # Debug statement
+    #assert(a.shape == z.shape)
+    return a
+
+def sigmoid_backward(dA, z):
+    """
+    Implement the derivative of the sigmoid function.
+    
+    Arguments:
+    dA -- Post-activation gradient, of any shape
+    z -- Cached linear activation from Forward prop
+    
+    Returns:
+    dZ -- Gradient of the Cost with respect to z
+    """
+    s = 1. / (1. + np.exp(-z))
+    dZ = dA * s * (1 - s)
+    # Debug statement
+    #assert(dZ.shape == z.shape)
+    return dZ
+
+def relu_backward(dA, z):
+    """
+    Implement the backward propagation for a single ReLU unit.
+    
+    Arguments:
+    dA -- Post-activation gradient, of any shape
+    z -- Cached linear activation from Forward propagation
+    
+    Return:
+    dz -- Gradient of the Cost with respect to z
+    """
+    dz = np.array(dA, copy=True) #converting dz to a correct object
+    # When z <= 0, set dz to 0 as well
+    dz[z <= 0] = 0
+    # Debug statement
+    #assert (dz.shape == z.shape)
+    return dz
+
 def random_minibatches(X, Y, batch_size=64):
     """
     Creates a list of random smaller batches of X and Y
@@ -309,3 +373,193 @@ def inv_counter(name, invID, task):
                 ':val1': 1
             }
         )
+
+def propogate(direction, batch, layer, parameter_key):
+    """
+    Determines the amount of "hidden" units based on the layer and loops
+    through launching the necessary `NeuronLambda` functions with the 
+    appropriate state. Each `NeuronLambda` implements the cost function 
+    OR the gradients depending on the direction.
+
+    Arguments:
+    direction -- The current direction of the propogation, either `forward` or `backward`.
+    epoch -- Integer representing the "current" epoch to close out.
+    layer -- Integer representing the current hidden layer.
+
+    Note: When launching NeuronLambda with multiple hidden unit,
+    remember to assign an ID, also remember to start at 1
+    and not 0. for example:
+    num_hidden_units = 5
+    for i in range(1, num_hidden_units + 1):
+        # Do stuff
+    """
+    # Get the parameters for the layer
+    parameters = from_cache(db=batch, key=parameter_key)
+    num_hidden_units = parameters['neurons']['layer'+str(layer)]
+    
+    # Build the NeuronLambda payload
+    payload = {}
+    # Add the parameters to the payload
+    payload['state'] = direction
+    payload['batch'] = batch
+    payload['layer'] = layer
+    
+    # Determine process based on direction
+    if direction == 'forward':
+        # Launch Lambdas to propagate forward
+        # Prepare the payload for `NeuronLambda`
+        # Update parameters with this function's updates
+        parameters['layer'] = layer
+        payload['parameter_key'] = to_cache(db=batch, obj=parameters, name='parameters')
+
+        # Debug Statements
+        """
+        Note: This should be uncommented in production
+        #print("Starting Forward Propagation for batch " + str(batch) + ", layer " + str(layer))
+        """
+        # Prepare the payload for `NeuronLambda`
+        for i in range(1, num_hidden_units + 1):
+            payload['id'] = i
+            if i == num_hidden_units:
+                payload['last'] = "True"
+            else:
+                payload['last'] = "False"
+            payload['activation'] = parameters['activations']['layer' + str(layer)]
+            
+            # Debug Statements
+            #print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+            
+            """
+            Note: the `neuron_handler` function is called for the
+            2-Layer sample.
+            """
+            neuron_handler(event=payload, context=None)
+            
+            # Create an Invokation ID to ensure no duplicate funcitons are launched
+            #invID = str(uuid.uuid4()).split('-')[0]
+            #name = "NeuronLambda" #Name of the Lambda fucntion to be invoked
+            #task = 'set'
+            #inv_counter(name, invID, task)
+            #payload['invID'] = invID
+            #payloadbytes = dumps(payload)
+
+            # Invoke NeuronLambdas for next layer
+            #try:
+            #    response = lambda_client.invoke(
+            #        FunctionName=parameters['ARNs']['NeuronLambda'],
+            #        InvocationType='Event',
+            #        Payload=payloadbytes
+            #    )
+            #except botocore.exceptions.ClientError as e:
+            #    sns_message = "Errors occurred invoking Neuron Lambda from TrainerLambda."
+            #    sns_message += "\nError:\n" + str(e)
+            #    sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+            #    publish_sns(sns_message)
+            #    print(e)
+            #    raise
+            #print(response)
+        
+        """
+        Note: Return is called when running the
+        2-Layer Sample.
+        """
+        return
+    
+    elif direction == 'backward':
+        # Launch Lambdas to propogate backward        
+        # Prepare the payload for `NeuronLambda`
+        # Update parameters with this functions updates
+        parameters['layer'] = layer
+        payload['parameter_key'] = to_cache(db=batch, obj=parameters, name='parameters')
+        
+        # Debug Statements
+        """
+        Note: This should be uncommented in production
+        #print("Starting Backward Propagation for batch " + str(batch) + ", layer " + str(layer))
+        """
+        # Prepare the payload for `NeuronLambda`
+        for i in range(1, num_hidden_units + 1):
+            payload['id'] = i
+            if i == num_hidden_units:
+                payload['last'] = "True"
+            else:
+                payload['last'] = "False"
+            payload['activation'] = parameters['activations']['layer' + str(layer)]
+            
+            # Debug Statements
+            #print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+            
+            """
+            Note: the `neuron_handler` function is called for the
+            2-Layer sample.
+            """
+            neuron_handler(event=payload, context=None)
+            
+            # Create an Invokation ID to ensure no duplicate funcitons are launched
+            #invID = str(uuid.uuid4()).split('-')[0]
+            #name = "NeuronLambda" #Name of the Lambda fucntion to be invoked
+            #task = 'set'
+            #inv_counter(name, invID, task)
+            #payload['invID'] = invID
+            #payloadbytes = dumps(payload)
+
+            # Debug Statement
+            #print("Payload to be sent to NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
+
+            # Invoke NeuronLambdas for next layer
+            #try:
+            #    response = lambda_client.invoke(
+            #        FunctionName=parameters['ARNs']['NeuronLambda'],
+            #        InvocationType='Event',
+            #        Payload=payloadbytes
+            #    )
+            #except botocore.exceptions.ClientError as e:
+            #    sns_message = "Errors occurred invoking Neuron Lambda from TrainerLambda."
+            #    sns_message += "\nError:\n" + str(e)
+            #    sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+            #    publish_sns(sns_message)
+            #    print(e)
+            #    raise
+            #print(response)
+            
+        """
+        Note: Return is called when running the
+        2-Layer Sample.
+        """
+        return
+    
+    else:
+        """
+        Note: The following should be used in production
+        """
+        #sns_message = "Errors processing the `propogate() function."
+        #publish_sns(sns_message)
+        
+        raise
+
+
+def start_batch(batch, layer, parameter_key):
+    """
+    Starts a new mini-batch and configures the necessary
+    state tracking objects for the batch.
+    
+    Arguments:
+    batch -- Integer representing the "current" mini-batch
+    layer -- Integer representing the current hidden layer
+    """
+    # Configure state parameters for this batch
+    parameters = from_cache(db=batch, key=parameter_key)
+    parameters['layer'] = layer
+    parameter_key = to_cache(
+        db=batch,
+        obj=parameters,
+        name='parameters'
+    )
+    
+    # Start Forward propogation
+    propogate(
+        direction='forward',
+        batch=batch,
+        layer=layer+1,
+        parameter_key=parameter_key
+    )
