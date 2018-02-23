@@ -148,55 +148,57 @@ def lambda_handler(event, context):
                 obj=m,
                 name='m'
             )
-            
             # Debug Statements
-            print("\n"+"\n"+"Batch {} Parameters: ".format(current_batch))
-            print(dumps(batch_parameters, indent=4, sort_keys=True))
-            
-            # Initialize the payload for current batch to `TrainerLambda`
-            payload = {}
-            payload['state'] = 'start' # Initialize overall state
-            payload['batch_ID'] = current_batch # Append the batch ID
-            payload['parameter_key'] = to_cache(
-                db=current_batch,
-                obj=batch_parameters,
-                name='parameters'
-            )
-            
-            # Create the invocation ID to ensure no duplicate functions
-            # are launched.
-            invID = str(uuid.uuid4()).split('-')[0]
-            name = 'TrainerLambda'
-            task = 'set'
-            inv_counter(name, invID, task)
-            payload['invID'] = invID
-            
-            # Prepare the payload for `TrainerLambda`
-            payloadbytes = dumps(payload)
-            
-            # Debug Statements
-            #print("Complete Neural Network Settings for batch: {}\n".format(current_batch))
+            #print("\n"+"\n"+"Batch {} Parameters: ".format(current_batch))
             #print(dumps(batch_parameters, indent=4, sort_keys=True))
-            #print("\n"+"Payload to be sent to TrainerLambda: \n")
-            #print(dumps(payload))
             
-            # Invoke TrainerLambda to start the training process for
-            # the current batch.
-            try:
-                response = lambda_client.invoke(
-                    FunctionName=batch_parameters['ARNs']['TrainerLambda'],
-                    InvocationType='Event',
-                    Payload=payloadbytes
-                )
-            except botocore.exceptions.ClientError as e:
-                sns_message = "Errors occurred invoking TrainerLambda from LaunchLambda."
-                sns_message += "\nError:\n" + str(e)
-                sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
-                publish_sns(sns_message)
-                print(e)
-                raise
-            print(response)
+        # Initialize the payload for initial batch to `TrainerLambda`
+        payload = {}
+        payload['state'] = 'start' # Initialize overall state
+        payload['batch_ID'] = 0 # Append the batch ID
+        """
+        Note: Need to think about this
+        payload['parameter_key'] = to_cache(
+            db=0,
+            obj=batch_parameters,
+            name='parameters'
+        )
+        """
+            
+        # Create the invocation ID to ensure no duplicate functions
+        # are launched.
+        invID = str(uuid.uuid4()).split('-')[0]
+        name = 'TrainerLambda'
+        task = 'set'
+        inv_counter(name, invID, task)
+        payload['invID'] = invID
+            
+        # Prepare the initial batch payload for `TrainerLambda`
+        payloadbytes = dumps(payload)
+            
+        # Debug Statements
+        #print("Complete Neural Network Settings for the initial batch:\n")
+        #print(dumps(batch_parameters, indent=4, sort_keys=True))
+        #print("\n"+"Payload to be sent to TrainerLambda: \n")
+        #print(dumps(payload))
+            
+        # Invoke TrainerLambda to start the training process for
+        # the current batch.
+        try:
+            response = lambda_client.invoke(
+                FunctionName=batch_parameters['ARNs']['TrainerLambda'],
+                InvocationType='Event',
+                Payload=payloadbytes
+            )
+        except botocore.exceptions.ClientError as e:
+            sns_message = "Errors occurred invoking TrainerLambda from LaunchLambda."
+            sns_message += "\nError:\n" + str(e)
+            sns_message += "\nCurrent Payload:\n" +  dumps(payload, indent=4, sort_keys=True)
+            publish_sns(sns_message)
+            print(e)
+            raise
+        print(response)
             
     """
-    To Do: Completenext stage if this is not the first time the function is called
+    To Do: Complete next stage if this is not the first time the function is called
     """
