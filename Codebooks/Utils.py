@@ -198,7 +198,7 @@ def from_cache(db, key):
     # Check if the Key is for a Numpy array containing
     # `float64` data types
     if 'float64' in key:
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
@@ -210,7 +210,7 @@ def from_cache(db, key):
     # Check if the Key is for a Numpy array containing
     # `int64` data types
     elif 'int64' in key:
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         val = cache.get(key)
         # De-serialize the value
         array_dtype, length, width = key.split('|')[1].split('#')
@@ -218,17 +218,17 @@ def from_cache(db, key):
         return obj
     # Check if the Key is for a json type
     elif 'json' in key:
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         obj = cache.get(key)
         return json.loads(obj)
     # Chec if the Key is an integer
     elif 'int' in key:
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         obj = cache.get(key)
         return int(obj)
     # Check if the Key is a string
     elif 'string' in key:
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         obj = cache.get(key)
         return obj
     else:
@@ -563,3 +563,88 @@ def start_batch(batch, layer, parameter_key):
         layer=layer+1,
         parameter_key=parameter_key
     )
+
+def vectorizer(Outputs, Layer, batch, parameters):
+    """
+    Creates a matrix of the individual neuron output for better vectorization.
+    
+    Arguments:
+    Outputs -- ElastiCache key to search for the data from `NeuronLambda`
+               e.g. 'a' for activations; 'dw' for Weight Derivatives
+    Layer -- Layer to search for neuron output that need to vectorized
+    batch -- The current mini-batch
+    parameters -- The current mini-batch parameters
+    
+    Returns:
+    result -- Matrix matching the size for the entire layer
+    """
+    # Use the following Redis command to ensure a pure string is return for the key
+    r = redis(host=endpoint, port=6379, db=batch, charset="utf-8", decode_responses=True)
+    search_results = []
+    # Compile a list of all the neurons in the search layer based on the search criteria
+    for n in range(1, parameters['neurons']['layer'+str(Layer)]+1):
+        tmp = r.keys('layer'+str(Layer)+'_'+str(Outputs)+'_'+str(n)+'|*')
+        search_results.append(tmp)
+    # Created an ordered list of neuron data keys
+    key_list = []
+    for result in search_results:
+        key_list.append(result[0])
+    # Create a dictionary of neuron data
+    Dict = {}
+    for data in key_list:
+        Dict[data] = from_cache(db=batch, key=data)
+    # Number of Neuron Activations for the search layer
+    num_neurons = parameters['neurons']['layer'+str(Layer)]
+    # Create a numpy array of the results, depending on the number
+    # of neurons (a Matrix of Activations)
+    matrix = np.array([arr.tolist() for arr in Dict.values()])
+    if num_neurons == 1:
+        # Single Neuron Activation
+        dims = (key_list[0].split('|')[1].split('#')[1:])
+        matrix = matrix.reshape(int(dims[0]), int(dims[1]))
+    else:
+        # Multiple Neuron Activations
+        matrix = np.squeeze(matrix)
+    
+    return matrix
+
+def update_parameters_with_gd(W, b, dW, db, learning_rate, batch, layer, parameters):
+    """
+    Updates parameters using one step of gradient descent for a layer.
+    
+    Arguments:
+    W -- Matrix of the Weights for the layer
+    b -- Vector of the Bias for the layer
+    dW -- Matrix of the Derivatives of  Weights for the layer
+    db -- Vector of the Derivatives of theBias for the layer
+    learning_rate -- Learning rate for the network, scalar
+    batch -- Current mini-batch
+    layer -- Current layer being optimized
+    
+    Returns:
+    parameter_key -- Updated parameter key with Weight and Bias data keys
+    """
+    # Run gradient descent
+    W_prime = W - learning_rate * dW
+    b_prime = b - learning_rate * db
+    
+    # Update the MASTER Weights and Bias
+    parameters['data_keys']['W'+str(layer+1)] = to_cache(
+        db=15,
+        obj=W_prime,
+        name='W'+str(layer+1)
+    )
+    parameters['data_keys']['b'+str(layer+1)] = to_cache(
+        db=15,
+        obj=b_prime,
+        name='b'+str(layer+1)
+    )
+    
+    # Update parameters for the mini-batch
+    parameter_key = to_cache(
+        db=batch,
+        obj=parameters,
+        name='parameters'
+    )
+    
+    return parameter_key
