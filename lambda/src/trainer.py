@@ -141,7 +141,7 @@ def lambda_handler(event, context):
 
             # Debug Statements
             #print("Complete Neural Network Settings for batch: {}\n".format(current_batch))
-            #print(dumps(batch_parameters, indent=4, sort_keys=True))
+            #print(dumps(parameters, indent=4, sort_keys=True))
             #print("\n"+"Payload to be sent to TrainerLambda: \n")
             #print(dumps(payload))
 
@@ -149,7 +149,7 @@ def lambda_handler(event, context):
             # the current batch
             try:
                 response = lambda_client.invoke(
-                    FunctionName=batch_parameters['ARNs']['LaunchLambda'],
+                    FunctionName=parameters['ARNs']['LaunchLambda'],
                     InvocationType='Event',
                     Payload=payloadbytes
                 )
