@@ -57,6 +57,21 @@ Each version is meant to enhance the functionality of the implementation to star
         - The `LaunchLambda` now controls the overall iterations/epochs.
         - Mini-batch training is controlled by the `TrainerLambda`.
     - The re-worked architecture specifies a dedicated ElastiCache database for each mini-batch. The "master" database for paramaters is by default hard-coded to **15** as a single Redis server can only support **16** databases. This means that for the solution to work, no more than **15** mini-batches can be used.
+    - Issues:
+        ```python
+        list index out of range: IndexError
+        Traceback (most recent call last):
+        File "/var/task/trainer.py", line 40, in lambda_handler
+        A = vectorizer(Outputs='a', Layer=layer-1, batch=batch, parameters=parameters)
+        File "/var/task/Utils.py", line 556, in vectorizer
+        key_list.append(result[0])
+        IndexError: list index out of range
+        ```
+        - Tried 10 second latency
+        - Tried 2 second latency
+        - Tried 1 second latency
+        - Tried bigger Lambdas
+
 - Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
 - Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**Complete**)
     >**Notes:**
