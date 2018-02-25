@@ -40,6 +40,7 @@ def lambda_handler(event, context):
         }
         # Input data set and parameter bucket
         parameters['s3_bucket'] = event['Records'][0]['s3']['bucket']['name']
+        parameters['datasets_key'] = event['Records'][0]['s3']['object']['key']
         # Initial epoch for tracking
         parameters['epoch'] = 0
         # Initialize hash key tracking object
@@ -123,7 +124,7 @@ def lambda_handler(event, context):
                 ],
                 ProvisionedThroughput={
                     'ReadCapacityUnits': 20,
-                    'WriteCapacityUnits': 50
+                    'WriteCapacityUnits': 20
                 }
             )
             table.meta.client.get_waiter('table_exists').wait(TableName=t)
@@ -286,14 +287,16 @@ def lambda_handler(event, context):
             print("Cost after epoch {} = {}".format(epoch, float(current_cost)))
             
             # Retrieve "fresh" datasets and parmeters from S3
-            input_bucket = parameters['s3_bucket']
-            dataset_key = 'training_input/datasets.h5'
+            input_bucket_name = parameters['s3_bucket']
+            #datasets_key = parameters['datasets_key']
+            datasets_key = 'training_input/datasets.h5'
+
             try:
-                input_bucket.download_file(dataset_key, '/tmp/datasets.h5')
+                s3_resource.Bucket(input_bucket_name).download_file(datasets_key, '/tmp/datasets.h5')
             except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] == '404':
+                if e.response['Error']['Code'] == "404":
                     sns_message = "Error downloading input data from S3, S3 object does not exist"
-                    #publish_sns(sns_message)
+                    publish_sns(sns_message)
                     print(sns_message)
                 else:
                     raise
