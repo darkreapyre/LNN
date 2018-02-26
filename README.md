@@ -57,8 +57,8 @@ Each version is meant to enhance the functionality of the implementation to star
         - The `LaunchLambda` now controls the overall iterations/epochs.
         - Mini-batch training is controlled by the `TrainerLambda`.
     - The re-worked architecture specifies a dedicated ElastiCache database for each mini-batch. The "master" database for paramaters is by default hard-coded to **15** as a single Redis server can only support **16** databases. This means that for the solution to work, no more than **15** mini-batches can be used.
-    - Issues:
-        ```python
+    - After reworking the framework to accommodate mini-batches, the following error occurred intermitently, but mostly during the inital epochs:
+    ```python
         list index out of range: IndexError
         Traceback (most recent call last):
         File "/var/task/trainer.py", line 40, in lambda_handler
@@ -66,11 +66,13 @@ Each version is meant to enhance the functionality of the implementation to star
         File "/var/task/Utils.py", line 556, in vectorizer
         key_list.append(result[0])
         IndexError: list index out of range
-        ```
-        - Tried 10 second latency
-        - Tried 2 second latency
-        - Tried 1 second latency
-        - Tried bigger Lambdas
+    ```
+    - A similar error was seen before in some of the previous Versions and related to latency in the ElastiCache datababase. TYhis was resolved by re-submitting the `datasets.h5` file to S3 as it happenned on the first Epoch. However the error above accurs anywhere between **7** and **23** Epochs. It was assumed that that the `NeuronLandler` was launching the `TrainerLambda` before the other Neurons had updated ElstiCache and therefore the index was out of range. To address this, the following was tried:
+        - Tried **10** second latency before launching the `TrainerLambda`. --> This approach was terminated due to the fact that the overall latency of adding would defeat the purpose of trying mini-batches to optimize quicker and reduce training time.
+        - Tried 2 second latency before launching `TrainerLambda`. --> Faileden after **90** Epochs.
+        - Tried 1 second latency before launching `TrainerLambda`. --> Failed after **50** Epochs.
+        - Tried bigger Lambda memory size. --> Failed after **3** Epochs.
+    - After trying to debug the above error by analysing ElastiCache data, the error was re-produced. The index is out of range because the `result` array was empty. In fact there was no data from ElastiCache when searning. It was later determined that ElastyiCache REDIS engine deleted the database when `flushdb()` is called, in the background. This command was used within `LaunchLambda` to "refresh" the database between Epochs. Since this didn't happen synchronously, the data was bening delated between the updated from `NauronLambda` and `TrainerLambda`. The `flushdb()` command was removed from `LaunchLambda`, which resolved the issue.
 
 - Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
 - Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**Complete**)
