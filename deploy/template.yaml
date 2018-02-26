@@ -12,7 +12,7 @@ Parameters:
     ClusterNodeType:
         Description: ElastiCache Node type.
         Type: String
-        Default: cache.t2.small
+        Default: cache.t2.medium
         AllowedValues:
             - cache.t2.small
             - cache.t2.medium
