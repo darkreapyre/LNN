@@ -327,12 +327,6 @@ def lambda_handler(event, context):
             for batch in batches:
                 # Create parameters that are specific to the batch, `batch_parameters`
                 current_batch += 1
-                # Debug statements
-                #print("Flushing Batch {} Database.".format(current_batch))
-                # Create "fresh" ElastiCache mini-batch databases
-                batch_cache = redis(host=endpoint, port=6379, db=int(current_batch))
-                batch_cache.flushdb()
-                # Update new batch database
                 (batch_X, batch_Y) = batch
                 m = batch_X.shape[1]
                 batch_parameters = parameters
