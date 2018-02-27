@@ -12,12 +12,13 @@ Parameters:
     ClusterNodeType:
         Description: ElastiCache Node type.
         Type: String
-        Default: cache.r4.large
+        Default: cache.r4.xlarge
         AllowedValues:
             - cache.t2.small
             - cache.t2.medium
             - cache.m4.large
             - cache.r4.large
+            - cache.r4.xlarge
     
     TopicEmail:
         Default: ${EMAIL}
