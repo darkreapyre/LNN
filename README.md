@@ -72,8 +72,9 @@ Each version is meant to enhance the functionality of the implementation to star
         - Tried 2 second latency before launching `TrainerLambda`. --> Faileden after **90** Epochs.
         - Tried 1 second latency before launching `TrainerLambda`. --> Failed after **50** Epochs.
         - Tried bigger Lambda memory size. --> Failed after **3** Epochs.
+        - Tried to constrain the Lambda function and ElastiCache to a single Availability Zone in case there were Lambda invocations in the second AZ of the Region. --> No effect.
     - After trying to debug the above error by analysing ElastiCache data, the error was re-produced. The index is out of range because the `result` array was empty. In fact there was no data from ElastiCache when searning. It was later determined that ElastyiCache REDIS engine deleted the database when `flushdb()` is called, in the background. This command was used within `LaunchLambda` to "refresh" the database between Epochs. Since this didn't happen synchronously, the data was bening delated between the updated from `NauronLambda` and `TrainerLambda`. The `flushdb()` command was removed from `LaunchLambda`, which resolved the issue.
-
+    - After testing with with **750** Epochs, the training time was significantly betters, **18** hours. However, event thoguh final cost was **0.0012926892893857303**, the overall model accuracy was only **$74%$**.
 - Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**TBD**)
 - Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**Complete**)
     >**Notes:**
