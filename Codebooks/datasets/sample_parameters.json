@@ -10,6 +10,9 @@
         "layer2": 1
     },
     "learning_rate": 0.0075,
-    "optimizer": "gd",
+    "beta1": 0.9,
+    "beta2": 0.9,
+    "epsilon": 1e-8,
+    "optimizer": "adam",
     "batch_size": 64
 }
