@@ -82,7 +82,7 @@ def lambda_handler(event, context):
         
         # Initialize the optimizer
         if parameters['optimizer'] == "gd":
-            pass # No initialization required for gradient descent
+            pass # No additional initialization required for gradient descent
         elif parameters['optimizer'] == "adam":
             initialize_adam(parameters)
         

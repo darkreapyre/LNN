@@ -326,7 +326,7 @@ Resources:
                   - lambda:RemovePermission
                 Resource: '*'
     
-    LaunchLambdaLogs:
+  LaunchLambdaLogs:
     Type: AWS::Logs::LogGroup
     DependsOn: LaunchLambda
     Properties:
