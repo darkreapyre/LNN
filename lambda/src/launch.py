@@ -84,7 +84,7 @@ def lambda_handler(event, context):
         if parameters['optimizer'] == "gd":
             pass # No initialization required for gradient descent
         elif parameters['optimizer'] == "adam":
-            pass # Future use
+            initialize_adam(parameters)
         
         # Upload the pre-processed data sets to the Master ElastiCache DB (db=15)
         # and update the parameters with the keys

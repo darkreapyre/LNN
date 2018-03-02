@@ -325,3 +325,31 @@ Resources:
                   - lambda:AddPermission
                   - lambda:RemovePermission
                 Resource: '*'
+    
+    LaunchLambdaLogs:
+    Type: AWS::Logs::LogGroup
+    DependsOn: LaunchLambda
+    Properties:
+      LogGroupName: '/aws/lambda/LaunchLambda'
+      RetentionInDays: 1
+
+  TrainerLambdaLogs:
+    Type: AWS::Logs::LogGroup
+    DependsOn: TrainerLambda
+    Properties:
+      LogGroupName: '/aws/lambda/TrainerLambda'
+      RetentionInDays: 1
+
+  NeuronLambdaLogs:
+    Type: AWS::Logs::LogGroup
+    DependsOn: NeuronLambda
+    Properties:
+      LogGroupName: '/aws/lambda/NeuronLambda'
+      RetentionInDays: 1
+
+  TriggerLambdaLogs:
+    Type: AWS::Logs::LogGroup
+    DependsOn: S3TriggerLambda
+    Properties:
+      LogGroupName: '/aws/lambda/S3TriggerLambda'
+      RetentionInDays: 1

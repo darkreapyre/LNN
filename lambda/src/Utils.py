@@ -112,6 +112,60 @@ def initialize_data(parameters):
     
     return X, Y
 
+def initialize_adam(parameters):
+    """
+    Initializes Adam variables `v` and `s` as arrays of zeros and
+    uploads them to ElastiCache Master database as the exponetially
+    weighted average of the gradiet (v) and expoenentially weighted
+    average of the squared gradient (s). Additionally the counter `t`
+    for the Adam update is initialized.
+    
+    Arguments:
+    parameters -- The inital/running parameters dictionary object.
+    
+    Returns:
+    parameters -- Updated running parameters object with new keys.
+    """
+    for l in range(1, parameters['layers']+1):
+        W = from_cache(db=15, key=parameters['data_keys']['W'+str(l)])
+        b = from_cache(db=15, key=parameters['data_keys']['b'+str(l)])
+        vdW = np.zeros(W.shape)
+        vdb = np.zeros(b.shape)
+        sdW = np.zeros(W.shape)
+        sdb = np.zeros(b.shape)
+        
+        # Upload `v` and `s` to MASTER ElastiCache database
+        parameters['data_keys']['vdW'+str(l)] = to_cache(
+            db=15,
+            obj=vdW,
+            name='vdW'+str(l)
+        )
+        parameters['data_keys']['vdb'+str(l)] = to_cache(
+            db=15,
+            obj=vdb,
+            name='vdb'+str(l)
+        )
+        parameters['data_keys']['sdW'+str(l)] = to_cache(
+            db=15,
+            obj=sdW,
+            name='sdW'+str(l)
+        )
+        parameters['data_keys']['sdb'+str(l)] = to_cache(
+            db=15,
+            obj=sdb,
+            name='sdb'+str(l)
+        )
+    
+    # Initialize the counter required for Adam update
+    t = 1
+    parameters['data_keys']['t'] = to_cache(
+        db=15,
+        obj=t,
+        name='t'
+    )
+    
+    return parameters
+
 def to_cache(db, obj, name):
     """
     Serializes multiple data type to ElastiCache and returns
@@ -572,7 +626,7 @@ def vectorizer(Outputs, Layer, batch, parameters):
     
     return matrix
 
-def update_parameters_with_gd(W, b, dW, db, learning_rate, batch, layer, parameters):
+def update_parameters_with_gd(W, b, dW, db, batch, layer, parameters):
     """
     Updates parameters using one step of gradient descent for a layer.
     
@@ -588,6 +642,8 @@ def update_parameters_with_gd(W, b, dW, db, learning_rate, batch, layer, paramet
     Returns:
     parameter_key -- Updated parameter key with Weight and Bias data keys
     """
+    learning_rate = parameters['learning_rate']
+    
     # Run gradient descent
     W_prime = W - learning_rate * dW
     b_prime = b - learning_rate * db
@@ -612,3 +668,73 @@ def update_parameters_with_gd(W, b, dW, db, learning_rate, batch, layer, paramet
     )
     
     return parameter_key
+
+def update_parameters_with_adam(W, b, dW, db, batch, layer, parameters):
+    """
+    Update the parameters for the kayer using Adam.
+    
+    Arguments:
+    W -- Matrix of the Weights for the previous layer
+    b -- Vector of the Bias for the previous layer
+    dW -- Matrix of the Derivatives of  Weights for the previous layer
+    db -- Vector of the Derivatives of theBias for the previous layer
+    batch -- Current mini-batch
+    layer -- Current layer being optimized
+    parameters -- Running parameters dictionary object
+    
+    Returns:
+    parameter_key -- Updated parameter key with Weight and Bias data keys
+    """
+    # Get Adam specific paramaters
+    learning_rate = parameters['learning_rate']
+    beta1 = parameters['beta1'] # Exponential decay for first moment
+    beta2 = parameters['beta2'] # Exponential decay for second moment
+    epsilon = parameters['epsilon'] # Hyperparameter preventing divisison by 0
+    t = from_cache(db=15, key=parameters['data_keys']['t'])
+    
+    # Get the moving averages of the first and second gradient for the previous layer
+    vdW = from_cache(db=15, key=parameters['data_keys']['vdW'+str(layer+1)])
+    vdb = from_cache(db=15, key=parameters['data_keys']['vdb'+str(layer+1)])
+    sdW = from_cache(db=15, key=parameters['data_keys']['sdW'+str(layer+1)])
+    sdb = from_cache(db=15, key=parameters['data_keys']['sdb'+str(layer+1)])
+    
+    # Calculate the moving average of the gradients
+    vdW_prime = beta1 * vdW + (1 - beta1) * dW
+    vdb_prime = beta1 * vdb + (1 - beta1) * db
+    
+    # Calculate the bias-corrected first moment estimate
+    vdW_corrected = vdW_prime / (1 - (beta1**t))
+    vdb_corrected = vdb_prime / (1 - (beta1**t))
+    
+    # Calculate the moving averages of the squared gradient
+    sdW_prime = beta2 * sdW + (1 - beta2) * np.power(dW, 2)
+    sdb_prime = beta2 * sdb + (1 - beta2) * np.power(db, 2)
+    
+    # Calculate the bias-corrected second moment estimate
+    sdW_corrected = sdW_prime / (1 - (beta2**t))
+    sdb_corrected = sdb_prime / (1 - (beta2**t))
+    
+    # Update the parameters
+    W_prime = W - learning_rate * (vdW_corrected / np.sqrt(sdW_corrected + epsilon))
+    b_prime = b - learning_rate * (vdb_corrected / np.sqrt(sdb_corrected + epsilon))
+    
+    # Update the MASTER Weights and Bias
+    parameters['data_keys']['W'+str(layer+1)] = to_cache(
+        db=15,
+        obj=W_prime,
+        name='W'+str(layer+1)
+    )
+    parameters['data_keys']['b'+str(layer+1)] = to_cache(
+        db=15,
+        obj=b_prime,
+        name='b'+str(layer+1)
+    )
+    
+    # Update parameters for the mini-batch
+    parameter_key = to_cache(
+        db=batch,
+        obj=parameters,
+        name='parameters'
+    )
+    
+    return parameter_key, t

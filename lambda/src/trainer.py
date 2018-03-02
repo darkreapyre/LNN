@@ -115,18 +115,33 @@ def lambda_handler(event, context):
             if parameters['optimizer'] == 'gd':
                 parameter_key = update_parameters_with_gd(
                     W, b, dW, db,
-                    learning_rate,
                     batch, layer,
                     parameters
                 )
             elif parameters['optimizer'] == 'adam':
-                pass # Future use
+                parameter_key, t = update_parameters_with_adam(
+                    W, b, dW, db,
+                    batch, layer,
+                    parameters
+                )
+                
+                # Update Adam counter
+                t = t + 1
+                parameters['data_keys']['t'] = to_cache(
+                    db=15,
+                    obj=t,
+                    name='t'
+                )
             
             # Launch `LaunchLambda` to close out the Epoch
             # Initialize the payload for initial batch to `LaunchLambda`
             payload = {}
             payload['state'] = 'next' # Initialize overall state
-            payload['parameter_key'] = parameter_key
+            payload['parameter_key'] = to_cache(
+                db=batch,
+                obj=parameters,
+                name='parameters'
+            )
 
             # Create the invocation ID to ensure no duplicate functions
             # are launched
@@ -174,12 +189,28 @@ def lambda_handler(event, context):
             if parameters['optimizer'] == 'gd':
                 parameter_key = update_parameters_with_gd(
                     W, b, dW, db,
-                    learning_rate,
                     batch, layer,
                     parameters
                 )
             elif parameters['optimizer'] == 'adam':
-                pass # Future use
+                parameter_key, t = update_parameters_with_adam(
+                    W, b, dW, db,
+                    batch, layer,
+                    parameters
+                )
+                
+                # Update the Adam counter
+                t = t + 1
+                parameters['data_keys']['t'] = to_cache(
+                    db=15,
+                    obj=t,
+                    name='t'
+                )
+                parameter_key = to_cache(
+                    db=batch,
+                    obj=parameters,
+                    name='parameters'
+                )
             
             # Start the next mini-batch
             start_batch(batch=batch+1, layer=0, parameter_key=parameter_key)
@@ -205,12 +236,15 @@ def lambda_handler(event, context):
             if parameters['optimizer'] == 'gd':
                 parameter_key = update_parameters_with_gd(
                     W, b, dW, db,
-                    learning_rate,
                     batch, layer,
                     parameters
                 )
             elif parameters['optimizer'] == 'adam':
-                pass # Future use
+                parameters, t = update_parameters_with_adam(
+                    W, b, dW, db,
+                    batch, layer,
+                    parameters
+                )
             
             # Move onto the the next hidden layer for multiple layer networks
             propogate(direction='backward', batch=batch, layer=layer, parameter_key=parameter_key)
@@ -224,4 +258,3 @@ def lambda_handler(event, context):
     else:
         sns_message = "General error processing TrainerLambda handler!"
         publish_sns(sns_message)
-        raise
