@@ -703,16 +703,16 @@ def update_parameters_with_adam(W, b, dW, db, batch, layer, parameters):
     vdb_prime = beta1 * vdb + (1 - beta1) * db
     
     # Calculate the bias-corrected first moment estimate
-    vdW_corrected = vdW_prime / (1 - (beta1**t))
-    vdb_corrected = vdb_prime / (1 - (beta1**t))
+    vdW_corrected = vdW_prime / (1 - np.power(beta1, t))
+    vdb_corrected = vdb_prime / (1 - np.power(beta1, t))
     
     # Calculate the moving averages of the squared gradient
     sdW_prime = beta2 * sdW + (1 - beta2) * np.power(dW, 2)
     sdb_prime = beta2 * sdb + (1 - beta2) * np.power(db, 2)
     
     # Calculate the bias-corrected second moment estimate
-    sdW_corrected = sdW_prime / (1 - (beta2**t))
-    sdb_corrected = sdb_prime / (1 - (beta2**t))
+    sdW_corrected = sdW_prime / (1 - np.power(beta2, t))
+    sdb_corrected = sdb_prime / (1 - np.power(beta2, t))
     
     # Update the parameters
     W_prime = W - learning_rate * (vdW_corrected / np.sqrt(sdW_corrected + epsilon))
