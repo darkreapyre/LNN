@@ -240,7 +240,7 @@ def lambda_handler(event, context):
                     parameters
                 )
             elif parameters['optimizer'] == 'adam':
-                parameters, t = update_parameters_with_adam(
+                parameter_key, t = update_parameters_with_adam(
                     W, b, dW, db,
                     batch, layer,
                     parameters
