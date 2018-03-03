@@ -16,7 +16,7 @@ zip deploy/templates.zip main.yaml templates/*
 cd scripts && zip scripts.zip * && cd ..
 mv scripts/scripts.zip deploy/scripts.zip
 
-aws s3 mb "s3://${bucket}" --region us-east-1
+aws s3 mb "s3://${bucket}" --region us-west-2
 aws s3 cp deploy/templates.zip "s3://${bucket}" --acl public-read
 aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read
 aws s3 cp main.yaml "s3://${bucket}" --acl public-read
@@ -25,4 +25,4 @@ aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read
 aws s3 cp assets/datasets/parameters.json "s3://${bucket}/training_input/" --acl public-read
 aws s3 cp assets/datasets/datasets.h5 "s3://${bucket}/training_input/" --acl public-read
 aws s3api put-bucket-versioning --bucket "${bucket}" --versioning-configuration Status=Enabled
-aws cloudformation deploy --stack-name $stackname --template-file main.yaml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides TemplateBucket=$bucket GitHubToken=$GitHubToken EmailAddress=$email GitHubUser=$GitHubUser --region us-east-1
+aws cloudformation deploy --stack-name $stackname --template-file main.yaml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides TemplateBucket=$bucket GitHubToken=$GitHubToken EmailAddress=$email GitHubUser=$GitHubUser --region us-west-2
