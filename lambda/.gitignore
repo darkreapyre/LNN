@@ -1,0 +1,13 @@
+.DS_Store
+event.json
+*.py[co]
+*.egg-info
+
+package.zip
+packaged.yaml
+packaged.yml
+
+/var
+/venv
+
+/serverless
