@@ -18,7 +18,6 @@ from redis import StrictRedis as redis
 
 # Global Variables
 rgn = environ['Region']
-rgn = 'us-west-2'
 s3_client = client('s3', region_name=rgn) # S3 access
 s3_resource = resource('s3')
 sns_client = client('sns', region_name=rgn) # SNS
@@ -145,14 +144,14 @@ def to_cache(db, obj, name):
         # i.e. {name}|{type}#{length}#{width}
         key = '{0}|{1}#{2}#{3}'.format(name, array_dtype, length, width)
         # Store the binary string to Redis
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         cache.set(key, val)
         return key
     # Test if the object to serialize is a string
     elif type(obj) is str:
         key = '{0}|{1}'.format(name, 'string')
         val = obj
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         cache.set(key, val)
         return key
     # Test if the object to serialize is an integer
@@ -160,7 +159,7 @@ def to_cache(db, obj, name):
         key = '{0}|{1}'.format(name, 'int')
         # Convert to a string
         val = str(obj)
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         cache.set(key, val)
         return key
     # Test if the object to serialize is a dictionary
@@ -168,7 +167,7 @@ def to_cache(db, obj, name):
         # Convert the dictionary to a String
         val = json.dumps(obj)
         key = '{0}|{1}'.format(name, 'json')
-        cache = redis(host=endpoint, port=6379, db=int(db))
+        cache = redis(host=endpoint, port=6379, db=db)
         cache.set(key, val)
         return key
     else:
@@ -422,7 +421,7 @@ def propogate(direction, batch, layer, parameter_key):
             
             # Debug Statements
             #print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
-            
+                        
             # Create an Invokation ID to ensure no duplicate funcitons are launched
             invID = str(uuid.uuid4()).split('-')[0]
             name = "NeuronLambda" #Name of the Lambda fucntion to be invoked
@@ -468,7 +467,7 @@ def propogate(direction, batch, layer, parameter_key):
             
             # Debug Statements
             #print("Payload to be sent NeuronLambda: \n" + dumps(payload, indent=4, sort_keys=True))
-                        
+
             # Create an Invokation ID to ensure no duplicate funcitons are launched
             invID = str(uuid.uuid4()).split('-')[0]
             name = "NeuronLambda" #Name of the Lambda fucntion to be invoked
@@ -495,7 +494,7 @@ def propogate(direction, batch, layer, parameter_key):
                 print(e)
                 raise
             print(response)
-    
+
     else:
         sns_message = "Errors processing the `propogate() function."
         publish_sns(sns_message)
@@ -592,14 +591,14 @@ def update_parameters_with_gd(W, b, dW, db, learning_rate, batch, layer, paramet
     W_prime = W - learning_rate * dW
     b_prime = b - learning_rate * db
     
-    # Update the MASTER Weights and Bias
+    # Update the current batch ElastiCache with Weights and Bias
     parameters['data_keys']['W'+str(layer+1)] = to_cache(
-        db=15,
+        db=batch,
         obj=W_prime,
         name='W'+str(layer+1)
     )
     parameters['data_keys']['b'+str(layer+1)] = to_cache(
-        db=15,
+        db=batch,
         obj=b_prime,
         name='b'+str(layer+1)
     )

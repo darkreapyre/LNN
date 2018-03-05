@@ -58,14 +58,15 @@ def lambda_handler(event, context):
             cost = np.squeeze(cost)
             assert(cost.shape == ())
             
-            # Update the results if this is the last batch
-            if batch == parameters['num_batches'] - 1:
-                current_epoch = parameters['epoch']
-                update_results = from_cache(db=15, key=parameters['data_keys']['results'])
-                update_results['epoch'+str(current_epoch)]['cost'] = float(cost)
-                to_cache(db=15, obj=update_results, name='results')
-            
-            print("Cost after Epoch {}, Batch {}: {}".format(parameters['epoch'], batch, cost))
+            # Upload the Cost to ElastiCache for the current
+            # mini-batch to average out later.
+            parameters['data_keys']['cost'] = to_cache(
+                db=batch,
+                obj=cost,
+                name='cost'
+            )
+
+            print("Cost after Epoch {}, Batch {}: {}".format(parameters['epoch'],batch,cost))
             
             # Initialize Backprop
             # Calculate the derivative of the Cost with respect to the last
@@ -107,22 +108,22 @@ def lambda_handler(event, context):
         if batch == (parameters['num_batches'] - 1) and (layer == 0):
             # Location is at the end of the final mini-batch, therefore
             # get the necessary MASTER parameters for optimization and close
-            # out the Epoch.
+            # out the parallel run by launching `LaunchLambda`.
             W = from_cache(db=15, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(db=15, key=parameters['data_keys']['b'+str(layer+1)])
             
-            # Update parameters for current layer
-            if parameters['optimizer'] == 'gd':
-                parameter_key = update_parameters_with_gd(
-                    W, b, dW, db,
-                    learning_rate,
-                    batch, layer,
-                    parameters
-                )
-            elif parameters['optimizer'] == 'adam':
-                pass # Future use
+            # Update parameters for current layer to the mini-batch ElastiCache
+            parameter_key = update_parameters_with_gd(
+                W, b, dW, db,
+                learning_rate,
+                batch, layer,
+                parameters
+            )
             
-            # Launch `LaunchLambda` to close out the Epoch
+            # Debug Statement
+            print("Training complete for batch {}, epoch {}".format(batch, parameters['epoch']))
+            
+            # Launch `LaunchLambda` to close out the mini-batches
             # Initialize the payload for initial batch to `LaunchLambda`
             payload = {}
             payload['state'] = 'next' # Initialize overall state
@@ -140,9 +141,9 @@ def lambda_handler(event, context):
             payloadbytes = dumps(payload)
 
             # Debug Statements
-            #print("Complete Neural Network Settings for batch: {}\n".format(current_batch))
-            #print(dumps(parameters, indent=4, sort_keys=True))
-            #print("\n"+"Payload to be sent to TrainerLambda: \n")
+            #print("Complete Neural Network Settings for batch: {}\n".format(batch))
+            #print(dumps(batch_parameters, indent=4, sort_keys=True))
+            #print("\n"+"Payload to be sent to LaunchLambda: \n")
             #print(dumps(payload))
 
             # Invoke LaunchLambda to start the training process for
@@ -165,25 +166,21 @@ def lambda_handler(event, context):
         elif (batch < parameters['num_batches'] - 1) and (layer == 0):
             # Location is at the end of the current mini-batch and
             # backprop is finished, therefore get the necessary 
-            # MASTER parameters for optimization and close out the
-            # mini-batch.
+            # MASTER parameters for optimization and simply close
+            # out the mini-batch.
             W = from_cache(db=15, key=parameters['data_keys']['W'+str(layer+1)])
             b = from_cache(db=15, key=parameters['data_keys']['b'+str(layer+1)])
             
-            # Update parameters for current layer
-            if parameters['optimizer'] == 'gd':
-                parameter_key = update_parameters_with_gd(
-                    W, b, dW, db,
-                    learning_rate,
-                    batch, layer,
-                    parameters
-                )
-            elif parameters['optimizer'] == 'adam':
-                pass # Future use
-            
-            # Start the next mini-batch
-            start_batch(batch=batch+1, layer=0, parameter_key=parameter_key)
-            
+            # Update parameters for current layer to the mini-bacth ElastiCache
+            parameter_key = update_parameters_with_gd(
+                W, b, dW, db,
+                learning_rate,
+                batch, layer,
+                parameters
+            )
+            # Debug Statement
+            print("Training complete for batch {}, epoch {}".format(batch, parameters['epoch']))
+                        
         else:
             # Location is still within the backprop process, therefore 
             # get the necessary MASTER parameters for optimization and 
@@ -201,26 +198,21 @@ def lambda_handler(event, context):
                 name=dA_name
             )
             
-            # Update parameters for current layer
-            if parameters['optimizer'] == 'gd':
-                parameter_key = update_parameters_with_gd(
-                    W, b, dW, db,
-                    learning_rate,
-                    batch, layer,
-                    parameters
-                )
-            elif parameters['optimizer'] == 'adam':
-                pass # Future use
+            # Update parameters for current layer to the mini-bacth ElastiCache
+            parameter_key = update_parameters_with_gd(
+                W, b, dW, db,
+                learning_rate,
+                batch, layer,
+                parameters
+            )
             
             # Move onto the the next hidden layer for multiple layer networks
             propogate(direction='backward', batch=batch, layer=layer, parameter_key=parameter_key)
             
     elif state == 'start':
         # Initialize the start of a mini-batch execution
-        batch = 0
         layer = 0
         start_batch(batch=batch, layer=layer, parameter_key=event.get('parameter_key'))
-
     else:
         sns_message = "General error processing TrainerLambda handler!"
         publish_sns(sns_message)

@@ -14,7 +14,7 @@ def lambda_handler(event, context):
     """
     This Lambda Function simulates a single Perceptron for both 
     forward and backward propogation.
-    """    
+    """
     # Ensure that this is not a duplicate invokation
     invID = event.get('invID')
     name = "NeuronLambda" #Name of the current Lambda function
@@ -38,7 +38,7 @@ def lambda_handler(event, context):
     
     # Get the mini-batch parameters from Elasticache
     parameters = from_cache(db=batch, key=event.get('parameter_key'))
-    
+
     # Debug Statement
     print("Starting {} propagation on Neuron: {}, for Batch {} and Layer {}".format(state, str(ID), str(batch), str(layer)))
     
@@ -69,7 +69,7 @@ def lambda_handler(event, context):
         to_cache(db=batch, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
 
         # Debug Statements
-        print("Completed Forward Propogation for batch {}, layer {}.".format(str(batch), str(layer)))
+        print("Completed Forward Propogation for batch {}, layer {}.".format(str(batch, str(layer))))
         
         if last == 'True':
             # Update parameters with this Neuron's data
@@ -83,7 +83,7 @@ def lambda_handler(event, context):
             
             # Debug Statement
             #print("Payload to be sent to TrainerLambda: \n" + dumps(payload, indent=4, sort_keys=True))
-
+            
             # Create an Invokation ID to ensure no duplicate funcitons are launched
             invID = str(uuid.uuid4()).split('-')[0]
             name = "TrainerLambda" #Name of the Lambda fucntion to be invoked
