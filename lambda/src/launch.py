@@ -184,6 +184,7 @@ def lambda_handler(event, context):
             
             # Create the invocation ID to ensure no duplicate functions
             # are launched
+            invID = str(uuid.uuid4()).split('-')[0]
             name = 'TrainerLambda'
             task = 'set'
             inv_counter(name, invID, task)
