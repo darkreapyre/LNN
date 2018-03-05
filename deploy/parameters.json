@@ -14,6 +14,5 @@
         "layer4": 1
     },
     "learning_rate": 0.0075,
-    "optimizer": "gd",
     "batch_size": 64
 }
