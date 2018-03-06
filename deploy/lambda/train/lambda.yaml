@@ -58,7 +58,7 @@ Resources:
         - LaunchLambdaRole
         - Arn
       Runtime: python3.6
-      MemorySize: '512'
+      MemorySize: '192'
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
@@ -136,7 +136,7 @@ Resources:
         - TrainerLambdaRole
         - Arn
       Runtime: python3.6
-      MemorySize: '512'
+      MemorySize: '192'
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
@@ -207,7 +207,7 @@ Resources:
         - NeuronLambdaRole
         - Arn
       Runtime: python3.6
-      MemorySize: '512'
+      MemorySize: '192'
       Timeout: '300'
       VpcConfig:
         SecurityGroupIds:
