@@ -57,9 +57,7 @@ Resources:
                 EnvironmentName:    !Ref AWS::StackName
                 VpcCIDR:            10.0.0.0/16
                 PublicSubnet1CIDR:  10.0.8.0/21
-                PublicSubnet2CIDR:  10.0.16.0/21
                 PrivateSubnet1CIDR: 10.0.24.0/21
-                PrivateSubnet2CIDR: 10.0.32.0/21
 
     SecurityGroups:
         Type: AWS::CloudFormation::Stack
@@ -76,7 +74,6 @@ Resources:
             Parameters:
                 EnvironmentName: !Ref AWS::StackName
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-                PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
                 VPC: !GetAtt VPC.Outputs.VPC
                 ClusterNodeType: !Ref ClusterNodeType
     
@@ -90,5 +87,5 @@ Resources:
                 S3Bucket: !Ref TemplateBucket
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.HostSecurityGroup
                 PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-                PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+                
 

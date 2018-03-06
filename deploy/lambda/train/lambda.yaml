@@ -24,9 +24,6 @@ Parameters:
     Description: Private Subnet 1
     Type: 'AWS::EC2::Subnet::Id'
 
-  PrivateSubnet2:
-    Description: Private Subnet 2
-    Type: 'AWS::EC2::Subnet::Id'
 
   SecurityGroup:
     Description: >-
@@ -65,7 +62,6 @@ Resources:
           - !Ref SecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
@@ -143,7 +139,6 @@ Resources:
           - !Ref SecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
@@ -214,7 +209,6 @@ Resources:
           - !Ref SecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
-          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
