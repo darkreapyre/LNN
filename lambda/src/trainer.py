@@ -129,6 +129,9 @@ def lambda_handler(event, context):
             payload['state'] = 'next' # Initialize overall state
             payload['parameter_key'] = parameter_key
 
+#            import time
+#            time.sleep(1)
+
             # Create the invocation ID to ensure no duplicate functions
             # are launched
             invID = str(uuid.uuid4()).split('-')[0]

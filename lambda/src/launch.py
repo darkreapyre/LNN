@@ -184,6 +184,14 @@ def lambda_handler(event, context):
             
             # Create the invocation ID to ensure no duplicate functions
             # are launched
+
+#            if current_batch == parameters['num_batches']-1:
+#                import time
+#                time.sleep(1)
+
+
+
+
             invID = str(uuid.uuid4()).split('-')[0]
             name = 'TrainerLambda'
             task = 'set'
