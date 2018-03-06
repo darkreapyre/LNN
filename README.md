@@ -78,9 +78,22 @@ Each version is meant to enhance the functionality of the implementation to star
     - After testing with **625** Epcohs, it was hoped that since each mini-batch is approximately a quarter of the training data, that the number of epochs could be reduced by a factor of **4** to produce a similar result, the final cost being **0.0025214069754894153** after **15** hours with an Accuracy score of **$78%$**. SO it seems the theory was correct, **BUT** the model did not accurately predict "non-cat" images, while the **750** epoch model had lower scores, it predicted the "non-cat" model accurately. This shows that the model is geared to "cat" images sepcifically.
 - Version 0.2.3:  L-Layer Logistic Regression - Adam Optmization. (**Failed**)
     - Adam Optmization failed at **750** and **2500** Epochs, producing **NaN** for the cost. 
-    - However it succedded wice running **625** Epochs, but failed to converge.
+    - However it succedded twice running **625** Epochs, but failed to converge.
 - Version 0.2.4: L-Layer Logistic Regression - Average Parameters Mini-batch Gradient Descent Optmization. (**Under Investigation**)
     - The idea behind this version is to create a "custom" i.e. don't think this has been done before, metahdology to optimize the parameters. This is done by running each mini-batch in parallel and taking the average of the **Weights** and **Bias** (optmized by running mini-batch gradient descent) over the various mini-batches.
+
+    >**Issues:** Between 30 and 90 Epochs
+    ```python
+        'cost': KeyError
+        Traceback (most recent call last):
+        File "/var/task/launch.py", line 349, in lambda_handler
+        Costs.append(from_cache(db=b, key=batch_parameters['data_keys']['cost']))
+        KeyError: 'cost'
+    ```
+
+
+
+
 - Version 0.2.5: L-Layer Logistic Regression - Lowest Error Mini-batch Gradient Descent Optimization. (**TBD**)
     - The idea behind this version is to create a "custom" i.e. don't think this has been done before, metahdology to optimize the parameters. This is done by running each mini-batch in parallel and taking the mini-batch with the lowest error/cost over the various mini-batches.
 - Version 0.3.0: L-Layer Logistic Regression - Introduction of Blue/Green Pipeline with Fargate. (**Complete**)
