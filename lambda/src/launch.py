@@ -253,6 +253,7 @@ def lambda_handler(event, context):
                 for b in range(parameters['num_batches']):
                     # Get the parameters for the layer from each mini-batch
                     # and add them together.
+                    batch_parameters = from_cache(db=b, key=event.get('parameter_key'))
                     W = from_cache(db=b, key=parameters['data_keys']['W'+str(l)])
                     total_W = total_W + W
                     b = from_cache(db=b, key=parameters['data_keys']['b'+str(l)])
@@ -318,9 +319,10 @@ def lambda_handler(event, context):
                 for b in range(parameters['num_batches']):
                     # Get the parameters for the layer from each mini-batch
                     # and add them together.
-                    W = from_cache(db=b, key=parameters['data_keys']['W'+str(l)])
+                    batch_parameters = from_cache(db=b, key=event.get('parameter_key'))
+                    W = from_cache(db=b, key=batch_parameters['data_keys']['W'+str(l)])
                     total_W = total_W + W
-                    b = from_cache(db=b, key=parameters['data_keys']['b'+str(l)])
+                    b = from_cache(db=b, key=batch_parameters['data_keys']['b'+str(l)])
                     total_b = total_b + b
                 # Take the average across the number of mini-batches
                 avg_W = total_W / parameters['num_batches']
@@ -328,8 +330,8 @@ def lambda_handler(event, context):
                 # Update the MASTER ElastiCache database with the new parameters
                 # for this layer. This will be leveraged as the inputs to the 
                 # next epoch.
-                parameters['data_keys']['W'+str(l)] = to_cache(db=15, obj=W, name='W'+str(l))
-                parameters['data_keys']['b'+str(l)] = to_cache(db=15, obj=b, name='b'+str(l))
+                parameters['data_keys']['W'+str(l)] = to_cache(db=15, obj=avg_W, name='W'+str(l))
+                parameters['data_keys']['b'+str(l)] = to_cache(db=15, obj=avg_b, name='b'+str(l))
             
             # Step 2: Calculate the average Cost across the mini-batches
             Costs = []
