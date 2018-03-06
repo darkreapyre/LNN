@@ -60,6 +60,10 @@ def lambda_handler(event, context):
             
             # Upload the Cost to ElastiCache for the current
             # mini-batch to average out later.
+            
+            #import time
+            #time.sleep(1)
+            
             parameters['data_keys']['cost'] = to_cache(
                 db=batch,
                 obj=cost,
