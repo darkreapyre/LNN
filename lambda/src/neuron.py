@@ -69,7 +69,7 @@ def lambda_handler(event, context):
         to_cache(db=batch, obj=a, name='layer'+str(layer)+'_a_'+str(ID))
 
         # Debug Statements
-        print("Completed Forward Propogation for batch {}, layer {}.".format(str(batch, str(layer))))
+        print("Completed Forward Propogation for batch {}, layer {}.".format(str(batch), str(layer)))
         
         if last == 'True':
             # Update parameters with this Neuron's data
