@@ -329,7 +329,7 @@ def lambda_handler(event, context):
             table = dynamo_resource.Table('Costs')
             response = table.get_item(
                 Key={
-                    'epoch': epoch
+                    'epoch': str(epoch)
                 }
             )
             

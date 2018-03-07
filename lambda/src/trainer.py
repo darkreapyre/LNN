@@ -80,7 +80,7 @@ def lambda_handler(event, context):
             table = dynamo_resource.Table('Costs')
             table.put_item(
                 Item={
-                    'epoch': parameters['epoch'],
+                    'epoch': str(parameters['epoch']),
                     'batch'+str(batch): str(cost) # `cost` as String Value
                 }
             )
