@@ -147,7 +147,7 @@ def lambda_handler(event, context):
                     'AttributeType': 'S'
                 },
             ],
-            ProvisionThroughput={
+            ProvisionedThroughput={
                 'ReadCapacityUnits': 10,
                 'WriteCapacityUnits': 10
             }
