@@ -24,7 +24,6 @@ Parameters:
     Description: Private Subnet 1
     Type: 'AWS::EC2::Subnet::Id'
 
-
   SecurityGroup:
     Description: >-
       The security groups IDs in the VPC that includes the resources to which
