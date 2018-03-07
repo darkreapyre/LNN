@@ -93,11 +93,11 @@ def lambda_handler(event, context):
         # Initialize DynamoDB table for tracking Costs
         # Get the list of current DynamoDB Tables
         current_tables = dynamo_client.list_tables()
-        if cur_tab in current_tables['TableNames'] == 'Costs':
+        if 'Costs' in current_tables['TableNames']:
             # Delete the exisiting `Costs` table
-            dynamo_client.delete_table(TableName=cur_tab)
+            dynamo_client.delete_table(TableName='Costs')
             waiter = dynamo_client.get_waiter('table_not_exists')
-            waiter.wait(TableName=cur_tab)
+            waiter.wait(TableName='Costs')
         
         # Initialize DynamoDB tables for treacking Lambda invocations 
         table_list = ['LaunchLambda','TrainerLambda', 'NeuronLambda']
