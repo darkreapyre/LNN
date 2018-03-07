@@ -61,6 +61,9 @@ def lambda_handler(event, context):
             # Upload the Cost to ElastiCache for the current
             # mini-batch to average out later.
             
+            """
+            Note: The following is to sleep if necessary BUT using this should
+            be avoided at all costs to save time. 
             #import time
             #time.sleep(1)
             
@@ -68,6 +71,18 @@ def lambda_handler(event, context):
                 db=batch,
                 obj=cost,
                 name='cost'
+            )
+
+            3.6.18: Switching to using DynamoDB to alleviate the strain on ElastiCache.
+            """
+            
+            # Add batch cost to DynamoDB
+            table = dynamo_resource.Table('Costs')
+            table.put_item(
+                Item={
+                    'epoch': parameters['epoch'],
+                    'batch'+str(batch): str(cost) # `cost` as String Value
+                }
             )
 
             print("Cost after Epoch {}, Batch {}: {}".format(parameters['epoch'],batch,cost))

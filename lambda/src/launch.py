@@ -123,6 +123,38 @@ def lambda_handler(event, context):
             )
             table.meta.client.get_waiter('table_exists').wait(TableName=t)
         
+        # Initialize DynamoDB table for tracking Costs
+        # Get the list of current DynamoDB Tables
+        current_tables = dynamo_client.list_tables()
+        if t in current_tables['TableNames'] == 'Costs':
+            # Delete the exisiting `Costs` table
+            dynamo_client.delete_table(TableName=t)
+            waiter = dynamo_client.get_waiter('table_not_exists')
+            waiter.wait(TableName=t)
+
+        # Create the "fresh" `Costs` table
+        table = dynamo_resource.create_table(
+            TableName='Costs',
+            KeySchema=[
+                {
+                    'AttributeName': 'epoch',
+                    'AttributeType': 'HASH'
+                },
+            ],
+            AttributeDefinitions=[
+                {
+                    'AttributeName': 'epoch',
+                    'AttributeType': 'S'
+                },
+            ],
+            ProvisionThroughput={
+                'ReadCapacityUnits': 10,
+                'WriteCapacityUnits': 10
+            }
+        )
+        table.meta.client.get_waiter('table_exists').wait(TableNAme='Costs')
+
+        
         # Initialize the Results tracking object
         results = {}
         results['Start'] = str(datetime.datetime.now())
@@ -188,9 +220,6 @@ def lambda_handler(event, context):
 #            if current_batch == parameters['num_batches']-1:
 #                import time
 #                time.sleep(1)
-
-
-
 
             invID = str(uuid.uuid4()).split('-')[0]
             name = 'TrainerLambda'
@@ -286,13 +315,30 @@ def lambda_handler(event, context):
             
             # Step 2: Calculate the average Cost across the mini-batches
             Costs = []
+            """
+            Note: As of 3.6.18, switching to DynamoDB to handle Costs
+
             for b in range(parameters['num_batches']):
                 # Get the cost from each mini-batch
                 batch_parameters = from_cache(db=b, key=event.get('parameter_key'))
                 Costs.append(from_cache(db=b, key=batch_parameters['data_keys']['cost']))
             # Calculate the average Cost
             avg_cost = np.average(Costs)
+            """
+            # Get costs from DynamoDB for the epoch
+            table = dynamo_resource.Table('Costs')
+            response = table.get_item(
+                Key={
+                    'epoch': epoch
+                }
+            )
             
+            item = response['Item']
+            # Get the cost for each mini-batch
+            for k, v in item.items():
+                Costs.append(float(v))
+            avg_cost = np.average(Costs)
+
             # Debug Statements
             print("Training Completed successfully!\n"+"Final Average Cost = "+dumps(avg_cost))
             
@@ -343,10 +389,28 @@ def lambda_handler(event, context):
             
             # Step 2: Calculate the average Cost across the mini-batches
             Costs = []
+            """
+            Note: Switching to DynamnoDB
+
             for b in range(parameters['num_batches']):
                 # Get the cost from each mini-batch
                 batch_parameters = from_cache(db=b, key=event.get('parameter_key'))
                 Costs.append(from_cache(db=b, key=batch_parameters['data_keys']['cost']))
+            """
+
+            # Get costs from DynamoDB for the epoch
+            table = dynamo_resource.Table('Costs')
+            response = table.get_item(
+                Key={
+                    'epoch': epoch
+                }
+            )
+            
+            item = response['Item']
+            # Get the cost for each mini-batch
+            for k, v in item.items():
+                Costs.append(float(v))
+
             # Calculate the average Cost
             avg_cost = np.average(Costs)
             
