@@ -90,6 +90,15 @@ def lambda_handler(event, context):
         batches = random_minibatches(X, Y, batch_size)
         parameters['num_batches'] = len(batches)
         
+        # Initialize DynamoDB table for tracking Costs
+        # Get the list of current DynamoDB Tables
+        current_tables = dynamo_client.list_tables()
+        if cur_tab in current_tables['TableNames'] == 'Costs':
+            # Delete the exisiting `Costs` table
+            dynamo_client.delete_table(TableName=cur_tab)
+            waiter = dynamo_client.get_waiter('table_not_exists')
+            waiter.wait(TableName=cur_tab)
+        
         # Initialize DynamoDB tables for treacking Lambda invocations 
         table_list = ['LaunchLambda','TrainerLambda', 'NeuronLambda']
         for t in table_list:
@@ -122,15 +131,6 @@ def lambda_handler(event, context):
                 }
             )
             table.meta.client.get_waiter('table_exists').wait(TableName=t)
-        
-        # Initialize DynamoDB table for tracking Costs
-        # Get the list of current DynamoDB Tables
-        current_tables = dynamo_client.list_tables()
-        if t in current_tables['TableNames'] == 'Costs':
-            # Delete the exisiting `Costs` table
-            dynamo_client.delete_table(TableName=t)
-            waiter = dynamo_client.get_waiter('table_not_exists')
-            waiter.wait(TableName=t)
 
         # Create the "fresh" `Costs` table
         table = dynamo_resource.create_table(
@@ -152,7 +152,7 @@ def lambda_handler(event, context):
                 'WriteCapacityUnits': 10
             }
         )
-        table.meta.client.get_waiter('table_exists').wait(TableNAme='Costs')
+        table.meta.client.get_waiter('table_exists').wait(TableName='Costs')
 
         
         # Initialize the Results tracking object
