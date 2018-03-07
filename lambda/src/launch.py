@@ -138,7 +138,7 @@ def lambda_handler(event, context):
             KeySchema=[
                 {
                     'AttributeName': 'epoch',
-                    'AttributeType': 'HASH'
+                    'KeyType': 'HASH'
                 },
             ],
             AttributeDefinitions=[
