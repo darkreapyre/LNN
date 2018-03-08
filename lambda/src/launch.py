@@ -154,6 +154,15 @@ def lambda_handler(event, context):
         )
         table.meta.client.get_waiter('table_exists').wait(TableName='Costs')
 
+        # Initialize the DynamoDB epoch tracking item
+        table = dynamo_resource.Table('Costs')
+        for i in range(parameters['num_batches']):
+            response = table.put_item(
+                Item={
+                    'epoch': str(parameters['epoch'])
+                    'batch'+str(i): str(0.0)
+                }
+            )
         
         # Initialize the Results tracking object
         results = {}

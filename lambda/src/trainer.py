@@ -76,12 +76,16 @@ def lambda_handler(event, context):
             3.6.18: Switching to using DynamoDB to alleviate the strain on ElastiCache.
             """
             
-            # Add batch cost to DynamoDB
+            # Add batch cost to DynamoDB Costs tracking object
             table = dynamo_resource.Table('Costs')
             table.update_item(
-                Item={
-                    'epoch': str(parameters['epoch']),
-                    'batch'+str(batch): str(cost) # `cost` as String Value
+                Key={
+                    'epoch': str(parameters['epoch'])
+                },
+                UpdateExpression="Set :batchval = :costval",
+                ExpressionAttributeValues={
+                    ':batchval': 'batch'+str(batch),
+                    ':costval': str(cost)
                 }
             )
 
