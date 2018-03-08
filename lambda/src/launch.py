@@ -159,7 +159,7 @@ def lambda_handler(event, context):
         for i in range(parameters['num_batches']):
             response = table.put_item(
                 Item={
-                    'epoch': str(parameters['epoch'])
+                    'epoch': str(parameters['epoch']),
                     'batch'+str(i): str(0.0)
                 }
             )
