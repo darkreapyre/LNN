@@ -78,7 +78,7 @@ def lambda_handler(event, context):
             
             # Add batch cost to DynamoDB
             table = dynamo_resource.Table('Costs')
-            table.put_item(
+            table.update_item(
                 Item={
                     'epoch': str(parameters['epoch']),
                     'batch'+str(batch): str(cost) # `cost` as String Value
