@@ -99,7 +99,7 @@ def lambda_handler(event, context):
             waiter = dynamo_client.get_waiter('table_not_exists')
             waiter.wait(TableName='Costs')
         
-        # Initialize DynamoDB tables for treacking Lambda invocations 
+        # Initialize DynamoDB tables for tracking Lambda invocations 
         table_list = ['LaunchLambda','TrainerLambda', 'NeuronLambda']
         for t in table_list:
             # Check to see if the table already exists
@@ -414,7 +414,7 @@ def lambda_handler(event, context):
                     Costs.append(float(v))
             # Calculate the average Cost
             avg_cost = np.average(Costs)
-            
+
             # Debug Statements
             print("Average Cost after Epoch {} = {}".format(epoch, float(avg_cost)))
             
@@ -453,16 +453,6 @@ def lambda_handler(event, context):
             parameters['data_keys']['results'] = to_cache(
                 db=15, obj=update_results, name='results'
             )
-
-            # Initialize the DynamoDB epoch tracking item
-            table = dynamo_resource.Table('Costs')
-            for i in range(parameters['num_batches']):
-                response = table.put_item(
-                    Item={
-                        'epoch': str(epoch),
-                        'batch'+str(i): str(0.0)
-                    }
-                )
             
             # Finalize master parameters to ElastiCache
             master_parameter_key = to_cache(
