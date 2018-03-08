@@ -82,10 +82,12 @@ def lambda_handler(event, context):
                 Key={
                     'epoch': str(parameters['epoch'])
                 },
-                UpdateExpression="Set :batchval = :costval",
+                UpdateExpression="Set #batch = :costval",
                 ExpressionAttributeValues={
-                    ':batchval': 'batch'+str(batch),
                     ':costval': str(cost)
+                },
+                ExpressionAttributeNames={
+                    '#batch': 'batch'+str(batch)
                 }
             )
 

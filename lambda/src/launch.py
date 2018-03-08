@@ -153,16 +153,6 @@ def lambda_handler(event, context):
             }
         )
         table.meta.client.get_waiter('table_exists').wait(TableName='Costs')
-
-        # Initialize the DynamoDB epoch tracking item
-        table = dynamo_resource.Table('Costs')
-        for i in range(parameters['num_batches']):
-            response = table.put_item(
-                Item={
-                    'epoch': str(parameters['epoch']),
-                    'batch'+str(i): str(0.0)
-                }
-            )
         
         # Initialize the Results tracking object
         results = {}
@@ -345,7 +335,9 @@ def lambda_handler(event, context):
             item = response['Item']
             # Get the cost for each mini-batch
             for k, v in item.items():
-                Costs.append(float(v))
+                if 'batch' in k:
+                    Costs.append(float(v))
+            # Calculate the average Cost
             avg_cost = np.average(Costs)
 
             # Debug Statements
@@ -418,8 +410,8 @@ def lambda_handler(event, context):
             item = response['Item']
             # Get the cost for each mini-batch
             for k, v in item.items():
-                Costs.append(float(v))
-
+                if 'batch' in k:
+                    Costs.append(float(v))
             # Calculate the average Cost
             avg_cost = np.average(Costs)
             
