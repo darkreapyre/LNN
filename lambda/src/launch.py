@@ -461,6 +461,16 @@ def lambda_handler(event, context):
             parameters['data_keys']['results'] = to_cache(
                 db=15, obj=update_results, name='results'
             )
+
+            # Initialize the DynamoDB epoch tracking item
+            table = dynamo_resource.Table('Costs')
+            for i in range(parameters['num_batches']):
+                response = table.put_item(
+                    Item={
+                        'epoch': str(epoch),
+                        'batch'+str(i): str(0.0)
+                    }
+                )
             
             # Finalize master parameters to ElastiCache
             master_parameter_key = to_cache(
