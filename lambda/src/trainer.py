@@ -80,7 +80,7 @@ def lambda_handler(event, context):
             table = dynamo_resource.Table('Costs')
             table.update_item(
                 Key={
-                    'epoch': str(parameters['epoch'])
+                    'epoch': parameters['epoch']
                 },
                 UpdateExpression="Set #batch = :costval",
                 ExpressionAttributeValues={

@@ -144,7 +144,7 @@ def lambda_handler(event, context):
             AttributeDefinitions=[
                 {
                     'AttributeName': 'epoch',
-                    'AttributeType': 'S'
+                    'AttributeType': 'N'
                 },
             ],
             ProvisionedThroughput={
@@ -328,7 +328,7 @@ def lambda_handler(event, context):
             table = dynamo_resource.Table('Costs')
             response = table.get_item(
                 Key={
-                    'epoch': str(epoch)
+                    'epoch': epoch
                 }
             )
             
@@ -403,7 +403,7 @@ def lambda_handler(event, context):
             table = dynamo_resource.Table('Costs')
             response = table.get_item(
                 Key={
-                    'epoch': str(epoch)
+                    'epoch': epoch
                 }
             )
             
