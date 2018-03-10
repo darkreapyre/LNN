@@ -4,15 +4,15 @@ This repository comtains various branches that depict leveraging AWS Lambda Func
 Each version is meant to enhance the functionality of the implementation to start from a basic Perceptron and evolve into more compleicated funcitonality that includes Regularization, Optmization and Gradient Checking techniques as well as deeper network architectures. The version branches are as follows:
 
 ### Version 0.0: Single Neuron Logistic Regression - DynamoDB. (**Obsolete**)
-    >**Notes:**
+>**Notes:**
     - DynamoDB does not offer sufficient flexability to store Numpy Arrays, thus forced to store the data on S3.
     - DynamoDB does not offer sufficient flexability to store the network settings as it does not serialize JSON files or dictionaries very well.
     - DynamoDB does not store float data types and thus we have to serialize ductionary content to `decimal` which cases significant programming complexity.
 ### Version 0.1: Single Neuron Logistic Regression - Elasticache. (**Obsolete**)
-    >**Notes:**
+>**Notes:**
     - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-invoke, thus causing epochs to repeat. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
 ### Version 0.1.1: Single Neuron Logistic Regression - ElastiCache/Batches. (**Obsolete**)
-    >**Notes:**
+>**Notes:**
     - Multiple Techniques were applied, with little to no effect.:
         1. Increasing the `connect_timeout` and `read_timeout` by applying the following `Boto` configuration parameter:
         ```python
@@ -27,14 +27,14 @@ Each version is meant to enhance the functionality of the implementation to star
     - Disabling the `retry` value didn't seem to have the desired effect,  not only on the "mutant" Lambda Functions, but if an error occured, the Lambda Funcitons still tried to retry, except on random errors that couldnb't be reproduced.
     - Changing the invocation type had an unexpected side effect in that new Lambda functions were spawned as opposed to re-used, thus causing each to require a dedicated **ENI**. Unfortunately, the limit for ENI’s* on the VPC is 300, therefore the processes halted as ENI’s limits were saturated quickly.
 ### Version 0.1.2: Single Neuron Logistic Regression - ElastiCache/Batches using CloudWatch Scheduled Events. (**Obsolete**)
-    >**Notes:**
+>**Notes:**
     - After executing 100 epochs, a *CloudWatch* scheduled event is created to wait *30* minutes and then execute the next 100 epochs.
     - The event didn't triogger on schedule some times and other times, the event was not even created and training process simply continued.
 ### Version 0.1.3: Single Neuron Logistic Regression - ElastiCache/Recursive Checking with DynamoDB. (**Complete**)
-    >**Notes:**
+>**Notes:**
     - After doing research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations, see [here](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/) for more information. To address this, the code now initializes [AWS DynamoDB](https://aws.amazon.com/dynamodb/) Tables (one for each Lambda Function) and ensure that each invocation is assigned a unique ID. If any duplicate functions are spawned, there is a conflict with the unique ID and the duplicate funciton immediatley terminates.
 ### Version 0.2: L-Layer Logistic Regression. (**Complete**)
-    >**Notes:**
+>**Notes:**
     - Unlike  `Version 0.1.3`, where **20,000** Epochs produces a good set of optimal paramaters, **2,500** Epochs is a good startong point for training iterations on `Version 0.2`. But due to the fact that it takes a significant amnount of time to train an L-Layer Network (approx. 40 hours), the development infrastructure has been removed from the *CloudFormation* deployment.
     - Initially, the code (`LaunchLambda`) initialized the **Weights** and **Bias** with a `0.075` constraint. This significantly impacted the **Cost** function. It was further realized that the intitialization should be $\frac{1}{\sqrt{n}}$ and the **Bias** initialized to zero.
     - Based on the above, it was further realized that the **Cost Function** calculation was incorrect, **0.30319607531996434** after **2,500** Epochs. After applying the correct [cross-entropy cost function](http://neuralnetworksanddeeplearning.com/chap3.html#introducing_the_cross-entropy_cost_function), this was significantly improved upon.
@@ -43,7 +43,7 @@ Each version is meant to enhance the functionality of the implementation to star
     - To address both of the above issues, a `vectorizer()` function was created to returned an ordered list of individual neuron outputs in both the forward and backward propogation steps. Applying this resulted in a final **Cost** of **0.011273672815000354** after **2,500** Epochs.
     - This Branch was used to create the [itsacat](https://github.com/darkreapyre/itsacat) demo, and prototyped the usage of [Xavier Glorot](http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) initialization as well as the [ReLU](https://arxiv.org/pdf/1502.01852v1.pdf) initializations.
 ### Version 0.2.1: L-Layer Logistic Regression - Xavier Initialization with L2 Regularization. (**Complete**)
-    >**Notes:**
+>**Notes:**
     - Should this or subsequent versions succeed, the training process will integrate with the *CI/CD Pipeline* (`Version 0.3.x`). Currently the Pipeline has been de-coupled to only lerage the services required by the Lambda functions, namely:
         - VPC
         - Security Groups
@@ -52,7 +52,7 @@ Each version is meant to enhance the functionality of the implementation to star
     - It is also important to note that runnning the network without *Xavier* initialization produces an overall Accuracy Score of **$78%$** after **3,000** Epochs. Using **Xavier** initialization (without **L2 Regularization**) produces an Accuracy Score of **$74%$** after **2,500** Epochs. It is the hope to see an improvement by increasing this to **3,000** Epochs. As a side note, the network leveraging **Xavier** initialization as well as **L2 Regularization** only produces a **$68%$** Accuracy Score.
     - To try and reduce the exploding gradient issue, the next release will investigate different optimizers and mini-batch gradient descent.
 ### Version 0.2.2: L-Layer Logistic Regression - Mini-Batch Gradient Decent Optimization. (**Under Investigation**)
-    >**Notes:**
+>**Notes:**
     - In order to improve the overall error **without** inreasing the number of Epochs, *Mini-Batch* Gradient Descent is tested. This process requires a complete reworking of the architecture:
         - The `LaunchLambda` now controls the overall iterations/epochs.
         - Mini-batch training is controlled by the `TrainerLambda`.
