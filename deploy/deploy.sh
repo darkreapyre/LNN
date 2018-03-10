@@ -1,12 +1,12 @@
 #!/bin/bash
 
-echo -n "Enter the AWS Region to use >"
+echo -n "Enter the AWS Region to use > "
 read region
-echo -n "Enter the S3 bucket to create >"
+echo -n "Enter the S3 bucket to create > "
 read bucket
-echo -n "Enter the name of the Stack to deploy >"
+echo -n "Enter the name of the Stack to deploy > "
 read stackname
-echo -n "Enter the e-mail address to send training update >"
+echo -n "Enter the e-mail address to send training update > "
 read email
 export BUCKET=$bucket
 export EMAIL=$email
