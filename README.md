@@ -5,9 +5,9 @@ Each version is meant to enhance the functionality of the implementation to star
 
 ### Version 0.0: Single Neuron Logistic Regression - DynamoDB. (**Obsolete**)
 >**Notes:**
-- DynamoDB does not offer sufficient flexability to store Numpy Arrays, thus forced to store the data on S3.
-- DynamoDB does not offer sufficient flexability to store the network settings as it does not serialize JSON files or dictionaries very well.
-- DynamoDB does not store float data types and thus we have to serialize ductionary content to `decimal` which cases significant programming complexity.
+    - DynamoDB does not offer sufficient flexability to store Numpy Arrays, thus forced to store the data on S3.
+    - DynamoDB does not offer sufficient flexability to store the network settings as it does not serialize JSON files or dictionaries very well.
+    - DynamoDB does not store float data types and thus we have to serialize ductionary content to `decimal` which cases significant programming complexity.
 ### Version 0.1: Single Neuron Logistic Regression - Elasticache. (**Obsolete**)
 >**Notes:**
 - After testing, close to 1000 epochs, the TrainerLambda and NeuronLambda both re-invoke, thus causing epochs to repeat. Fortunately Gradient Descent seems to function correclty and the *Cost* continues to decrease, but the epochs repeat infinitely. After 8 - 10 hours, multiple interations of epochs are visible with no end in sight.
@@ -35,7 +35,7 @@ Each version is meant to enhance the functionality of the implementation to star
 - After doing research, it seems that other users had found similar issues with Lambda Functions spawning duplicate Lambda invocations, see [here](https://cloudonaut.io/your-lambda-function-might-execute-twice-deal-with-it/) for more information. To address this, the code now initializes [AWS DynamoDB](https://aws.amazon.com/dynamodb/) Tables (one for each Lambda Function) and ensure that each invocation is assigned a unique ID. If any duplicate functions are spawned, there is a conflict with the unique ID and the duplicate funciton immediatley terminates.
 ### Version 0.2: L-Layer Logistic Regression. (**Complete**)
 >**Notes:**
-- Unlike  `Version 0.1.3`, where **20,000** Epochs produces a good set of optimal paramaters, **2,500** Epochs is a good startong point for training iterations on `Version 0.2`. But due to the fact that it takes a significant amnount of time to train an L-Layer Network (approx. 40 hours), the development infrastructure has been removed from the *CloudFormation* deployment.
+- Unlike  `Version 0.1.3`, where **20,000** Epochs produces a good set of optimal paramaters, **2,500** Epochs is a good starting point for training iterations on `Version 0.2`. But due to the fact that it takes a significant amount of time to train an L-Layer Network (approx. 40 hours), the development infrastructure has been removed from the *CloudFormation* deployment.
 - Initially, the code (`LaunchLambda`) initialized the **Weights** and **Bias** with a `0.075` constraint. This significantly impacted the **Cost** function. It was further realized that the intitialization should be $\frac{1}{\sqrt{n}}$ and the **Bias** initialized to zero.
 - Based on the above, it was further realized that the **Cost Function** calculation was incorrect, **0.30319607531996434** after **2,500** Epochs. After applying the correct [cross-entropy cost function](http://neuralnetworksanddeeplearning.com/chap3.html#introducing_the_cross-entropy_cost_function), this was significantly improved upon.
 - Another issue that was discovered was the fact that when the various Activations a compiled into a single Matrix after eacch layer invocation, by the `TrainerLambda`, the sequence retuned by *ElastiCache* is **not** in numerical order. This basically means that the vectorized implementaiton of how the *Weights* apply to the output is out of order. After ensuring the correct numerical sequence was returned to construct the correct Matrix, the final **Cost** was **0.07576201861014191** after **3,000** Epochs.
@@ -43,11 +43,11 @@ Each version is meant to enhance the functionality of the implementation to star
 - To address both of the above issues, a `vectorizer()` function was created to returned an ordered list of individual neuron outputs in both the forward and backward propogation steps. Applying this resulted in a final **Cost** of **0.011273672815000354** after **2,500** Epochs.
 - This Branch was used to create the [itsacat](https://github.com/darkreapyre/itsacat) demo, and prototyped the usage of [Xavier Glorot](http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf) initialization as well as the [ReLU](https://arxiv.org/pdf/1502.01852v1.pdf) initializations.
 ### Version 0.2.1: L-Layer Logistic Regression - Xavier Initialization with L2 Regularization. (**Complete**)
->**Notes:**
 - Should this or subsequent versions succeed, the training process will integrate with the *CI/CD Pipeline* (`Version 0.3.x`). Currently the Pipeline has been de-coupled to only lerage the services required by the Lambda functions, namely:
     - VPC
     - Security Groups
     - ElastiCache
+>**Notes:**
 - Although introducing *Xavier* initialization for the **Weights** shows significant improvement (final **Cost** of **0.00658138016613162** after **2,500** Epochs), adding **L2 Regularization** does not solve the **Exploding Gradient** problem and in fact produces final **Cost** that is worse, **0.12014227975111075** after **2,500** Epochs. 
 - It is also important to note that runnning the network without *Xavier* initialization produces an overall Accuracy Score of **$78%$** after **3,000** Epochs. Using **Xavier** initialization (without **L2 Regularization**) produces an Accuracy Score of **$74%$** after **2,500** Epochs. It is the hope to see an improvement by increasing this to **3,000** Epochs. As a side note, the network leveraging **Xavier** initialization as well as **L2 Regularization** only produces a **$68%$** Accuracy Score.
 - To try and reduce the exploding gradient issue, the next release will investigate different optimizers and mini-batch gradient descent.
