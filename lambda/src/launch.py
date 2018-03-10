@@ -371,7 +371,7 @@ def lambda_handler(event, context):
                 parameters['data_keys']['b'+str(l)] = to_cache(db=15, obj=b, name='b'+str(l))
 
             # Debug Statements
-            print("Average Cost after Epoch {} = {}".format(epoch, Costs[best_batch])
+            print("Average Cost after Epoch {} = {}".format(epoch, Costs[best_batch]))
             
             # Update the results for this epoch with the average cost and
             # send status updates for epochs every 100 epochs
