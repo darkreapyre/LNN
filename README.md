@@ -1,3 +1,3 @@
-# Lambda Neural Network Version 0.2.4 (Lowest Error Mini-batch Gradient Descent Optimization)
+# Lambda Neural Network Version 0.2.4 (L-Layer Logistic Regression using MXNet)
 
->**Note:** This Branch breaks away from the standard branch configuration and decouples the Prediction API running on ECS/Fargate, to focus solely on the training process.
+>**Note:** This Branch breaks away from the using the Serverless Neural Network and simulates confniguration of all previous Versions using the MXNet Framework.
