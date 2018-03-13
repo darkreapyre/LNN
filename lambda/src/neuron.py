@@ -154,7 +154,7 @@ def lambda_handler(event, context):
         
         # Calculate the derivative of the Weights for this neuron with
         # L2 Regularization
-        dw = 1 / m * (np.dot(dZ, A_prev.T) + L2 * W)
+        dw = 1 / m * (np.dot(dZ, A_prev.T) + l2 * W)
         # Upload the derivative of the weight for the 
         # neuron to ElastiCache, to be used by `TrainerLambda`.
         to_cache(db=batch, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))
