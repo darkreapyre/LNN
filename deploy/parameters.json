@@ -14,5 +14,6 @@
         "layer4": 1
     },
     "learning_rate": 0.0075,
-    "batch_size": 64
+    "batch_size": 64,
+    "lambda": 0.7
 }
