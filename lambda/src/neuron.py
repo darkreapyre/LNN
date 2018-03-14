@@ -122,6 +122,7 @@ def lambda_handler(event, context):
             db=batch,
             key=parameters['data_keys']['A'+str(layer-1)]
         )
+        l2 = parameters['lambda']
         
         # Get the derivative of the current layer's activation,
         # based on the size of the layer.
@@ -150,9 +151,11 @@ def lambda_handler(event, context):
         # Upload the derivative of the activations for the 
         # mini-batch to ElastiCache, to be used by `TrainerLambda`.
         to_cache(db=batch, obj=dZ, name='layer'+str(layer)+'_dZ_'+str(ID))
-        
-        # Calculate the derivative of the Weights for this neuron
-        dw = 1 / m * np.dot(dZ, A_prev.T)
+
+        # Calculate the derivative of the Weights for this neuron with
+        # L2 Regularization
+        dw = 1 / m * (np.dot(dZ, A_prev.T) + L2 * W)
+
         # Upload the derivative of the weight for the 
         # neuron to ElastiCache, to be used by `TrainerLambda`.
         to_cache(db=batch, obj=dw, name='layer'+str(layer)+'_dw_'+str(ID))

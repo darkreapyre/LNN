@@ -52,31 +52,23 @@ def lambda_handler(event, context):
             # Get the training examples data and no. examples (`Y` and `m`)
             Y = from_cache(db=batch, key=parameters['data_keys']['Y'])
             m = from_cache(db=batch, key=parameters['data_keys']['m'])
-            
-            # Calculate the Cross-Entropy Cost
-            cost = (1. / m) * (-np.dot(Y, np.log(A).T) - np.dot(1 - Y, np.log(1 - A).T))
+
+            # Calculate the cross-entropy cost
+            l2 = parameters['lambda']
+            cross_entropy_cost = (1./m) * (-np.dot(Y, np.log(A).T) - np.dot(1 - Y, np.log(1 - A).T))
+
+            # Calculate the L2 Cost from the MASTER Weights
+            l2_cost = 0
+            for l in range(1, parameters['layers']+1):
+                W = from_cache(db=15, key=parameters['data_keys']['W'+str(l)])
+                l2_cost += np.sum(np.square(W))
+
+            # Calculate the Cross-Entropy Cost with L2 Regularization
+            cost = cross_entropy_cost + (l2 / (2 * m)) * l2_cost
             cost = np.squeeze(cost)
             assert(cost.shape == ())
             
-            # Upload the Cost to ElastiCache for the current
-            # mini-batch to average out later.
-            
-            """
-            Note: The following is to sleep if necessary BUT using this should
-            be avoided at all costs to save time. 
-            #import time
-            #time.sleep(1)
-            
-            parameters['data_keys']['cost'] = to_cache(
-                db=batch,
-                obj=cost,
-                name='cost'
-            )
-
-            3.6.18: Switching to using DynamoDB to alleviate the strain on ElastiCache.
-            """
-            
-            # Add batch cost to DynamoDB Costs tracking object
+            # Upload the Cost to DynamoDB Costs tracking object
             table = dynamo_resource.Table('Costs')
             table.update_item(
                 Key={
