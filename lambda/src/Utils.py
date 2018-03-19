@@ -306,7 +306,10 @@ def random_minibatches(X, Y, batch_size=64):
     """
     #np.random.seed(seed)
     m = X.shape[1] # no. of training examples
-    mini_batches = [] 
+    mini_batches = []
+    
+    """
+    Note: Removing the Shuffle step
     
     # Step 1: Shuffle (X, Y)
     permutation = list(np.random.permutation(m))
@@ -320,11 +323,30 @@ def random_minibatches(X, Y, batch_size=64):
         mini_batch_Y = shuffled_Y[:, k * batch_size : (k + 1) * batch_size]
         mini_batch = (mini_batch_X, mini_batch_Y)
         mini_batches.append(mini_batch)
+    """
     
+    # Create mini-batches without shuffling the data
+    num_complete_minibatches = math.floor(m / batch_size)
+    for k in range(0, num_complete_minibatches):
+        mini_batch_X = X[:, k * batch_size : (k + 1) * batch_size]
+        mini_batch_Y = Y[:, k * batch_size : (k + 1) * batch_size]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+    
+    """
+    Note: Removing Shuffled inputs
     # Step 3: Deal with the end case
     if m % batch_size != 0:
         mini_batch_X = shuffled_X[:, num_complete_minibatches * batch_size:]
         mini_batch_Y = shuffled_Y[:, num_complete_minibatches * batch_size:]
+        mini_batch = (mini_batch_X, mini_batch_Y)
+        mini_batches.append(mini_batch)
+    """
+    
+    # Deal with the end-case
+    if m % batch_size != 0:
+        mini_batch_X = X[:, num_complete_minibatches * batch_size:]
+        mini_batch_Y = Y[:, num_complete_minibatches * batch_size:]
         mini_batch = (mini_batch_X, mini_batch_Y)
         mini_batches.append(mini_batch)
     
