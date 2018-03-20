@@ -374,10 +374,10 @@ def lambda_handler(event, context):
             print("Cost after Epoch {} = {}".format(epoch, Costs[best_batch]))
 
             """
-            Note: Adding break if Cost is lower or equal to 0.0019
+            Note: Adding break if Cost is lower or equal to threshold
             """
 
-            if float(avg_cost) <= 0.0019:
+            if float(Costs[best_batch]) <= parameters['threshold']:
                 # Break put of processing and treat this epoch as the final
                 # Create dictionary of model parameters for prediction app
                 params = {}
@@ -396,7 +396,7 @@ def lambda_handler(event, context):
 
                 # Update the final results with the average cost
                 final_results = from_cache(db=15, key=parameters['data_keys']['results'])
-                final_results['epoch'+str(epoch)]['cost'] = float(avg_cost)
+                final_results['epoch'+str(epoch)]['cost'] = Costs[best_batch]
                 # Add the end time to the results
                 final_results['End'] = str(datetime.datetime.now())
                 # Upload the final results to S3
@@ -409,7 +409,7 @@ def lambda_handler(event, context):
 
                 # Publish to SNS
                 sns_message = "Training Completed EARLY!\n"+"Training halted at epoch {}".format(epoch)
-                sns_message += "\nFinal Average Cost = "+dumps(avg_cost)
+                sns_message += "\nFinal Cost = "+dumps(Costs[best_batch])
                 publish_sns(sns_message)
             
             # Update the results for this epoch with the average cost and
