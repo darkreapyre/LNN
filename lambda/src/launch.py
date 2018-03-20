@@ -405,7 +405,7 @@ def lambda_handler(event, context):
             Note: Adding a break if the cost is lower then 0.0019
             """
             threshold = parameters['threshold']
-            if float(Costs[best_batch]) <= eval("%.0e" % (threshold)):
+            if float(avg_cost) <= eval("%.0e" % (threshold)):
                 # Break put of processing and treat this epoch as the final
                 # Create dictionary of model parameters for prediction app
                 params = {}
