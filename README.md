@@ -1,3 +1,3 @@
-# Lambda Neural Network Version 0.2.4 (Lowest Error Mini-batch Gradient Descent Optimization)
+# Lambda Neural Network Version 0.2.4 (Lowest Error Mini-batch Gradient Descent Optimization with BREAK)
 
->**Note:** This Branch breaks away from the standard branch configuration and decouples the Prediction API running on ECS/Fargate, to focus solely on the training process.
+>**Note:** If the Cost is lower or equal to 0.0019, then the process terminates.

@@ -338,7 +338,7 @@ def lambda_handler(event, context):
         
         else:
             # This is not the final Epoch, therfore process the next
-            # epoch by onsolidating the results from the parallel
+            # epoch by consolidating the results from the parallel
             # mini-batches.
             # Step 1: Get the lowest Cost for EACH mini-batch form 
             # DynamoDB and determine which mini-batch has the lowest
@@ -372,6 +372,45 @@ def lambda_handler(event, context):
 
             # Debug Statements
             print("Cost after Epoch {} = {}".format(epoch, Costs[best_batch]))
+
+            """
+            Note: Adding break if Cost is lower or equal to 0.0019
+            """
+
+            if float(avg_cost) <= 0.0019:
+                # Break put of processing and treat this epoch as the final
+                # Create dictionary of model parameters for prediction app
+                params = {}
+                # Update the model parameters for the prediction app
+                params['W'+str(l)] = W
+                params['b'+str(l)] = b
+                # Create a model parameters file for use by prediction app
+                with h5py.File('/tmp/params.h5', 'w') as h5file:
+                    for key in params:
+                        h5file['/' + key] = params[key]
+                # Upload model parameters file to S3
+                s3_resource.Object(
+                    parameters['s3_bucket'],
+                    'predict_input/params.h5'
+                ).put(Body=open('/tmp/params.h5', 'rb'))
+
+                # Update the final results with the average cost
+                final_results = from_cache(db=15, key=parameters['data_keys']['results'])
+                final_results['epoch'+str(epoch)]['cost'] = float(avg_cost)
+                # Add the end time to the results
+                final_results['End'] = str(datetime.datetime.now())
+                # Upload the final results to S3
+                results_obj = s3_resource.Object(parameters['s3_bucket'],'training_results/results.json')
+                try:
+                    results_obj.put(Body=json.dumps(final_results))
+                except botocore.exceptions.ClientError as e:
+                    print(e)
+                    raise
+
+                # Publish to SNS
+                sns_message = "Training Completed EARLY!\n"+"Training halted at epoch {}".format(epoch)
+                sns_message += "\nFinal Average Cost = "+dumps(avg_cost)
+                publish_sns(sns_message)
             
             # Update the results for this epoch with the average cost and
             # send status updates for epochs every 100 epochs
