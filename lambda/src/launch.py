@@ -411,6 +411,7 @@ def lambda_handler(event, context):
                 sns_message = "Training Completed EARLY!\n"+"Training halted at epoch {}".format(epoch)
                 sns_message += "\nFinal Cost = "+dumps(Costs[best_batch])
                 publish_sns(sns_message)
+                sys.exit()
             
             # Update the results for this epoch with the average cost and
             # send status updates for epochs every 100 epochs
