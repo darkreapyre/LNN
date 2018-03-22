@@ -359,6 +359,12 @@ def lambda_handler(event, context):
             # Calculate the index of the lowest Cost
             best_batch = np.argmin(Costs)
 
+            """
+            Note: Adding temporary parameters placeholder in case current epoch
+            produces the best Cost.
+            """
+            params = {}
+
             # Step 2: Get the optimized Weights and Bias (by layer) from
             # the mini-batch with the lowest error and upload these as
             # the Weights and Bias for the prediciton app.
@@ -370,6 +376,10 @@ def lambda_handler(event, context):
                 parameters['data_keys']['W'+str(l)] = to_cache(db=15, obj=W, name='W'+str(l))
                 parameters['data_keys']['b'+str(l)] = to_cache(db=15, obj=b, name='b'+str(l))
 
+                # Update params in case current epoch is below threshold
+                params['W'+str(l)] = W
+                params['b'+str(l)] = b
+
             # Debug Statements
             print("Cost after Epoch {} = {}".format(epoch, Costs[best_batch]))
 
@@ -379,11 +389,6 @@ def lambda_handler(event, context):
             threshold = parameters['threshold']
             if float(Costs[best_batch]) <= eval("%.0e" % (threshold)):
                 # Break put of processing and treat this epoch as the final
-                # Create dictionary of model parameters for prediction app
-                params = {}
-                # Update the model parameters for the prediction app
-                params['W'+str(l)] = W
-                params['b'+str(l)] = b
                 # Create a model parameters file for use by prediction app
                 with h5py.File('/tmp/params.h5', 'w') as h5file:
                     for key in params:
