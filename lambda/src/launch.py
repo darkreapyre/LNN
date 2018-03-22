@@ -353,6 +353,13 @@ def lambda_handler(event, context):
         
         else:
             # Consolidate the results from the parallel mini-batches.
+
+            """
+            Note: Adding temporary parameters placeholder in case current epoch
+            produces the best Cost.
+            """
+            params = {}
+
             # Step 1: Get the optimized Weights and Bias from EACH mini-batch,
             # BY layer, and calculate the average of the parameters.
             for l in range(1, parameters['layers']+1):
@@ -378,6 +385,10 @@ def lambda_handler(event, context):
                 # next epoch.
                 parameters['data_keys']['W'+str(l)] = to_cache(db=15, obj=avg_W, name='W'+str(l))
                 parameters['data_keys']['b'+str(l)] = to_cache(db=15, obj=avg_b, name='b'+str(l))
+
+                # Updating temporary params in case this current epoch is the final epoch
+                params['W'+str(l)] = avg_W
+                params['b'+str(l)] = avg_b
             
             # Step 2: Calculate the average Cost across the mini-batches
             Costs = []
@@ -407,11 +418,6 @@ def lambda_handler(event, context):
             threshold = parameters['threshold']
             if float(avg_cost) <= eval("%.0e" % (threshold)):
                 # Break put of processing and treat this epoch as the final
-                # Create dictionary of model parameters for prediction app
-                params = {}
-                # Update the model parameters for the prediction app
-                params['W'+str(l)] = avg_W
-                params['b'+str(l)] = avg_b
                 # Create a model parameters file for use by prediction app
                 with h5py.File('/tmp/params.h5', 'w') as h5file:
                     for key in params:
