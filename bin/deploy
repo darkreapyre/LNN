@@ -4,7 +4,7 @@ echo -n "Enter the AWS Region to use > "
 read region
 echo -n "Enter S3 Bucket to host the templates and scripts > "
 read bucket
-echo -n "Enter stackname to create or update the stack > "
+echo -n "Enter CloudFormation stackname to create > "
 read stackname
 echo -n "Enter GitHub User > "
 read GitHubUser
