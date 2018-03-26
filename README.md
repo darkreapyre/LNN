@@ -45,7 +45,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     - IAM Role -> Create new role.
     - Specific S3 Bucket -> "UNIQUE BUCKET NAME" -> Create Role.
     - VPC -> "UNIQUE STACK NAME" .
-    - Subnet -> Select the subnet marked "Private".
+    - Subnet -> Select the subnet marked "Private Subnet (AZ1)".
     - Security group(s) -> ComputeSecurityGroup.
     - Direct Internet Access -> Enable.
     - Create notebook instance.
@@ -57,7 +57,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
         - Service -> Choose a service -> ElastiCache.
         - Action -> Select and action
             - All ElastiCache actions (elasticache:*).
-            - Any DynamoDB Table actions (dynamoDB:*).
+            - All DynamoDB actions (dynamoDB:*).
         - Review Policy.
         - Save changes.
     - The final Policy should look similar to this:
@@ -68,14 +68,8 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
                 {
                     "Sid": "VisualEditor0",
                     "Effect": "Allow",
-                    "Action": [
-                        "dynamodb:*",
-                        "s3:ListBucket"
-                    ],
-                    "Resource": [
-                        "arn:aws:s3:::lnn-1",
-                        "arn:aws:dynamodb:*:*:table/*"
-                    ]
+                    "Action": "s3:ListBucket",
+                    "Resource": "arn:aws:s3:::<<UNIQUE BUCKET NAME>>"
                 },
                 {
                     "Sid": "VisualEditor1",
@@ -91,18 +85,8 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
                     "Sid": "VisualEditor2",
                     "Effect": "Allow",
                     "Action": [
-                        "dynamodb:DescribeReservedCapacityOfferings",
-                        "dynamodb:TagResource",
-                        "dynamodb:UntagResource",
-                        "dynamodb:ListTables",
-                        "dynamodb:DescribeReservedCapacity",
-                        "dynamodb:ListBackups",
-                        "dynamodb:PurchaseReservedCapacityOfferings",
-                        "dynamodb:ListTagsOfResource",
-                        "dynamodb:DescribeTimeToLive",
-                        "dynamodb:DescribeLimits",
-                        "elasticache:*",
-                        "dynamodb:ListStreams"
+                        "dynamodb:*",
+                        "elasticache:*"
                     ],
                     "Resource": "*"
                 }
@@ -112,7 +96,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
 5. Return to the SageMaker console and confirm the Notebook instance is created. Under "Actions" -> Select "Open".
 6. After the Jupyter Interface has opened, Configure the Python Libraries:
     - Select the "Conda" tab -> under "Conda environments" -> select "python3".
-    - Under "Available packages" -> Click the "Search" -> enter "redis". The following two "redis" packages should be available. 
+    - Under "Available packages" -> click the "Search" box -> enter "redis". The following two "redis" packages should be available. 
         - redis
         - redis-py
     - Select both packages and click the "->" button to install the packages.
@@ -123,7 +107,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     ```shell
         $ cd SageMaker
         $ git clone https://github.com/darkreapyre/LNN
-        $ Git ccheckout 1.0
+        $ git checkout 1.0
         $ exit
     ```
     - Go back to the "Files" tab -> click "LNN" -> click "artifacts" -> select `Introduction.ipynb`
@@ -134,7 +118,7 @@ The **Introduction** provides an overview of the *Architecture*, *Why* and *How*
 
 ### `Codebook.ipynb` Notebook
 The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that is integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network using the code within the Notebook to get an understanding of the full training process will be executed.
-
+>**Note:** After executing the various cells withing the *CodeBook*, the results from the *10 Epoch* mockup will trigger the  production model deployment pipeline. To view the unoptimized version of the Prediciton API at this stage, refer to the [Prediction API](## Prediction API) section.
 ## Training the Classifier
 To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
 >**Note:** A pre-configured `parameters.json` file has already been created. To change the Neural Network configuration parameters, before running the training process, change this file and upload it to the `training_iput` folder of the S3 Bucket before uploading the data set.
@@ -146,7 +130,7 @@ Once the data file has been uploaded, an S3 Bucket Event will automatically trig
 ```
 In-depth insight to the training process can be viewed through the **CloudWatch** console.
 
-If a message is not received after *5 minutes*, refer to the **Troubleshooting** section.
+If a message is not received after *5 minutes*, refer to the [Troubleshooting](## Troubleshooting) section.
 
 ## Analyzing the Results
 Once the training process has successfully completed, an e-mail will be sent to the address configured during the deployment. To analyze the results of the testing and to determine if the trained model is production-worthy, using the same *SageMaker* instance used for the *Codebook*, navigate to the `artifacts` directory and launch the `Analysis.ipynb` notebook.
@@ -157,6 +141,8 @@ Work through the various code cells to see:
 3. How well the model performs against new images.
 
 >**Note:** Ensure to add the name of the S3 Bucket and AWS Region used during deployment to get the correct results files created during the training process.
+
+## Predition API
 
 ## Troubleshooting
 Since the framework launches a significant amount to Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may show the following error:
