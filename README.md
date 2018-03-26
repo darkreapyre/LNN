@@ -15,15 +15,16 @@
 ## Deployment
 
 1. Make any changes to the Neural Network configuraiton parameters file (`parameters.json`) before running the deployment.
-2. To deploy the environment, change to the *deploy* directory. An easy to use deployment script has been created to automatically deploy the environment. Start the process by running `./deploy.sh`. You will be prompted for the following information:
+2. To deploy the environment, an easy to use deployment script has been created to automatically deploy the environment. Start the process by running `bin/deploy`. You will be prompted for the following information:
 ```console
     Enter the AWS Region to use > <<AWS REGION>>
     Enter the S3 bucket to create > <<UNIQUE S3 BUCKET>>
     Enter the name of the Stack to deploy > <<UNIQUE CLOUDFOMRATION STACK NAME>>
     Enter GitHub User > <<GitHub Username>>
-    Enter GitHubToken > [<<GitHub Token>>](https://github.com/settings/tokens)
+    Enter GitHubToken > <<GitHub Token>>
     Enter the e-mail address to send training update > <<E-MAIL ADDRESS>>
 ```
+>**Note:** For more information on creating a GitHub [Token](https://github.com/settings/tokens).
 
 3. The `deploy.sh` script creates the an *S3* Bucket; copies the necessary *CloudFormation* templates to the Bucket; creates the *Lambda* deployment package and uploads it to the Bucket and lastly, it creates the CloudFormation *Stack*. Once completed, the following message is displayed:
 
