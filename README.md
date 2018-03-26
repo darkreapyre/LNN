@@ -47,6 +47,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     - VPC -> "UNIQUE STACK NAME" .
     - Subnet -> select any of the subnets marked "Private".
     - Security group(s) -> ComputeSecurityGroup.
+    - Direct Internet Access -> Enable.
     - Create notebook instance.
 3. You should see Status -> Pending.
 4. Configure Service Access role.
@@ -54,7 +55,9 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     - Policy name -> "AmazonSageMaker-ExecutionPolicy-..." -> Edit policy.
     - Visual editor tab -> Add additional permissions.
         - Service -> Choose a service -> ElastiCache.
-        - Action -> Select and action -> All ElastiCache actions (elasticache:*) .
+        - Action -> Select and action
+            - All ElastiCache actions (elasticache:*).
+            - Any DynamoDB Table actions (dynamoDB:*).
         - Review Policy.
         - Save changes.
     - The final Policy should look similar to this:
@@ -66,17 +69,41 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
                     "Sid": "VisualEditor0",
                     "Effect": "Allow",
                     "Action": [
-                        "s3:PutObject",
-                        "s3:GetObject",
-                        "s3:ListBucket",
-                        "s3:DeleteObject"
+                        "dynamodb:*",
+                        "s3:ListBucket"
                     ],
-                    "Resource": "arn:aws:s3:::*"
+                    "Resource": [
+                        "arn:aws:s3:::lnn-1",
+                        "arn:aws:dynamodb:*:*:table/*"
+                    ]
                 },
                 {
                     "Sid": "VisualEditor1",
                     "Effect": "Allow",
-                    "Action": "elasticache:*",
+                    "Action": [
+                        "s3:PutObject",
+                        "s3:GetObject",
+                        "s3:DeleteObject"
+                    ],
+                    "Resource": "arn:aws:s3:::lnn-1/*"
+                },
+                {
+                    "Sid": "VisualEditor2",
+                    "Effect": "Allow",
+                    "Action": [
+                        "dynamodb:DescribeReservedCapacityOfferings",
+                        "dynamodb:TagResource",
+                        "dynamodb:UntagResource",
+                        "dynamodb:ListTables",
+                        "dynamodb:DescribeReservedCapacity",
+                        "dynamodb:ListBackups",
+                        "dynamodb:PurchaseReservedCapacityOfferings",
+                        "dynamodb:ListTagsOfResource",
+                        "dynamodb:DescribeTimeToLive",
+                        "dynamodb:DescribeLimits",
+                        "elasticache:*",
+                        "dynamodb:ListStreams"
+                    ],
                     "Resource": "*"
                 }
             ]
@@ -90,15 +117,16 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
         - redis-py
     - Select both packages and click the "->" button to install the packages.
     - Confirm to "Install" on the pop-up.
-7. Clone the "itsacat" Code.
+7. Clone the GitHuib Repository.
     - Under the "Files" tab -> Click "New" -> "Terminal".
     - Under the Shell run the following commands:
     ```shell
         $ cd SageMaker
-        $ git clone https://github.com/darkreapyre/itsacat
+        $ git clone https://github.com/darkreapyre/LNN
+        $ Git ccheckout 1.0
         $ exit
     ```
-    - Go back to the "Files" tab -> click "itsacat" -> click "artifacts" -> select `Introduction.ipynb`
+    - Go back to the "Files" tab -> click "LNN" -> click "artifacts" -> select `Introduction.ipynb`
 
 ## Jupyter Notebooks
 ### `Introduction.ipynb` Notebook

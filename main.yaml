@@ -15,7 +15,7 @@ Parameters:
 
   GitHubBranch:
     Type: String
-    Default: 0.3.0
+    Default: 1.0
     Description: The branch of the repo to continuously deploy.
 
   GitHubToken:
@@ -87,7 +87,6 @@ Resources:
         PublicSubnet1CIDR: 10.215.10.0/24
         PublicSubnet2CIDR: 10.215.11.0/24
         PrivateSubnet1CIDR: 10.215.20.0/24
-        PrivateSubnet2CIDR: 10.215.21.0/24
 
   SNN:
     Type: AWS::CloudFormation::Stack
@@ -99,7 +98,6 @@ Resources:
         TopicEmail: !Ref EmailAddress
         S3Bucket: !Ref TemplateBucket
         PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-#        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
         VpcCIDR: 10.215.0.0/16
   
   ElastiCache:
@@ -109,7 +107,6 @@ Resources:
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-#        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
         ClusterNodeType: !Ref ClusterNodeType
         VPC: !GetAtt VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
