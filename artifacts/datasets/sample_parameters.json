@@ -9,5 +9,6 @@
         "layer1": 3,
         "layer2": 1
     },
-    "learning_rate": 0.0075
+    "learning_rate": 0.0075,
+    "batch_size": 64
 }
