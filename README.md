@@ -43,7 +43,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     - Specific S3 Bucket -> "UNIQUE BUCKET NAME" -> Create Role.
     - VPC -> "UNIQUE STACK NAME" .
     - Subnet -> select any of the subnets marked "Private".
-    - Security group(s) -> HostSecurityGroup.
+    - Security group(s) -> ComputeSecurityGroup.
     - Create notebook instance.
 3. You should see Status -> Pending.
 4. Configure Service Access role.

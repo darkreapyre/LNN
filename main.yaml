@@ -34,11 +34,12 @@ Parameters:
   ClusterNodeType:
     Description: ElastiCache node type.
     Type: String
-    Default: cache.t2.small
+    Default: cache.r4.large
     AllowedValues:
       - cache.t2.small
       - cache.t2.medium
       - cache.m4.large
+      - cache.r4.large
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -98,7 +99,7 @@ Resources:
         TopicEmail: !Ref EmailAddress
         S3Bucket: !Ref TemplateBucket
         PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+#        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
         VpcCIDR: 10.215.0.0/16
   
   ElastiCache:
@@ -108,7 +109,7 @@ Resources:
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
+#        PrivateSubnet2: !GetAtt VPC.Outputs.PrivateSubnet2
         ClusterNodeType: !Ref ClusterNodeType
         VPC: !GetAtt VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
