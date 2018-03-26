@@ -20,6 +20,8 @@
     Enter the AWS Region to use > <<AWS REGION>>
     Enter the S3 bucket to create > <<UNIQUE S3 BUCKET>>
     Enter the name of the Stack to deploy > <<UNIQUE CLOUDFOMRATION STACK NAME>>
+    Enter GitHub User > <<GitHub Username>>
+    Enter GitHubToken > [<<GitHub Token>>](https://github.com/settings/tokens)
     Enter the e-mail address to send training update > <<E-MAIL ADDRESS>>
 ```
 

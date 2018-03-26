@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -o errexit -o xtrace
+echo -n "Enter the AWS Region to use > "
+read region
 echo -n "Enter S3 Bucket to host the templates and scripts > "
 read bucket
 echo -n "Enter stackname to create or update the stack > "
@@ -31,17 +33,17 @@ mv scripts/scripts.zip deploy/scripts.zip
 echo ""
 echo -n "Uploading CloudFormation Templates to s3 ..."
 echo ""
-aws s3 mb "s3://${bucket}" --region us-east-1
-aws s3 cp deploy/templates.zip "s3://${bucket}" --acl public-read
-aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read
-aws s3 cp deploy/package.zip "s3://${bucket}" --acl public-read
-aws s3 cp main.yaml "s3://${bucket}" --acl public-read
-aws s3 cp --recursive templates/ "s3://${bucket}/templates" --acl public-read
-aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read
-aws s3 cp parameters.json "s3://${bucket}/training_input/" --acl public-read
-aws s3api put-bucket-versioning --bucket "${bucket}" --versioning-configuration Status=Enabled
+aws s3 mb "s3://${bucket}" --region "${region}"
+aws s3 cp deploy/templates.zip "s3://${bucket}" --acl public-read --region "${region}"
+aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read --region "${region}"
+aws s3 cp deploy/package.zip "s3://${bucket}" --acl public-read --region "${region}"
+aws s3 cp main.yaml "s3://${bucket}" --acl public-read --region "${region}"
+aws s3 cp --recursive templates/ "s3://${bucket}/templates" --acl public-read --region "${region}"
+aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read --region "${region}"
+aws s3 cp parameters.json "s3://${bucket}/training_input/" --acl public-read --region "${region}"
+aws s3api put-bucket-versioning --bucket "${bucket}" --versioning-configuration Status=Enabled --region "${region}"
 
 echo ""
 echo -n "Launching CloudFormation Stack ..."
 echo ""
-aws cloudformation deploy --stack-name $stackname --template-file main.yaml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides TemplateBucket=$bucket GitHubToken=$GitHubToken EmailAddress=$email GitHubUser=$GitHubUser --region us-east-1
+aws cloudformation deploy --stack-name $stackname --template-file main.yaml --capabilities CAPABILITY_NAMED_IAM --parameter-overrides TemplateBucket=$bucket GitHubToken=$GitHubToken EmailAddress=$email GitHubUser=$GitHubUser --region "${region}"
