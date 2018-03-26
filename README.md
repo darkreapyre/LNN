@@ -45,7 +45,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     - IAM Role -> Create new role.
     - Specific S3 Bucket -> "UNIQUE BUCKET NAME" -> Create Role.
     - VPC -> "UNIQUE STACK NAME" .
-    - Subnet -> select any of the subnets marked "Private".
+    - Subnet -> Select the subnet marked "Private".
     - Security group(s) -> ComputeSecurityGroup.
     - Direct Internet Access -> Enable.
     - Create notebook instance.
