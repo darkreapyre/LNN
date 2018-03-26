@@ -24,21 +24,11 @@ Parameters:
     Description: Private Subnet 1
     Type: 'AWS::EC2::Subnet::Id'
 
-#  PrivateSubnet2:
-#    Description: Private Subnet 2
-#    Type: 'AWS::EC2::Subnet::Id'
-  
   VPC:
     Type: AWS::EC2::VPC::Id
   
   VpcCIDR:
     Type: String
-
-#  SecurityGroup:
-#    Description: >-
-#      The security groups IDs in the VPC that includes the resources to which
-#      the Lambda function requires access.
-#    Type: 'AWS::EC2::SecurityGroup::Id'
 
 Resources:
   SNSTopic:
@@ -80,7 +70,6 @@ Resources:
           - !Ref ComputeSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
-#          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
@@ -158,7 +147,6 @@ Resources:
           - !Ref ComputeSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
-#          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
@@ -229,7 +217,6 @@ Resources:
           - !Ref ComputeSecurityGroup
         SubnetIds:
           - !Ref PrivateSubnet1
-#          - !Ref PrivateSubnet2
       Environment:
         Variables:
           Region: !Ref 'AWS::Region'
@@ -341,33 +328,33 @@ Resources:
                   - lambda:RemovePermission
                 Resource: '*'
 
-  LaunchLambdaLogs:
-    Type: AWS::Logs::LogGroup
-    DependsOn: LaunchLambda
-    Properties:
-      LogGroupName: '/aws/lambda/LaunchLambda'
-      RetentionInDays: 1
+#  LaunchLambdaLogs:
+#    Type: AWS::Logs::LogGroup
+#    DependsOn: LaunchLambda
+#    Properties:
+#      LogGroupName: '/aws/lambda/LaunchLambda'
+#      RetentionInDays: 1
 
-  TrainerLambdaLogs:
-    Type: AWS::Logs::LogGroup
-    DependsOn: TrainerLambda
-    Properties:
-      LogGroupName: '/aws/lambda/TrainerLambda'
-      RetentionInDays: 1
+#  TrainerLambdaLogs:
+#    Type: AWS::Logs::LogGroup
+#    DependsOn: TrainerLambda
+#    Properties:
+#      LogGroupName: '/aws/lambda/TrainerLambda'
+#      RetentionInDays: 1
 
-  NeuronLambdaLogs:
-    Type: AWS::Logs::LogGroup
-    DependsOn: NeuronLambda
-    Properties:
-      LogGroupName: '/aws/lambda/NeuronLambda'
-      RetentionInDays: 1
+#  NeuronLambdaLogs:
+#    Type: AWS::Logs::LogGroup
+#    DependsOn: NeuronLambda
+#    Properties:
+#      LogGroupName: '/aws/lambda/NeuronLambda'
+#      RetentionInDays: 1
 
-  TriggerLambdaLogs:
-    Type: AWS::Logs::LogGroup
-    DependsOn: S3TriggerLambda
-    Properties:
-      LogGroupName: '/aws/lambda/S3TriggerLambda'
-      RetentionInDays: 1
+#  TriggerLambdaLogs:
+#    Type: AWS::Logs::LogGroup
+#    DependsOn: S3TriggerLambda
+#    Properties:
+#      LogGroupName: '/aws/lambda/S3TriggerLambda'
+#      RetentionInDays: 1
   
 Outputs:
   SNSTopicArn:
