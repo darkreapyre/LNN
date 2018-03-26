@@ -1,6 +1,5 @@
 #!/bin/bash
 
-set -o errexit -o xtrace
 echo -n "Enter the AWS Region to use > "
 read region
 echo -n "Enter S3 Bucket to host the templates and scripts > "

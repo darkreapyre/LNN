@@ -1,4 +1,4 @@
-# Serverless Neural Network for Image Classification - Prediction API Pipeline Demo
+# Serverless Neural Network for Image Classification - Training/Prediction Pipeline Demo
 
 ![alt text](https://github.com/darkreapyre/itsacat/blob/master/artifacts/images/Prediction_Architecture.png "Architecture")
 
@@ -32,7 +32,7 @@
     "Successfully created/updated stack - <<Stack Name>>"
 ```
 
->**Note:** During the deployment, and e-mail will be sent to the address specified in the `deploy.sh` script. Make sure to confirm the subscription to the SNS Topic.
+>**Note:** During the deployment, and e-mail will be sent to the specified address. Make sure to confirm the subscription to the SNS Topic.
 
 ## Integration with SageMaker Notebook Instance
 Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazon.com/sagemaker/) into the stack to start reviewing the Demo content by using the following steps:
