@@ -119,7 +119,7 @@ The **Introduction** provides an overview of the *Architecture*, *Why* and *How*
 
 ### `Codebook.ipynb` Notebook
 The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that is integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network using the code within the Notebook to get an understanding of the full training process will be executed.
->**Note:** After executing the various cells withing the *CodeBook*, the results from the *10 Epoch* mockup will trigger the  production model deployment pipeline. To view the unoptimized version of the Prediciton API at this stage, refer to the [Prediction API](## Prediction API) section.
+>**Note:** After executing the various cells withing the *CodeBook*, the results from the *10 Epoch* mockup will trigger the production deployment pipeline. To view the unoptimized version of the Prediciton API at this stage, refer to the [Prediction API] (# prediction-api) section.
 
 ## Training the Classifier
 To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
