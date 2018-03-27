@@ -32,7 +32,7 @@ mv scripts/scripts.zip deploy/scripts.zip
 echo ""
 echo -n "Uploading CloudFormation Templates to s3 ..."
 echo ""
-aws s3 mb "s3://${bucket}" --region "${region}"
+aws s3 mb "s3://${bucket}" --region us-east-1
 aws s3 cp deploy/templates.zip "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp deploy/package.zip "s3://${bucket}" --acl public-read --region us-east-1
