@@ -144,7 +144,7 @@ Work through the various code cells to see:
 
 >**Note:** Ensure to add the name of the S3 Bucket and AWS Region used during deployment to get the correct results files created during the training process.
 
-## Predition API
+## Prediction API
 
 ## Troubleshooting
 Since the framework launches a significant amount to Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may show the following error:
