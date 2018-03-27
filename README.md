@@ -91,7 +91,9 @@ Each version is meant to enhance the functionality of the implementation to star
     KeyError: 'cost'
 ```
 - After trying a number of alternatives, namely:
-    1. 
+    1. Bigger ElastiCache Instances.
+    2. Constraining the training to a single AZ.
+    3. The best solution to address the error was to create a separate *Costs* DynamoDB Table to track the Loss for each bacth.
 
 
     __TBD__ --> Version 0.2.4.1
