@@ -18,7 +18,6 @@
 1. Make any changes to the Neural Network configuraiton parameters file (`parameters.json`) before running the deployment.
 2. To deploy the environment, an easy to use deployment script has been created to automatically deploy the environment. Start the process by running `bin/deploy`. You will be prompted for the following information:
 ```console
-    Enter the AWS Region to use > <<AWS REGION>>
     Enter the S3 bucket to create > <<UNIQUE S3 BUCKET>>
     Enter the name of the Stack to deploy > <<UNIQUE CLOUDFOMRATION STACK NAME>>
     Enter GitHub User > <<GitHub Username>>
@@ -80,7 +79,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
                         "s3:GetObject",
                         "s3:DeleteObject"
                     ],
-                    "Resource": "arn:aws:s3:::lnn-1/*"
+                    "Resource": "arn:aws:s3:::<<UNIQUE BUCKET NAME>>/*"
                 },
                 {
                     "Sid": "VisualEditor2",
@@ -107,7 +106,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     - Under the Shell run the following commands:
     ```shell
         $ cd SageMaker
-        $ git clone https://github.com/darkreapyre/LNN
+        $ git clone https://github.com/<<Repository>>/LNN
         $ git checkout 1.0
         $ exit
     ```
@@ -118,8 +117,8 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
 The **Introduction** provides an overview of the *Architecture*, *Why* and *How* the *Serverless Neural Network* is implemented.
 
 ### `Codebook.ipynb` Notebook
-The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that is integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network using the code within the Notebook to get an understanding of the full training process will be executed.
->**Note:** After executing the various cells withing the *CodeBook*, the results from the *10 Epoch* mockup will trigger the production deployment pipeline. To view the unoptimized version of the Prediciton API at this stage, refer to the [Prediction API](#prediction-api) section. 
+The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that are integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network, using the code within the Notebook to get an understanding of how the full training process will be executed.
+>**Note:** After executing the various cells withing the *CodeBook*, the results from the *2-Layer* mockup will trigger the production deployment pipeline. To view the unoptimized version of the Prediciton API at this stage, refer to the [Prediction API](#prediction-api) section. 
 
 ## Training the Classifier
 To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
@@ -132,7 +131,7 @@ Once the data file has been uploaded, an S3 Bucket Event will automatically trig
 ```
 In-depth insight to the training process can be viewed through the **CloudWatch** console.
 
-If a message is not received after *5 minutes*, refer to the [Troubleshooting](## Troubleshooting) section.
+If a message is not received after *5 minutes*, refer to the [Troubleshooting](#troubleshooting) section.
 
 ## Analyzing the Results
 Once the training process has successfully completed, an e-mail will be sent to the address configured during the deployment. To analyze the results of the testing and to determine if the trained model is production-worthy, using the same *SageMaker* instance used for the *Codebook*, navigate to the `artifacts` directory and launch the `Analysis.ipynb` notebook.
@@ -145,9 +144,10 @@ Work through the various code cells to see:
 >**Note:** Ensure to add the name of the S3 Bucket and AWS Region used during deployment to get the correct results files created during the training process.
 
 ## Prediction API
+The final production application
 
 ## Troubleshooting
-Since the framework launches a significant amount to Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may show the following error:
+Since the framework launches a significant amount to Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:
 
 ```python
     list index out of range: IndexError
