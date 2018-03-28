@@ -107,7 +107,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
         $ git checkout 1.0
         $ exit
     ```
-    - Go back to the "Files" tab -> click "<<Repository Nane>>" -> click "artifacts" -> select `Introduction.ipynb`
+    - Go back to the "Files" tab -> click "`<<Repository Nane>>`" -> click "artifacts" -> select `Introduction.ipynb`
 
 ## Demo Process Flow
 To follow the Machine Learning Pipeline process flow the four steps listed below:
@@ -159,7 +159,7 @@ The following Approval action is waiting for your response:
 ...
 ```
 Included is the e-mail is a link to the *CodePipeline* Service Console to approve the deployment from QA to Production. To view and test the Prediction API in the QA stage, execute the following:
-1. Open the *CloudFormation* Service Console and select the nested Stack for the Elastic Container Service (ECS). e.g. **<<Stack Name>>-DeploymentPipeline-...-ecs-cluster**.
+1. Open the *CloudFormation* Service Console and select the nested Stack for the Elastic Container Service (ECS). e.g. **`<<Stack Name>>-DeploymentPipeline-...-ecs-cluster`**.
 2. Click on the CloudFormation Outputs tab.
 3. The *ApplicationURL** Value provides a link to the **Prediction API URL for Production (Blue)**. Clicking on this link will open a browser page to the Prediciton API. Successful connection to the API will display the **"Ping Successfull!"** message.
 4. To view the production (Blue) API, find the URL of a "cat" picture (e.g.[Grumpy Cat](http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg)) and add it to the URL as follows:
@@ -172,7 +172,7 @@ Included is the e-mail is a link to the *CodePipeline* Service Console to approv
 
 Accessing the (Greep) API after [Step 2.](#step-2-training-the-classifier)) should correctly predict a "cat" image and thus the **Manual-Approval** stage in CodePipeline can be *Approved*. This in turn will swap the (Green) API to production (Blue), wich can be accessued using **Prediction API URL for Production (Blue)**.
 
-It is at this point that a successull integration of a **Machine Learning Pipeline** into a production **DevOps Pipeline** has been successfully demonstrated. To avoid additionalk charges AWS resources, refer to the [Cleanup](#Cleanup) Section.
+It is at this point that a successull integration of a **Machine Learning Pipeline** into a production **DevOps Pipeline** has been successfully demonstrated. To avoid additional charges for AWS resources, refer to the [Cleanup](#cleanup) Section.
 
 ## Troubleshooting
 Since the framework launches a significant amount of Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:  
@@ -194,7 +194,7 @@ To address this, simply delete all the DynamoDB Tables as well as data set (`dat
     - Select the Notebook Instance -> click Actions -> Delete.
 2. After the SageMaker Notebook Instance is deleted, delete the CloudFormnation Stack.
     - Open the CloudFormation Service console.
-    - First select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. **<<Stack Name>>-DeploymentPipeline-...-ecs-cluster**
+    - First select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. **`<<Stack Name>>-DeploymentPipeline-...-ecs-cluster`**
     - Click Actions -> Delete Stack -> "Yes, Delete".
     - Select the stack created by the initial deployment and repeat the above step.
 3. Delete DynamoDB Tables.
