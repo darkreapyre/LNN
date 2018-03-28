@@ -163,7 +163,7 @@ Included is the e-mail is a link to the *CodePipeline* Service Console to approv
 2. Click on the CloudFormation Outputs tab.
 3. The *ApplicationURL** Value provides a link to the **Prediction API URL for Productions (Blue)**. Clicking on this link will open a browser page to the Prediciton API. Successful connection to the API will display the **"Ping Successfull!"** message.
 4. To view the production (Blue) API, find the URL of a "cat" picture (e.g.[Grumpy Cat](http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg)) and add it to the URL as follows:
-    <center>http://<<GitHub Repo Name>>.us-east-1.elb.amazonaws.com/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg</center>
+    <center>http://{{GitHub Repo Name}}.us-east-1.elb.amazonaws.com/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg</center>
 5. qwdwqe
 
 ## Troubleshooting
