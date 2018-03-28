@@ -97,7 +97,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    resp = Response(response="Ping Successfull",
+    resp = Response(response="Ping Successfull!",
          status=200, \
          mimetype="application/json")
     return (resp)

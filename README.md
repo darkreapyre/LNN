@@ -163,8 +163,16 @@ Included is the e-mail is a link to the *CodePipeline* Service Console to approv
 2. Click on the CloudFormation Outputs tab.
 3. The *ApplicationURL** Value provides a link to the **Prediction API URL for Productions (Blue)**. Clicking on this link will open a browser page to the Prediciton API. Successful connection to the API will display the **"Ping Successfull!"** message.
 4. To view the production (Blue) API, find the URL of a "cat" picture (e.g.[Grumpy Cat](http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg)) and add it to the URL as follows:
-    <center>http://{{GitHub Repo Name}}.us-east-1.elb.amazonaws.com/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg</center>
-5. qwdwqe
+    
+    `http://{{GitHub Repo Name}}.us-east-1.elb.amazonaws.com/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg`
+
+5. To view the Test/Staging (Green) API, simply change the port to **8080** as follows:
+
+    `http://{{GitHub Repo Name}}.us-east-1.elb.amazonaws.com:8080/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg`
+
+Accessing the (Greep) API after [Step 2.](#step-2-training-the-classifier)) should correctly predict a "cat" image and thus the **Manual-Approval** stage in CodePipeline can be *Approved*, which in turn will swap the (Green) API to production (Blue).
+
+It is at this point that a successull integration of a **Machine Learning Pipeline** into a production **DevOps Pipeline** has been successfully demonstrated. To avoid additionalk charges AWS resources, refer to the [Cleanup](#Cleanup) Section.
 
 ## Troubleshooting
 Since the framework launches a significant amount of Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:  
@@ -178,7 +186,7 @@ Since the framework launches a significant amount of Asynchronous Lambda functio
     key_list.append(result[0])
     IndexError: list index out of range
 ```
-To address this, simply delete the data set (`datasets.h5`) from the S3 Bucket and re-upload it to re-launch the training process.
+To address this, simply delete all the DynamoDB Tables as well as data set (`datasets.h5`) from the S3 Bucket and re-upload data set to re-launch the training process.
 
 ## Cleanup
 1. Delete the SageMaker Notebook instance.
