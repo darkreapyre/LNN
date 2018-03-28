@@ -120,7 +120,7 @@ The **Introduction** provides an overview of the *Architecture*, *Why* and *How*
 
 #### `Codebook.ipynb` Notebook
 The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that are integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network, using the code within the Notebook to get an understanding of how the full training process will be executed.
->**Note:** After executing the various cells withing the *CodeBook*, the results from the *2-Layer* mockup will trigger the production deployment pipeline. **IGNORE** any e-mails sent to approve the Prediction API in the QA/Staging environment as this will be addessed during the [Prediction API](#prediction-api) step of the process flow.
+>**Note:** After executing the various cells withing the *CodeBook*, the results from the *2-Layer* mockup will trigger the production deployment pipeline. **IGNORE** any e-mails sent to approve the Prediction API in the QA/Staging environment as this will be addessed during the [Prediction API](#step-4-prediction-api) step of the process flow.
 
 ### Step 2. Training the Classifier
 To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
