@@ -1,5 +1,5 @@
 # Serverless Neural Network for Image Classification - Training/Prediction Pipeline Demo
-
+<!-- Note to Self: Change the picture and text below to reflect when adding to CodeCommit Repository -->
 ![alt text](https://github.com/darkreapyre/itsacat/blob/master/artifacts/images/Prediction_Architecture.png "Architecture")
 
 ## Pre-Requisites
@@ -14,7 +14,6 @@
 ``` 
 
 ## Deployment
-
 1. Make any changes to the Neural Network configuraiton parameters file (`parameters.json`) before running the deployment.
 2. To deploy the environment, an easy to use deployment script has been created to automatically deploy the environment. Start the process by running `bin/deploy`. You will be prompted for the following information:
 ```console
@@ -31,12 +30,10 @@
 ```console
     "Successfully created/updated stack - <<Stack Name>>"
 ```
-
 >**Note:** During the deployment, and e-mail will be sent to the specified address. Make sure to confirm the subscription to the SNS Topic.
 
 ## Integration with SageMaker Notebook Instance
 Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazon.com/sagemaker/) into the stack to start reviewing the Demo content by using the following steps:
-
 1. Open the SageMaker [console](https://console.aws.amazon.com/sagemaker).
 2. Create notebook instance.
 3. Notebook instance settings.
@@ -112,28 +109,30 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
     ```
     - Go back to the "Files" tab -> click "LNN" -> click "artifacts" -> select `Introduction.ipynb`
 
-## Jupyter Notebooks
-### `Introduction.ipynb` Notebook
+## Demo Process Flow
+To follow the Machine Learning Pipeline process flow the four steps listed below:
+
+### Step 1. Jupyter Notebooks
+Three Jupyter Notebooks have been created to explain and simulate the *Data Scientist's* and *DevOps Engineer's* role witin the Machine Learning Pipeline process. They are as follows:
+
+#### `Introduction.ipynb` Notebook
 The **Introduction** provides an overview of the *Architecture*, *Why* and *How* the *Serverless Neural Network* is implemented.
 
-### `Codebook.ipynb` Notebook
+#### `Codebook.ipynb` Notebook
 The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that are integrated into each of the Lambda Functions. It also provides a mockup of a *2-Layer* implementation of the Neural Network, using the code within the Notebook to get an understanding of how the full training process will be executed.
->**Note:** After executing the various cells withing the *CodeBook*, the results from the *2-Layer* mockup will trigger the production deployment pipeline. To view the unoptimized version of the Prediciton API at this stage, refer to the [Prediction API](#prediction-api) section. 
+>**Note:** After executing the various cells withing the *CodeBook*, the results from the *2-Layer* mockup will trigger the production deployment pipeline. **IGNORE** any e-mails sent to approve the Prediction API in the QA/Staging environment as this will be addessed during the [Prediction API](#step-4.-prediction-api) step of the process flow.
 
-## Training the Classifier
+### Step 2. Training the Classifier
 To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
->**Note:** A pre-configured `parameters.json` file has already been created. To change the Neural Network configuration parameters, before running the training process, change this file and upload it to the `training_iput` folder of the S3 Bucket before uploading the data set.
+>**Note:** A pre-configured `parameters.json` file has already been created. To change the Neural Network configuration parameters, before running the training process, change this file and upload it to the `training_input` folder of the S3 Bucket before uploading the data set.
 
-Once the data file has been uploaded, an S3 Bucket Event will automatically trigger the training process. Should trigger process be successful, an automatic message will be sent to the e-mail address configured during deployment. The message should look as follows:
-```text
-    Training update!
-    Cost after epoch 0 = 0.7012303687667679
-```
-In-depth insight to the training process can be viewed through the **CloudWatch** console.
+Once the data file has been uploaded, an S3 Event will automatically trigger the training process, and in-depth insight to the training process can be viewed through the **CloudWatch** console. Should the trigger process be successful, automatic update messages will be sent (after every 100 Epochs) to the e-mail address configured during deployment.
 
-If a message is not received after *5 minutes*, refer to the [Troubleshooting](#troubleshooting) section.
+Once the training is complete, the final optimized parameters will be copied to the `prediction_input` folder of the S3 bucket. This will trigger the production deployment pipeline and an additional message will be sent to review the Prediction API in the QA/Staging environment.
 
-## Analyzing the Results
+>**Note:** If a message is not received after *5 minutes*, refer to the [Troubleshooting](#troubleshooting) section.
+
+### Step 3. Analyzing the Results
 Once the training process has successfully completed, an e-mail will be sent to the address configured during the deployment. To analyze the results of the testing and to determine if the trained model is production-worthy, using the same *SageMaker* instance used for the *Codebook*, navigate to the `artifacts` directory and launch the `Analysis.ipynb` notebook.
 
 Work through the various code cells to see:
@@ -143,12 +142,12 @@ Work through the various code cells to see:
 
 >**Note:** Ensure to add the name of the S3 Bucket and AWS Region used during deployment to get the correct results files created during the training process.
 
-## Prediction API
+### Step 4. Prediction API
 The final production application
 
 ## Troubleshooting
-Since the framework launches a significant amount to Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:
-
+Since the framework launches a significant amount of Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:
+**Streams for /aws/lambda/TrainerLambda**
 ```python
     list index out of range: IndexError
     Traceback (most recent call last):
@@ -158,8 +157,7 @@ Since the framework launches a significant amount to Asynchronous Lambda functio
     key_list.append(result[0])
     IndexError: list index out of range
 ```
-
-To address this, simply delete the data set from the S3 Bucket and re-upload it to re-launch the training process.
+To address this, simply delete the data set (`datasets.h5`) from the S3 Bucket and re-upload it to re-launch the training process.
 
 ## Cleanup
 
@@ -171,7 +169,7 @@ To address this, simply delete the data set from the S3 Bucket and re-upload it 
     - Open DynamoDB Service console.
     - Select "Tables" in the navigation panel.
     - Check *NeuronLambda* -> Delete table -> Delete.
-    - Repeat the above process for the *TrainerLambda* table.
+    - Repeat the above process for the *Costs*, *TrainerLambda* and *LaunchLambda* tables.
 3. Delete the CloudWatch Logs.
     - Open the CloudWatch Service console.
     - Select "Logs" in the navigation panel.

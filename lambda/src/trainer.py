@@ -56,8 +56,7 @@ def lambda_handler(event, context):
             # Calculate the Cross-Entropy Cost
             cost = (1. / m) * (-np.dot(Y, np.log(A).T) - np.dot(1 - Y, np.log(1 - A).T))
             cost = np.squeeze(cost)
-            assert(cost.shape == ())
-            
+            assert(cost.shape == ())            
             # Add batch cost to DynamoDB Costs tracking object
             table = dynamo_resource.Table('Costs')
             table.update_item(
@@ -135,7 +134,6 @@ def lambda_handler(event, context):
             payload = {}
             payload['state'] = 'next' # Initialize overall state
             payload['parameter_key'] = parameter_key
-
             # Create the invocation ID to ensure no duplicate functions
             # are launched
             invID = str(uuid.uuid4()).split('-')[0]

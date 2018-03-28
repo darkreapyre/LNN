@@ -354,8 +354,6 @@ def lambda_handler(event, context):
             # Calculate the index of the lowest Cost
             best_batch = np.argmin(Costs)
 
-            # Add temporary parameters placeholder in case current epoch
-            # meets the threshold.
             params = {}
 
             # Step 2: Get the optimized Weights and Bias (by layer) from
@@ -376,7 +374,6 @@ def lambda_handler(event, context):
             # Debug Statements
             print("Cost after Epoch {} = {}".format(epoch, Costs[best_batch]))
 
-            # Exit if Cost is lower or equal to threshold
             threshold = parameters['threshold']
             if float(Costs[best_batch]) <= eval("%.0e" % (threshold)):
                 # Break put of processing and treat this epoch as the final

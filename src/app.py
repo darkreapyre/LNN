@@ -97,7 +97,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    resp = Response(response="Success",
+    resp = Response(response="Ping Successfull",
          status=200, \
          mimetype="application/json")
     return (resp)
@@ -124,16 +124,6 @@ def image():
     req = urllib.request.Request(url)
     res = urllib.request.urlopen(req).read()
     fname = BytesIO(res)
-    """
-    Note: This code is the tested code on Jupyter. Switching to 
-    original version to work with Flask.
-   
-    #img = np.array(ndimage.imread(fname, flatten=False))
-    img = plt.imread(fname)
-    #image = misc.imresize(img, size=(64, 64)).reshape((1, 64*64*3)).T
-    image = transform.resize(image, (64, 64), mode='constant').reshape((64 * 64 * 3, 1))
-    """
-    ### Origional Code ###
     img = np.array(ndimage.imread(fname, flatten=False))
     image = misc.imresize(img, size=(64, 64)).reshape((1, 64 * 64 * 3)).T
 
