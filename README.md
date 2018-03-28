@@ -140,13 +140,13 @@ Work through the various code cells to see:
 2. How well the model performs against the **Test** dataset.
 3. How well the model performs against new images.
 
->**Note:** Ensure to add the name of the S3 Bucket and AWS Region used during deployment to get the correct results files created during the training process.
+>**Note:** Ensure to add the name of the S3 Bucket and AWS Region, used during deployment, to get the correct results files created during the training process.
 
 ### Step 4. Prediction API
 The final production application
 
 ## Troubleshooting
-Since the framework launches a significant amount of Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:
+Since the framework launches a significant amount of Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:  
 **Streams for /aws/lambda/TrainerLambda**
 ```python
     list index out of range: IndexError
