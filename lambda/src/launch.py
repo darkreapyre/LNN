@@ -22,7 +22,7 @@ def lambda_handler(event, context):
         except botocore.exceptions.ClientError as e:
             if e.response['Error']['Code'] == '404':
                 sns_message = "Error downloading input data from S3, S3 object does not exist"
-                #publish_sns(sns_message)
+                publish_sns(sns_message)
                 print(sns_message)
             else:
                 raise
@@ -328,8 +328,8 @@ def lambda_handler(event, context):
                 raise
 
             # Publish to SNS
-            sns_message = "Training Completed Successfully!\n"+"Final Average Cost = "+dumps(Costs[best_batch])
-            publish_sns(sns_message)
+            #sns_message = "Training Completed Successfully!\n"+"Final Average Cost = "+dumps(Costs[best_batch])
+            #publish_sns(sns_message)
         
         else:
             # This is not the final Epoch, therfore process the next
@@ -403,16 +403,17 @@ def lambda_handler(event, context):
                 # Publish to SNS
                 sns_message = "Training Completed EARLY!\n"+"Training optimized at epoch {}".format(epoch)
                 sns_message += "\nFinal Cost = "+dumps(Costs[best_batch])
-                publish_sns(sns_message)
+                #publish_sns(sns_message)
+                print(sns_message)
                 sys.exit(0)
             
             # Update the results for this epoch with the average cost and
             # send status updates for epochs every 100 epochs
             update_results = from_cache(db=15, key=parameters['data_keys']['results'])
             update_results['epoch'+str(epoch)]['cost'] = Costs[best_batch]
-            if epoch % 100 == 0:
-                sns_message = "Training update!\n Cost after epoch {} = {}".format(epoch, Costs[best_batch])
-                publish_sns(sns_message)
+            #if epoch % 100 == 0:
+            #    sns_message = "Training update!\n Cost after epoch {} = {}".format(epoch, Costs[best_batch])
+            #    publish_sns(sns_message)
             
             # Close off current Epoch and move onto the next
             # Retrieve "fresh" datasets and parmeters from S3

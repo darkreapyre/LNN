@@ -119,17 +119,14 @@ Three Jupyter Notebooks have been created to explain and simulate the *Data Scie
 The **Introduction** provides an overview of the *Architecture*, *Why* and *How* the *Serverless Neural Network* is implemented.
 
 #### `Codebook.ipynb` Notebook
-The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that are integrated into each of the Lambda Functions. It also provides a sample implementation (10 Epoch Training) of the Neural Network, using the code within the Notebook to get an understanding of how the full training process will be executed.
+The **Codebook** provides an overview of the various *Python Libraries*, *Helper Functions* and the *Handler* functions that are integrated into each of the Lambda Functions. It also provides a sample implementation (10 Epoch Training) of the Neural Network, to get an understanding of how the full training process will be executed.
 >**Note:** After executing the various cells withing the *CodeBook*, the results from the *10 Epoch* sample will trigger the production deployment pipeline. To view the unoptmized version the Prediction API in the QA/Staging environment, see the [Prediction API](#step-4-prediction-api) step of the process flow.
 
 ### Step 2. Training the Classifier
-To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `datasets` directory to the `training_iput` folder that has already been created by the deployment process.
+To train the full classification model on the *SNN* framework, simply upload the `datasets.h5` file found in the `artifacts\datasets` directory to the `training_iput` folder that has already been created by the deployment process.
 >**Note:** A pre-configured `parameters.json` file has already been created. To change the Neural Network configuration parameters, before running the training process, change this file and upload it to the `training_input` folder of the S3 Bucket before uploading the data set.
 
-Once the data file has been uploaded, an S3 Event will automatically trigger the training process, and in-depth insight to the training process can be viewed through the **CloudWatch** console. Should the trigger process be successful, automatic update messages will be sent (after every 100 Epochs) to the e-mail address configured during deployment.
-
-Once the training is complete, the final optimized parameters will be copied to the `prediction_input` folder of the S3 bucket. This will trigger the production deployment pipeline and an additional message will be sent to review the Prediction API in the QA/Staging environment.
-
+Once the data file has been uploaded, an S3 Event will automatically trigger the training process, and in-depth insight to the training process can be viewed through the **CloudWatch** console. When the model training is complete (typically after 22 hours), the final optimized parameters will be copied to the `prediction_input` folder of the S3 bucket. This will trigger the production deployment pipeline and a message will be sent to review the Prediction API in the QA/Staging environment.
 >**Note:** If a message is not received after *5 minutes*, refer to the [Troubleshooting](#troubleshooting) section.
 
 ### Step 3. Analyzing the Results
@@ -160,21 +157,24 @@ Since the framework launches a significant amount of Asynchronous Lambda functio
 To address this, simply delete the data set (`datasets.h5`) from the S3 Bucket and re-upload it to re-launch the training process.
 
 ## Cleanup
-
-1. Delete the CloudFormnation Stack.
+1. Delete the SageMaker Notebook instance.
+    - Open the SageMaker Service console.
+    - Select the Notebook Instance -> click Actions -> Delete.
+2. After the SageMaker Notebook Instance is deleted, delete the CloudFormnation Stack.
     - Open the CloudFormation Service console.
-    - Select the "bottom" stack in the **Stack Name** column.
-    - Actions -> Delete Stack -> "Yes, Delete".
-2. Delete DynamoDB Tables.
+    - First select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. <<Stack Name>>-DeploymentPipeline-...-ecs-cluster
+    - Click Actions -> Delete Stack -> "Yes, Delete".
+    - Select the stack created by the initial deployment and repeat the above step.
+3. Delete DynamoDB Tables.
     - Open DynamoDB Service console.
     - Select "Tables" in the navigation panel.
     - Check *NeuronLambda* -> Delete table -> Delete.
     - Repeat the above process for the *Costs*, *TrainerLambda* and *LaunchLambda* tables.
-3. Delete the CloudWatch Logs.
+4. Delete the CloudWatch Logs.
     - Open the CloudWatch Service console.
     - Select "Logs" in the navigation panel.
     - Check */aws/lambda/LaunchLambda* -> Actions -> Delete log group -> Yes, Delete.
     - Repeat the above process for */aws/lambda/NeuronLambda*, */aws/lambda/S3TriggerLambda*, and */aws/lambda/S3TriggerLambda*.
-4. Delete the S3 Bucket.
+5. Delete the S3 Bucket.
     - Open the S3 Service console.
-    - Highlite the bucket -> Delete bucket.
+    - Highlite the bucket created at deployment time -> Delete bucket.
