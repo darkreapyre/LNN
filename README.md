@@ -1,6 +1,6 @@
 # Serverless Neural Network for Image Classification - Training/Prediction Pipeline Demo
 <!-- Note to Self: Change the picture and text below to reflect when adding to CodeCommit Repository -->
-![alt text](https://github.com/darkreapyre/itsacat/blob/master/artifacts/images/Prediction_Architecture.png "Architecture")
+![alt text](https://github.com/darkreapyre/itsacat/blob/master/artifacts/images/Prediction_Architecture-2.png "Architecture")
 
 ## Pre-Requisites
 >**Note:** This Demo must be run the **us-east-1** AWS Region as it leverages the **AWS Fargate** Service.
@@ -200,13 +200,13 @@ To address this, simply delete all the DynamoDB Tables as well as data set (`dat
 3. Delete DynamoDB Tables.
     - Open DynamoDB Service console.
     - Select "Tables" in the navigation panel.
-    - Check *NeuronLambda* -> Delete table -> Delete.
-    - Repeat the above process for the *Costs*, *TrainerLambda* and *LaunchLambda* tables.
+    - Check **NeuronLambda** -> Delete table -> Delete.
+    - Repeat the above process for the **Costs**, **TrainerLambda** and **LaunchLambda** tables.
 4. Delete the CloudWatch Logs.
     - Open the CloudWatch Service console.
     - Select "Logs" in the navigation panel.
     - Check */aws/lambda/LaunchLambda* -> Actions -> Delete log group -> Yes, Delete.
-    - Repeat the above process for *NeuronLambda*, *S3TriggerLambda*, and *S3TriggerLambda* and any of the logs created by CodePipeline.
+    - Repeat the above process for **NeuronLambda**, **S3TriggerLambda**, and **S3TriggerLambda** and any of the logs created by CodePipeline.
 5. Delete the S3 Bucket.
     - Open the S3 Service console.
     - Highlite the bucket created at deployment time -> Delete bucket.
