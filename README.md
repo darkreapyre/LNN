@@ -145,9 +145,26 @@ Work through the various code cells to see:
 
 ### Step 4. Prediction API
 The deployment pipeline for the production application is triggered at two separate stages within the Demo Process Flow:
-1. After executing the `Codebook.ipynb`, the parameters are written to the `predcit_input` folder of the S3 bucket. Since this is a Source for CodePipeline to trigger the deployment. At this stage, since the parameters have only been trained for 10 iterations, they are not fully optmized, so the Prediction API will not 
-2. After the 
+- After executing the `Codebook.ipynb` in [Step 1.](#step-1-jupyter-notebooks), the parameters are written to the `predict_input` folder of the S3 bucket. Since this is a Source for CodePipeline to trigger the deployment. At this stage, since the parameters have only been trained for 10 iterations, they are not fully optmized, so the Prediction API will not fully predict a "cat" picture.
+- After the model has been optimally trained in [Step 2.](#step-2-training-the-classifier), the parameters once again written to the `predict_input` folder fo the S3 bucket and thius the deployment pipeline is triggered. Since the model has been optmially trained, the Prediction API should fully predict a "cat" picture.
 
+During either of the above stages, an e-mail will be sent to the address configured during deployment similar to the following (stripped for brevity):
+```text
+Hello,
+
+The following Approval action is waiting for your response:
+
+--Pipeline Details--
+
+...
+```
+Included is the e-mail is a link to the *CodePipeline* Service Console to approve the deployment from QA to Production. To view and test the Prediction API in the QA stage, execute the following:
+1. Open the *CloudFormation* Service Console and select the nested Stack for the Elastic Container Service (ECS). e.g. **<<Stack Name>>-DeploymentPipeline-...-ecs-cluster**.
+2. Click on the CloudFormation Outputs tab.
+3. The *ApplicationURL** Value provides a link to the **Prediction API URL for Productions (Blue)**. Clicking on this link will open a browser page to the Prediciton API. Successful connection to the API will display the **"Ping Successfull!"** message.
+4. To view the production (Blue) API, find the URL of a "cat" picture (e.g.[Grumpy Cat](http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg)) and add it to the URL as follows:
+    <center>http://<<GitHub Repo Name>>.us-east-1.elb.amazonaws.com/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg</center>
+5. qwdwqe
 
 ## Troubleshooting
 Since the framework launches a significant amount of Asynchronous Lambda functions without any pre-warming, the **CloudWatch** logs may display an error similar to the following:  
@@ -169,7 +186,7 @@ To address this, simply delete the data set (`datasets.h5`) from the S3 Bucket a
     - Select the Notebook Instance -> click Actions -> Delete.
 2. After the SageMaker Notebook Instance is deleted, delete the CloudFormnation Stack.
     - Open the CloudFormation Service console.
-    - First select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. <<Stack Name>>-DeploymentPipeline-...-ecs-cluster
+    - First select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. **<<Stack Name>>-DeploymentPipeline-...-ecs-cluster**
     - Click Actions -> Delete Stack -> "Yes, Delete".
     - Select the stack created by the initial deployment and repeat the above step.
 3. Delete DynamoDB Tables.
