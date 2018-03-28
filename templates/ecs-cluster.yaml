@@ -100,4 +100,4 @@ Outputs:
   
   ApplicationURL:
       Value: !GetAtt LoadBalancer.Outputs.ServiceUrl
-      Description: Prediction API URL for Productions (Blue)
+      Description: Prediction API URL for Production (Blue)

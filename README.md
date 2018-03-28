@@ -161,7 +161,7 @@ The following Approval action is waiting for your response:
 Included is the e-mail is a link to the *CodePipeline* Service Console to approve the deployment from QA to Production. To view and test the Prediction API in the QA stage, execute the following:
 1. Open the *CloudFormation* Service Console and select the nested Stack for the Elastic Container Service (ECS). e.g. **<<Stack Name>>-DeploymentPipeline-...-ecs-cluster**.
 2. Click on the CloudFormation Outputs tab.
-3. The *ApplicationURL** Value provides a link to the **Prediction API URL for Productions (Blue)**. Clicking on this link will open a browser page to the Prediciton API. Successful connection to the API will display the **"Ping Successfull!"** message.
+3. The *ApplicationURL** Value provides a link to the **Prediction API URL for Production (Blue)**. Clicking on this link will open a browser page to the Prediciton API. Successful connection to the API will display the **"Ping Successfull!"** message.
 4. To view the production (Blue) API, find the URL of a "cat" picture (e.g.[Grumpy Cat](http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg)) and add it to the URL as follows:
     
     `http://{{GitHub Repo Name}}.us-east-1.elb.amazonaws.com/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg`
@@ -170,7 +170,7 @@ Included is the e-mail is a link to the *CodePipeline* Service Console to approv
 
     `http://{{GitHub Repo Name}}.us-east-1.elb.amazonaws.com:8080/image?image=http://i0.kym-cdn.com/entries/icons/facebook/000/011/365/GRUMPYCAT.jpg`
 
-Accessing the (Greep) API after [Step 2.](#step-2-training-the-classifier)) should correctly predict a "cat" image and thus the **Manual-Approval** stage in CodePipeline can be *Approved*, which in turn will swap the (Green) API to production (Blue).
+Accessing the (Greep) API after [Step 2.](#step-2-training-the-classifier)) should correctly predict a "cat" image and thus the **Manual-Approval** stage in CodePipeline can be *Approved*. This in turn will swap the (Green) API to production (Blue), wich can be accessued using **Prediction API URL for Production (Blue)**.
 
 It is at this point that a successull integration of a **Machine Learning Pipeline** into a production **DevOps Pipeline** has been successfully demonstrated. To avoid additionalk charges AWS resources, refer to the [Cleanup](#Cleanup) Section.
 
