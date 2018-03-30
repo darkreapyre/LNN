@@ -1,5 +1,6 @@
 # Import necessary libraries
 from __future__ import print_function
+import boto3
 import os
 import io
 import logging
@@ -141,9 +142,9 @@ def get_data(f_path):
     Returns:
     Pre-processed training and testing data along with training and testing labels.
     """
-    train_X = np.load(os.path.join(f_path,'train/train_X.npy'))
-    train_Y = np.load(os.path.join(f_path,'train/train_Y.npy'))
-    train_X, train_Y = transform(train_X, train_Y)
+    X = np.load(f_path+'train_X.npy')
+    Y = np.load(f_patch+'train_Y.npy')
+    train_X, train_Y = transform(X, Y)
     return train_X, train_Y
 
 # ---------------------------------------------------------------------------- #
