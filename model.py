@@ -21,7 +21,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
     lr = hyperparameters.get('learning_rate', 75e-4)
     batch_size = hyperparameters.get('batch_size', 64)
     # Set logging
-    logging.getLogger().setLevel(logging.DEBUG)
+    logging.getLogger().setLevel(logging.INFO)
     # Set Local vs. Distributed training
     if len(hosts) == 1:
         kvstore = 'device' if num_gpus > 0 else 'local'
@@ -47,7 +47,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
     )
     
     # Initialize the network
-    net = build_network()
+    net = create_graph()
     # Parameter Initialization (He .et al)
     net.collect_params().initialize(mx.init.MSRAPrelu())
     # Optimizer
@@ -85,7 +85,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
     # Return the model for saving
     return net
                 
-def build_network():
+def create_graph():
     """
     Defines and Returns the Gluon Network Structure.
     """
