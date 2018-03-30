@@ -123,7 +123,7 @@ def save(net, model_dir):
     """
     print("Saving the model in {}...".format(model_dir))
     y = net(mx.sym.var('data'))
-    y.save('%/model.json' % model_dir)
+    y.save('%s/model.json' % model_dir)
     net.collect_params().save('%s/model.params' % model_dir)
 
 def get_data(f_path):
