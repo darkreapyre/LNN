@@ -45,14 +45,6 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
         shuffle=True,
         batch_size=batch_size
     )
-    test_data = mx.gluon.data.DataLoader(
-        mx.gluon.data.ArrayDataset(
-            test_X,
-            test_Y
-        ),
-        shuffle=False,
-        batch_size=batch_size
-    )
     
     # Initialize the network
     net = build_network()
