@@ -1,16 +1,14 @@
 # Import necessary libraries
 from __future__ import print_function
 import os
+import io
 import logging
+import datetime
+import json
 import mxnet as mx
 import numpy as np
+from json import dumps, loads
 from mxnet import nd, autograd, gluon
-"""
-Note: There is no sklearn and h5py support
-
-import h5py
-from sklearn.metrics import accuracy_score
-"""
 
 # ---------------------------------------------------------------------------- #
 #                            Training functions                                #
@@ -30,12 +28,13 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
         kvstore = 'dist_device_sync' if num_gpus > 0 else 'dist_sync'
     # Set Context based on provided parameters
     ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
-    print(channel_input_dirs)
-    print(os.listdir(channel_input_dirs['training']))
+    #print(channel_input_dirs)
+    #print(os.listdir(channel_input_dirs['training']))
     # Load Training/Testing Data
     f_path = channel_input_dirs['training']
-    train_X, train_Y, test_X, test_Y = get_data(f_path)
+    train_X, train_Y = get_data(f_path)
     num_examples = train_X.shape[0]
+    
     # Create Training and Test Data Iterators
     train_data = mx.gluon.data.DataLoader(
         mx.gluon.data.ArrayDataset(
@@ -53,17 +52,19 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
         shuffle=False,
         batch_size=batch_size
     )
+    
     # Initialize the network
     net = build_network()
-    # Parameter Initialization
-    net.collect_params().initialize(mx.init.Xavier(magnitude=2.24))
+    # Parameter Initialization (He .et al)
+    net.collect_params().initialize(mx.init.MSRAPrelu())
     # Optimizer
     trainer = gluon.Trainer(net.collect_params(), optmizer, {'learning_rate': lr})
     # Cross Entropy Loss Function
     binary_ce = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
     
     # Start the Training loop
-    costs = [] # Track Loss function
+    results = {} # Track Loss function
+    results['Start'] = str(datetime.datetime.now())
     for epoch in range(epochs):
         cumulative_loss = 0
         # Enumerate batches
@@ -78,20 +79,15 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
             loss.backward()
             trainer.step(data.shape[0])
             cumulative_loss += nd.sum(loss).asscalar()
-        #test_accuracy = accuracy(test_data, net, test_Y)
-        costs.append(cumulative_loss/num_examples)
+        results['epoch'+str(epoch)] = cumulative_loss/num_examples
         if epoch % 100 == 0:
-            #print("Epoch: {}; Loss: {}; Test Set Accuracy: {}"\
-            #      .format(epoch,cumulative_loss/num_examples,test_accuracy))
             print("Epoch: {}; Loss: {}".format(epoch,cumulative_loss/num_examples))
         elif epoch == epochs-1:
-            #print("Final Epoch: {}; Final Loss: {}; Final Test Set Accuracy: {}"\
-            #      .format(epoch,cumulative_loss/num_examples,test_accuracy))
             print("Epoch: {}; Loss: {}".format(epoch,cumulative_loss/num_examples))
+            results['end'] = str(datetime.datetime.now())
     # Return the model for saving
-    return net
+    return net, results
                 
-
 def build_network():
     """
     Defines and Returns the Gluon Network Structure.
@@ -120,7 +116,7 @@ def transform(x, y):
     x = x.reshape((x.shape[0], (x.shape[1] * x.shape[2]) * x.shape[3]))
     return x.astype(np.float32) / 255, y.astype(np.float32)
 
-def save(net, model_dir):
+def save(net, results, model_dir):
     """
     Saves the trained model to S3.
     
@@ -132,28 +128,8 @@ def save(net, model_dir):
     y = net(mx.sym.var('data'))
     y.save('%/model.json' % model_dir)
     net.collect_params().save('%s/model.params' % model_dir)
-
-def accuracy(data_iterator, net, Y):
-    """
-    Evaluates overall accuracy the prediction against a test label.
-    
-    Arguments:
-    data_iterator -- Training data.
-    net -- Gluon network.
-    Y -- True label.
-    
-    Returns:
-    Accuracy Score.
-    """
-    for i, (data, label) in enumerate(data_iterator):
-        data = data.as_in_context(model_ctx)
-        label = label.as_in_context(model_ctx)
-        output = net(data)
-        decision_boundary = np.vectorize(lambda x: 1 if x > 0.5 else 0)
-        y_pred = list(decision_boundary(output.asnumpy()).flat)
-        Y = list(Y.flat)
-    return accuracy_score(Y, y_pred)
-
+    with io.open(str(model_dir)+'/results.json', 'w', encoding='utf-8') as f:
+        f.write(dumps(results, ensure_ascii=False)
 
 def get_data(f_path):
     """
@@ -168,11 +144,12 @@ def get_data(f_path):
     train_X = np.load(os.path.join(f_path,'train/train_X.npy'))
     train_Y = np.load(os.path.join(f_path,'train/train_Y.npy'))
     train_X, train_Y = transform(train_X, train_Y)
-    test_X = np.load(os.path.join(f_path,'test/test_X.npy'))
-    test_Y = np.load(os.path.join(f_path,'test/vtest_Y.npy'))
-    test_X, test_Y = transform(test_X, test_Y)
-    return train_X, train_Y, test_X, test_Y
-    
-    
-    
+    return train_X, train_Y
+
+# ---------------------------------------------------------------------------- #
+#                           Hosting functions                                  #
+# ---------------------------------------------------------------------------- #
+
+
+def model_fn(model_dir):
     
