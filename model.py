@@ -69,8 +69,8 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
         cumulative_loss = 0
         # Enumerate batches
         for i, (data, label) in enumerate(train_data):
-            data = data.as_in_context(model_ctx)
-            label = label.as_in_context(model_ctx)
+            data = data.as_in_context(ctx)
+            label = label.as_in_context(ctx)
             # Record for calculating derivatives for forward pass
             with autograd.record():
                 output = net(data)
@@ -150,6 +150,43 @@ def get_data(f_path):
 #                           Hosting functions                                  #
 # ---------------------------------------------------------------------------- #
 
-
 def model_fn(model_dir):
+    """
+    Load the Gluon model for hosting.
+
+    Arguments:
+    model_dir -- SAgeMaker model directory.
+
+    Retuns:
+    Gluon model
+    """
+    # Load the saved Gluon model
+    symbol = mx.sym.load('%s/model.json' % model_dir)
+    outputs = mx.sym.sigmoid(data=symbol, name='sigmoid_label')
+    inputs = mx.sym.var('data')
+    param_dict = gluon.ParameterDict('model_')
+    net = gluon.SymbolBlock(outputs, inputs, param_dict)
+    net.load_params('%s/model.params' % model_dir, ctx=mx.cou())
+    return net
+
+def transform_fn(net, data, input_content_type, output_content_type):
+    """
+    Transform input data into prediction result.
+
+    Argument:
+    net -- Gluon model loaded from `model_fn()` function.
+    data -- Input data from the `InvokeEndpoint` request.
+    input_content_type -- Content type of the request (JSON).
+    output_content_type -- Disired content type (JSON) of the repsonse.
     
+    Returns:
+    JSON paylod of the prediction result and content type.
+    """
+    # Parse the data
+    parsed = loads(data)
+    # Convert input to MXNet NDArray
+    nda = mx.nd.array(parsed)
+    output = net(nda)
+    prediction = (nd.sign(output) + 1) / 2
+    response_body = dumps(prediction.asnumpy().tolist()[0])
+    return response_body, output_content_type
