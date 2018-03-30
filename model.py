@@ -130,7 +130,7 @@ def save(net, results, model_dir):
     y.save('%/model.json' % model_dir)
     net.collect_params().save('%s/model.params' % model_dir)
     with io.open(str(model_dir)+'/results.json', 'w', encoding='utf-8') as f:
-        f.write(dumps(results, ensure_ascii=False)
+        f.write(dumps(results, ensure_ascii=False))
 
 def get_data(f_path):
     """
