@@ -134,7 +134,7 @@ Once the data file has been uploaded, an S3 Event will automatically trigger the
 >**Note:** Refer to the [Troubleshooting](#troubleshooting) section for any errors that may appear in the **CloudWatch** Console.
 
 ### Step 3. Analyzing the Results
-Once the training process has successfully completed, an e-mail will be sent to the address configured during the deployment. To analyze the results of the testing and to determine if the trained model is production-worthy, using the same *SageMaker* instance used for the *Codebook*, navigate to the `artifacts` directory and launch the `Analysis.ipynb` notebook.
+Once the training process has successfully completed, an e-mail will be sent to the address configured during the deployment. To analyze the results of the testing and to determine if the trained model is "production-worthy", using the same *SageMaker* instance used for the *Codebook*, navigate to the `artifacts` directory and launch the `Analysis.ipynb` notebook.
 
 Work through the various code cells to see:
 1. Results fo the training.
@@ -191,10 +191,12 @@ To address this, simply delete all the DynamoDB Tables as well as data set (`dat
 ## Cleanup
 1. Delete the SageMaker Notebook instance.
     - Open the SageMaker Service console.
+    - Select the Notebook Instance and Stop it, if the instance is still running.
     - Select the Notebook Instance -> click Actions -> Delete.
 2. After the SageMaker Notebook Instance is deleted, delete the CloudFormnation Stack.
     - Open the CloudFormation Service console.
-    - First select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. **`<<Stack Name>>-DeploymentPipeline-...-ecs-cluster`**
+    - Ensure all nested stacks have a **CREATE_COMPLETE** or **UPDATE_COMPLETE** Status. If not, wait for any stack updates to complete.
+    - Select the Elastic Container Service (ECS) Stack created by CodePipeline. e.g. **`<<Stack Name>>-DeploymentPipeline-...-ecs-cluster`**
     - Click Actions -> Delete Stack -> "Yes, Delete".
     - Select the stack created by the initial deployment and repeat the above step.
 3. Delete DynamoDB Tables.
@@ -206,7 +208,7 @@ To address this, simply delete all the DynamoDB Tables as well as data set (`dat
     - Open the CloudWatch Service console.
     - Select "Logs" in the navigation panel.
     - Check */aws/lambda/LaunchLambda* -> Actions -> Delete log group -> Yes, Delete.
-    - Repeat the above process for **NeuronLambda**, **S3TriggerLambda**, and **S3TriggerLambda** and any of the logs created by CodePipeline.
+    - Repeat the above process for **NeuronLambda**, **S3TriggerLambda**, **LaunchLambda**, **TrainerLambda**  and any of the logs created by CodePipeline.
 5. Delete the S3 Bucket.
     - Open the S3 Service console.
     - Highlite the bucket created at deployment time -> Delete bucket.
