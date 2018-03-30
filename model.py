@@ -28,7 +28,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
     else:
         kvstore = 'dist_device_sync' if num_gpus > 0 else 'dist_sync'
     # Set Context based on provided parameters
-    ctx = [mx.gpu(i) for i in range(num_gpus)] if num_gpus > 0 else [mx.cpu()]
+    ctx = mx.gpu() if num_gpus > 0 else mx.cpu()
     #print(channel_input_dirs)
     #print(os.listdir(channel_input_dirs['training']))
     # Load Training/Testing Data
