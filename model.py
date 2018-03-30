@@ -143,7 +143,7 @@ def get_data(f_path):
     Pre-processed training and testing data along with training and testing labels.
     """
     X = np.load(f_path+'/train_X.npy')
-    Y = np.load(f_patch+'/train_Y.npy')
+    Y = np.load(f_path+'/train_Y.npy')
     train_X, train_Y = transform(X, Y)
     return train_X, train_Y
 
