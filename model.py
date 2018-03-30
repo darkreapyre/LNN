@@ -15,7 +15,7 @@ from mxnet import nd, autograd, gluon
 #                            Training functions                                #
 # ---------------------------------------------------------------------------- #
 
-def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
+def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir, **kwargs):
     epochs = hyperparameters.get('epochs', 2500)
     optmizer = hyperparameters.get('optmizer', 'sgd')
     lr = hyperparameters.get('learning_rate', 75e-4)
@@ -78,8 +78,12 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, **kwargs):
         elif epoch == epochs-1:
             print("Epoch: {}; Loss: {}".format(epoch,cumulative_loss/num_examples))
             results['end'] = str(datetime.datetime.now())
+    # Save the results
+    print("Saving the Training Results...")
+    with io.open(str(output_data_dir)+'/results.json', 'w', encoding='utf-8') as f:
+        f.write(dumps(results, ensure_ascii=False))
     # Return the model for saving
-    return net, results
+    return net
                 
 def build_network():
     """
@@ -109,7 +113,7 @@ def transform(x, y):
     x = x.reshape((x.shape[0], (x.shape[1] * x.shape[2]) * x.shape[3]))
     return x.astype(np.float32) / 255, y.astype(np.float32)
 
-def save(net, results, model_dir):
+def save(net, model_dir):
     """
     Saves the trained model to S3.
     
@@ -117,12 +121,10 @@ def save(net, results, model_dir):
     model -- The model returned from the `train()` function.
     model_dir -- The model directory location to save the model.
     """
-    print("Saving the model in {}".format(model_dir))
+    print("Saving the model in {}...".format(model_dir))
     y = net(mx.sym.var('data'))
     y.save('%/model.json' % model_dir)
     net.collect_params().save('%s/model.params' % model_dir)
-    with io.open(str(model_dir)+'/results.json', 'w', encoding='utf-8') as f:
-        f.write(dumps(results, ensure_ascii=False))
 
 def get_data(f_path):
     """
