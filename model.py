@@ -81,7 +81,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
     # Save the results
     print("Saving the Training Results...")
     with io.open(str(output_data_dir)+'/results.json', 'w', encoding='utf-8') as f:
-        f.write(dumps(results, ensure_ascii=False))
+        f.write(unicode(dumps(results, ensure_ascii=False)))
     # Return the model for saving
     return net
                 
