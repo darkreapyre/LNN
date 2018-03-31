@@ -79,18 +79,20 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
             trainer.step(data.shape[0])
             cumulative_loss += nd.sum(loss).asscalar()
         # Accuracy Score
-        valid_accuracy = eval_acc(test_data, net, ctx)
+        val_accuracy = eval_acc(test_data, net, ctx)
         train_accuracy = eval_acc(train_data, net, ctx)
         results['epoch'+str(epoch)] = cumulative_loss/num_examples
         if epoch % 100 == 0:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
-            .format(epoch,cumulative_loss/num_examples,train_accuracy,valid_accuracy))
+            .format(epoch,cumulative_loss/num_examples,train_accuracy,val_accuracy))
         elif epoch == epochs-1:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
-            .format(epoch,cumulative_loss/num_examples,train_accuracy,valid_accuracy))
-            results['end'] = str(datetime.datetime.now())
+            .format(epoch,cumulative_loss/num_examples,train_accuracy,val_accuracy))
+            results['val_accuracy'] = val_accuracy
+            results['train_accuracy'] = train_accuracy
+            results['End'] = str(datetime.datetime.now())
     # Save the results
-    print("Saving the Training Results ...")
+    print("Saving the training results ...")
     with open(str(output_data_dir)+'/results.json', 'w') as f:
         json.dump(results, f)
     # Return the model for saving
