@@ -73,7 +73,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
             # Record for calculating derivatives for forward pass
             with autograd.record():
                 output = net(data)
-                loss = binary_ce(output, label)
+                loss = softmax_ce(output, label)
                 # Run backward pass
                 loss.backward()
             trainer.step(data.shape[0])
