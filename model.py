@@ -199,7 +199,7 @@ def model_fn(model_dir):
     inputs = mx.sym.var('data')
     param_dict = gluon.ParameterDict('model_')
     net = gluon.SymbolBlock(outputs, inputs, param_dict)
-    net.load_params('%s/model.params' % model_dir, ctx=mx.cou())
+    net.load_params('%s/model.params' % model_dir, ctx=mx.cpu())
     return net
 
 def transform_fn(net, data, input_content_type, output_content_type):
