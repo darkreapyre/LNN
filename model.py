@@ -107,7 +107,7 @@ def create_graph():
         net.add(gluon.nn.Dense(20, activation='relu'))
         net.add(gluon.nn.Dense(7, activation='relu'))
         net.add(gluon.nn.Dense(5, activation='relu'))
-        net.add(gluon.nn.Dense(2))#, activation='relu'))
+        net.add(gluon.nn.Dense(2, activation='relu'))
     net.hybridize()
     return net
 
@@ -188,7 +188,7 @@ def model_fn(model_dir):
     Load the Gluon model for hosting.
 
     Arguments:
-    model_dir -- SAgeMaker model directory.
+    model_dir -- SageMaker model directory.
 
     Retuns:
     Gluon model
