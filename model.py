@@ -79,8 +79,8 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
             trainer.step(data.shape[0])
             cumulative_loss += nd.sum(loss).asscalar()
         # Accuracy Score
-        valid_accuracy = eval_acc(test_data, net)
-        train_accuracy = eval_acc(train_data, net)
+        valid_accuracy = eval_acc(test_data, net, ctx)
+        train_accuracy = eval_acc(train_data, net, ctx)
         results['epoch'+str(epoch)] = cumulative_loss/num_examples
         if epoch % 100 == 0:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
@@ -156,17 +156,18 @@ def get_data(f_path):
     return train_X, train_Y, test_X, test_Y
 
 # Evlauation metric
-"""
-Evaluates the Accuracy Score based on the input data and the results of the network.
+def eval_acc(data_iterator, net, ctx):
+    """
+    Evaluates the Accuracy Score based on the input data and the results of the network.
 
-Arguments:
-data_iterator -- input data and associated label
-net -- Gluon model
+    Arguments:
+    data_iterator -- input data and associated label
+    net -- Gluon model
+    ctx -- Gluon memory context
 
-Returns:
-Accuracy score
-"""
-def eval_acc(data_iterator, net):
+    Returns:
+    Accuracy score
+    """
     acc = mx.metric.Accuracy()
     for i, (data, label) in enumerate(data_iterator):
         data = data.as_in_context(ctx)
