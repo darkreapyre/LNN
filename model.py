@@ -79,9 +79,11 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
             print("Epoch: {}; Loss: {}".format(epoch,cumulative_loss/num_examples))
             results['end'] = str(datetime.datetime.now())
     # Save the results
-    print("Saving the Training Results...")
-    with io.open(str(output_data_dir)+'/results.json', 'w', encoding='utf-8') as f:
-        f.write(unicode(dumps(results, ensure_ascii=False)))
+    print("Saving the Training Results ...")
+    #with io.open(str(output_data_dir)+'/results.json', 'w', encoding='utf-8') as f:
+    #    f.write(unicode(dumps(results, ensure_ascii=False)))
+    with open(str(output_data_dir)+'/results.json', 'w') as f:
+        json.dump(results, f)
     # Return the model for saving
     return net
                 
@@ -121,7 +123,7 @@ def save(net, model_dir):
     model -- The model returned from the `train()` function.
     model_dir -- The model directory location to save the model.
     """
-    print("Saving the model in {}...".format(model_dir))
+    print("Saving the trained model ..."
     y = net(mx.sym.var('data'))
     y.save('%s/model.json' % model_dir)
     net.collect_params().save('%s/model.params' % model_dir)
