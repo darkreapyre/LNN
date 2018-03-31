@@ -220,6 +220,6 @@ def transform_fn(net, data, input_content_type, output_content_type):
     # Convert input to MXNet NDArray
     nda = mx.nd.array(parsed)
     output = net(nda)
-    prediction = (nd.sign(output) + 1) / 2
+    prediction = nd.argmax(output, axis=1)
     response_body = dumps(prediction.asnumpy().tolist()[0])
     return response_body, output_content_type
