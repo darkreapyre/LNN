@@ -11,6 +11,9 @@ import numpy as np
 from json import dumps, loads
 from mxnet import nd, autograd, gluon
 
+# Set logging
+logging.getLogger().setLevel(logging.INFO)
+
 # ---------------------------------------------------------------------------- #
 #                            Training functions                                #
 # ---------------------------------------------------------------------------- #
@@ -20,8 +23,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
     optmizer = hyperparameters.get('optmizer', 'sgd')
     lr = hyperparameters.get('learning_rate', 75e-4)
     batch_size = hyperparameters.get('batch_size', 64)
-    # Set logging
-    logging.getLogger().setLevel(logging.INFO)
+    
     # Set Local vs. Distributed training
     if len(hosts) == 1:
         kvstore = 'device' if num_gpus > 0 else 'local'
@@ -81,15 +83,21 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
         # Accuracy Score
         val_accuracy = eval_acc(test_data, net, ctx)
         train_accuracy = eval_acc(train_data, net, ctx)
-        results['epoch'+str(epoch)] = cumulative_loss/num_examples
         if epoch % 100 == 0:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
             .format(epoch,cumulative_loss/num_examples,train_accuracy,val_accuracy))
+            results['epoch'+str(epoch)] = {}
+            results['epoch'+str(epoch)]['cost'] = cumulative_loss/num_examples
+            results['epoch'+str(epoch)]['val_acc'] = val_accuracy
+            results['epoch'+str(epoch)]['train_acc'] = train_accuracy
+
         elif epoch == epochs-1:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
             .format(epoch,cumulative_loss/num_examples,train_accuracy,val_accuracy))
-            results['val_accuracy'] = val_accuracy
-            results['train_accuracy'] = train_accuracy
+            results['epoch'+str(epoch)] = {}
+            results['epoch'+str(epoch)]['cost'] = cumulative_loss/num_examples
+            results['epoch'+str(epoch)]['val_acc'] = val_accuracy
+            results['epoch'+str(epoch)]['train_acc'] = train_accuracy
             results['End'] = str(datetime.datetime.now())
     # Save the results
     print("Saving the training results ...")
