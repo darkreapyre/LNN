@@ -20,7 +20,7 @@ from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
 
-build_id = str(os.environ['BUILD_ID'])
+build_id = str(os.environ['BUILD_ID'])[-5:]
 sagemaker_client = boto3.client('sagemaker')
 list_results = sagemaker_client.list_endpoints(
     SortBy='Name',
@@ -96,10 +96,11 @@ def image():
     image, payload = process_url(url)
 
     # Determine if SageMaker Endpoint or local is used
-    if endpoint != 0:
+    if endpoint_name != 0:
         # Invoke the SageMaker endpoint
+        runtime = boto3.client(service_name='runtime.sagemaker')
         response = runtime.invoke_endpoint(
-            EndpointName=model_name,
+            EndpointName=endpoint_name,
             ContentType='application/json',
             Body=json.dumps(payload)
         )
