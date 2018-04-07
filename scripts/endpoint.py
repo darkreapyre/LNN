@@ -1,6 +1,7 @@
 # Import Libraries
 from __future__ import print_function
 import os
+import sys
 import time
 import boto3
 import sagemaker
@@ -11,13 +12,13 @@ from sagemaker.mxnet import MXNet
 training_job = 0
 if training_job == 0:
     print("No Training job defined, exiting ...")
-    sys.exit(0)
+    sys.exit()
 
 # Global Variables
 sagemaker_client = boto3.client('sagemaker')
 iam_client = boto3.client('iam')
-build_id = os.environ['CODEBUILD_SOURCE_VERSION']
-model_name = str(build_id)
+build_id = str(os.environ['CODEBUILD_RESOLVED_SOURCE_VERSION'])
+model_name = build_id
 training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
 training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 
