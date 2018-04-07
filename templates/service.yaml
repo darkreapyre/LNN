@@ -97,13 +97,14 @@ Resources:
         {
             "Statement": [{
                 "Effect": "Allow",
-                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                "Principal": { "Service": [ "ecs-tasks.amazonaws.com", "sagemaker.amazonaws.com" ]},
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup

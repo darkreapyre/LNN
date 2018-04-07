@@ -1,33 +1,29 @@
 # Import Libraries
 from __future__ import print_function
+import os
 import time
 import boto3
 import sagemaker
 from sagemaker import get_execution_role
 from sagemaker.mxnet import MXNet
 
-# Enter Training job
-training_job = None
-if training_job == None:
+# Training job information
+training_job = 0
+if training_job == 0:
     print("No Training job defined, exiting ...")
-    endpoint_file={
-        "endpoint": "None"
-    }
-    with open('endpoint.json', 'w') as f:
-        json.dump(endpoint_file, f)
     sys.exit(0)
 
 # Global Variables
 sagemaker_client = boto3.client('sagemaker')
 iam_client = boto3.client('iam')
-build_id = '12345' # Build ID is generated from CodePipeline input artifacts
-model_name = str(training_job.split('-')[0]+'-prod-'+''.join(training_job.split('-')[2:])+'-'+build_id)
+build_id = os.environ['CODEBUILD_SOURCE_VERSION']
+model_name = str(build_id)
 training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
 training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 
 # Create IAM Role for SageMaker Session
 role_response = iam_client.create_role(
-    RoleName=model_name+'-Role',
+    RoleName='sagemaker-'+model_name+'-Role',
     AssumeRolePolicyDocument='{ "Version": "2012-10-17", "Statement": [ { "Effect": "Allow", "Principal": { "Service": "sagemaker.amazonaws.com" }, "Action": "sts:AssumeRole" } ] }'
 )
 time.sleep(5)
@@ -77,9 +73,3 @@ print('Endpoint status: {}'.format(status))
 
 if status != 'InService':
     raise Exception('Endpoint creation failed.')
-else:
-    endpoint_file={
-        "endpoint": model_name
-    }
-    with open('endpoint.json', 'w') as f:
-        json.dump(endpoint_file, f)

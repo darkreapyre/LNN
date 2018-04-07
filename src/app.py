@@ -20,21 +20,22 @@ from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
 
-"""
-TBD: Create logic to determine if the SageMaker Endpoint is available.
-"""
-try:
-    with open('endpoint.json') as j:
-        data = json.load(j)
-        endpoint = str(data.get('endpoint'))
-        if endpoint == "None":
-            endpoint = None
+build_id = os.environ['build_id']
+sagemaker_client = boto3.client('sagemaker')
+list_results = sagemaker_client.list_endpoints(
+    SortBy='Name',
+    NameContains=build_id,
+    MaxResults=1,
+    StatusEquals='InService'
+)
+if not list_results['Endpoints']:
+    endpoint_name = 0
 else:
-    endpoint = None
+    endpoint_name = str(list_results.get('Endpoints')[0]['EndpointName'])
 
 def local_predict(data):
     """
-    Runs the Gluon network if SAgeMaker Endpoint is not available
+    Runs the Gluon network if SageMaker Endpoint is not available
 
     Arguments:
     data -- Input image data as string.
@@ -95,7 +96,7 @@ def image():
     image, payload = process_url(url)
 
     # Determine if SageMaker Endpoint or local is used
-    if endpoint != None:
+    if endpoint != 0:
         # Invoke the SageMaker endpoint
         response = runtime.invoke_endpoint(
             EndpointName=model_name,

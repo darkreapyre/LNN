@@ -1,5 +1,8 @@
 FROM ubuntu:16.04
 
+ARG ID
+ENV build_id=$(ID)
+
 RUN apt-get update && apt-get -y install \
     build-essential \
     libopencv-dev \
@@ -63,7 +66,6 @@ RUN pip install \
   sagemaker
 
 ADD ./src /app
-ADD ./endpoint.json /app
 ADD ./src/config /config
 EXPOSE 80
 

@@ -15,7 +15,7 @@ Parameters:
 
   GitHubBranch:
     Type: String
-    Default: 1.0
+    Default: 1.1
     Description: The branch of the repo to continuously deploy.
 
   GitHubToken:
@@ -79,6 +79,7 @@ Resources:
     Properties:
       TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/deployment-pipeline.yaml
       Parameters:
+        EnvironmentName: !Ref AWS::StackName
         GitHubUser: !Ref GitHubUser
         GitHubToken: !Ref GitHubToken
         GitHubRepo: !Ref GitHubRepo
@@ -88,7 +89,7 @@ Resources:
         Subnet2: !GetAtt VPC.Outputs.PublicSubnet2
         VpcId: !GetAtt VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
-        SNSTopic: !GetAtt SNN.Outputs.SNSTopicArn
+        TopicEmail: !Ref EmailAdress
 
 Outputs:
   PipelineUrl:

@@ -2,6 +2,10 @@ Description: >
   This Template creates the CodePipeline and CodeBuild resources for Blue/Green Deployment of the Prediciton API on ECS.
 
 Parameters:
+  EnvironmentName:
+    Description: an environment name that will be a prefix to resource names
+    Typ: String
+
   GitHubUser:
     Type: String
 
@@ -29,10 +33,20 @@ Parameters:
   VpcCIDR:
     Type: String
 
-  SNSTopic:
+  TopicEmail:
     Type: String 
 
 Resources:
+  SNSTopic:
+    Type: 'AWS::SNS::Topic'
+    Description: CodePipeline Approval Messages.
+    Properties:
+      DisplayName: CodePipeline Approval Message
+      Subscription:
+        - Endpoint: !Ref TopicEmail
+          Protocol: email
+      TopicName: !Sub ${EnvironmentName}-SNS
+
   FlipLambda:
     Type: AWS::Lambda::Function
     Properties:
