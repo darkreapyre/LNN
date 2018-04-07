@@ -3,95 +3,78 @@ import os
 import json
 import boto3
 import tempfile
-import urllib
+import urllib3
 import scipy
 import botocore
 import base64
 import h5py
+import sagemaker
+import json
+import mxnet as mx
 import numpy as np
+from mxnet import gluon, nd
 import matplotlib.pyplot as plt
 from io import BytesIO
+from cStringIO import StringIO
 from flask import Flask, Response, request, jsonify, render_template
-from json import dumps, loads
-from boto3 import client, resource, Session
 from PIL import Image
-from scipy import ndimage, misc
 from skimage import transform
 
-def sigmoid(z):
+"""
+TBD: Create logic to determine if the SageMaker Endpoint is available.
+"""
+try:
+    with open('endpoint.json') as j:
+        data = json.load(j)
+        endpoint = str(data.get('endpoint'))
+        if endpoint == "None":
+            endpoint = None
+else:
+    endpoint = None
+
+def local_predict(data):
     """
-    Computes the sigmoid of z
+    Runs the Gluon network if SAgeMaker Endpoint is not available
 
     Arguments:
-    z -- A scalar or numpy array of any size
-
-    Return:
-    sigmoid(z)
-    """
-    return 1. / (1. + np.exp(-z))
-
-def relu(z):
-    """
-    Implement the ReLU function.
-
-    Arguments:
-    z -- Output of the linear layer, of any shape
+    data -- Input image data as string.
 
     Returns:
-    a -- Post-activation parameter, of the same shape as z
+    response_body -- Predition respons as string.
     """
-    a = np.maximum(0, z)
-    # Debug statement
-    #assert(a.shape == z.shape)
-    return a
+    # Load the saved Gluon model
+    symbol = mx.sym.load('model.json')
+    outputs = mx.sym.sigmoid(data=symbol, name='sigmoid_label')
+    inputs = mx.sym.var('data')
+    param_dict = gluon.ParameterDict('model_')
+    net = gluon.SymbolBlock(outputs, inputs, param_dict)
+    net.load_params('model.params', ctx=mx.cpu())
+    # Parse the data
+    parsed = json.loads(data)
+    # Convert input to MXNet NDArray
+    nda = mx.nd.array(parsed)
+    output = net(nda)
+    prediction = nd.argmax(output, axis=1)
+    response_body = json.dumps(prediction.asnumpy().tolist()[0])
+    return response_body
 
-def forward_prop(X, params, layers, activations):
+def process_url(url):
     """
-    Executes the Forward Propogation step.
+    Retrieves image from a URL and converts the image
+    to a Numpy Array as the Payload for the SageMaker
+    hosted endpoint.
     
     Arguments:
-    input -- Input data of shape (No. features, No. training examples)
-    params -- Trained Weights and Bias
-    layers -- Numer of hidden layers in the trained neural network
-    activations -- Activation function for each layer
-    """
-    A_prev = X
-    results = []
-    results.append({'A': A_prev})
-    for l in range(1, layers+1):
-        W = params['W'+str(l)]
-        b = params['b'+str(l)]
-        Z = np.dot(W, A_prev) + b
-        if activations['layer'+str(l)] == 'relu':
-            A_prev = relu(Z)
-        if activations['layer'+str(l)] == 'sigmoid':
-            A_prev = sigmoid(Z)
-        cache = {'A': A_prev}
-    results.append(cache)
-    output = results[-1]['A']
-    return output
-
-def predict(X, NN_parameters, trained_parameters):
-    """
-    Applies the Forward Propogation step with optmized paramters to the input data.
-    Compares the output to the labeled data to determine classification with a
-    decision boundary of 0.5.
-    
-    Arguments:
-    X -- Input data of any shape
-    NN_parameters -- Neural Network configuration
-    trained_parameters -- Numpy array of optmized weights and bias
+    url -- Full URL of the image
     
     Returns:
-    Y_pred -- The predicted label
+    payload -- Preprocessed image as a numpy array and returns a list
     """
-    # Run Forward Propagation on the input data
-    layers = NN_parameters['layers']
-    activations = NN_parameters['activations']
-    output = forward_prop(X, trained_parameters, layers, activations)
-    decision_boundry = np.vectorize(lambda x: 1 if x > 0.5 else 0)
-    Y_pred = decision_boundry(output)
-    return Y_pred
+    http = urllib3.PoolManager()
+    req = http.request('GET', url)
+    image = np.array(Image.open(StringIO(req.data)))
+    result = transform.resize(image, (64, 64), mode='constant').reshape((1, 64 * 64 * 3))
+    return image, result.tolist()
 
 app = Flask(__name__)
 
@@ -108,37 +91,29 @@ def image():
     url = request.args.get('image')
     print(url)
 
-    y = [1] # Truth Label for cat image
-    classes = ("NON-CAT", "CAT")
-    # Open Neural Network parameters file
-    with open("/app/parameters.json","r") as f:
-        NN_parameters = json.load(f)
+    # Process the URL
+    image, payload = process_url(url)
 
-    # Open Model parameters file
-    with h5py.File('/app/params.h5', 'r') as h5file:
-        trained_parameters = {}
-        for key, item in h5file['/'].items():
-            trained_parameters[key] = item.value
+    # Determine if SageMaker Endpoint or local is used
+    if endpoint != None:
+        # Invoke the SageMaker endpoint
+        response = runtime.invoke_endpoint(
+            EndpointName=model_name,
+            ContentType='application/json',
+            Body=json.dumps(payload)
+        )
+    else:
+        response = local_predict(data=json.dumps(payload))
 
-    # Pre-process the image
-    req = urllib.request.Request(url)
-    res = urllib.request.urlopen(req).read()
-    fname = BytesIO(res)
-    img = np.array(ndimage.imread(fname, flatten=False))
-    image = misc.imresize(img, size=(64, 64)).reshape((1, 64 * 64 * 3)).T
-
-    # Prediction
-    Y_pred = predict(image, NN_parameters, trained_parameters)
-    prediction = str(classes[int(np.squeeze(Y_pred))])
+    # Format the prediction from SgeMaker Endpoint
+    classes = ['non-cat', 'cat']
+    prediction = classes[int(json.loads(response['Body'].read().decode('utf-8')))]
 
     # Return prediction and image
     figfile = BytesIO()
-    plt.imsave(figfile, img, format='png')
+    plt.imsave(figfile, image, format='png')
     figfile.seek(0)
     figfile_png = base64.b64encode(figfile.getvalue()).decode('ascii')
-    # Remove byst string formatting
-    #result = str(figfile_png)[2:-1]
-
     return render_template('results.html', image=figfile_png, prediction=prediction)
 
 if __name__ == '__main__':

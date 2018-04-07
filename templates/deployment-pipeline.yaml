@@ -146,6 +146,7 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
+                  - logs:DescribeLogStreams
                   - ecr:GetAuthorizationToken
                   - cloudformation:Describe*
                   - elasticloadbalancing:Describe*
@@ -174,6 +175,44 @@ Resources:
                   - ecr:InitiateLayerUpload
                   - ecr:UploadLayerPart
                   - ecr:CompleteLayerUpload
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:CreatePolicy
+                  - iam:AttachRolePolicy
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - sagemaker:*
+                  - cloudwatch:PutMetricData
+                  - cloudwatch:PutMetricAlarm
+                  - cloudwatch:DescribeAlarms
+                  - cloudwatch:DeleteAlarms
+                  - application-autoscaling:DeleteScalingPolicy
+                  - application-autoscaling:DeleteScheduledAction
+                  - application-autoscaling:DeregisterScalableTarget
+                  - application-autoscaling:DescribeScalableTargets
+                  - application-autoscaling:DescribeScalingActivities
+                  - application-autoscaling:DescribeScalingPolicies
+                  - application-autoscaling:DescribeScheduledActions
+                  - application-autoscaling:PutScalingPolicy
+                  - application-autoscaling:PutScheduledAction
+                  - application-autoscaling:RegisterScalableTarget
+              - Resource: "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint"
+                Effect: Allow
+                Action:
+                  - iam:CreateServiceLinkedRole
+                Condition:
+                  StringLike:
+                    iam:AWSServiceName: "sagemaker.application-autoscaling.amazonaws.com"
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Condition:
+                  StringLike:
+                    iam:PassedToService: "sagemaker.amazonaws.com"
 
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
@@ -235,8 +274,6 @@ Resources:
             pre_build:
               commands: 
                 - printenv
-                - aws s3 cp s3://${TemplateBucket}/predict_input/params.h5 ./src/params.h5
-                - aws s3 cp s3://${TemplateBucket}/training_input/parameters.json ./src/parameters.json
                 - echo -n "$CODEBUILD_LOG_PATH" > /tmp/build_id.out
                 - printf "%s:%s" "$REPOSITORY_URI" "$(cat /tmp/build_id.out)" > /tmp/build_tag.out
                 - printf '{"tag":"%s"}' "$(cat /tmp/build_id.out)" > /tmp/build.json
@@ -298,6 +335,38 @@ Resources:
       Name: !Sub ${AWS::StackName}-discoveryproject
       ServiceRole: !Ref CodeBuildServiceRole
 
+  DeployEndpoint:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.1
+          phases:
+            install:
+              commands:
+                - pip install --upgrade pip
+                - pip install --upgrade python
+                - pip install --upgrade awscli
+                - pip install --upgrade boto3
+                - pip install sagemaker
+            pre_build:
+              commands:
+                - printenv
+                - ls -ld $(find .)
+                - python endpoint.py
+          artifacts:
+            files: endpoint.json
+            discard-paths: yes
+      Environment:
+        ComputeType: "BUILD_GENERAL1_SMALL"
+        Image: aws/codebuild/python:2.7.12
+        Type: "LINUX_CONTAINER"
+      Name: !Sub ${AWS::StackName}-endpointproject
+      ServiceRole: !Ref CodeBuildServiceRole
+
   Pipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -346,21 +415,22 @@ Resources:
               Configuration:
                 S3Bucket: !Ref TemplateBucket
                 S3ObjectKey: scripts.zip
-            - Name: Parameters
-              ActionTypeId:
-                Category: Source
-                Owner: AWS
-                Version: 1
-                Provider: S3
-              OutputArtifacts:
-                - Name: params
-              RunOrder: 1
-              Configuration:
-                S3Bucket: !Ref TemplateBucket
-                S3ObjectKey: predict_input/params.h5
         - Name: Build
           Actions:
-            - Name: Build
+            - Name: Deploy_Endpoint
+              ActionTypeId:
+                Catagory: Build
+                Owner: AWS
+                Version: 1
+                Provider: CodeBuild
+              Configuration:
+                ProjectName: !Ref DeployEndpoint
+              InputArtifacts:
+                - Name: Scripts
+              OutputArtifacts:
+                - Name: Endpoint
+              RunOrder: 1
+            - Name: Build_App
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -370,10 +440,11 @@ Resources:
                 ProjectName: !Ref CodeBuildProject
               InputArtifacts:
                 - Name: App
+                - Name: Endpoint
               OutputArtifacts:
                 - Name: BuildOutput
-              RunOrder: 1
-            - Name: Discover
+              RunOrder: 2
+            - Name: Discover_ALB
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -385,7 +456,7 @@ Resources:
                 - Name: Scripts
               OutputArtifacts:
                 - Name: DiscoveryOutput
-              RunOrder: 2
+              RunOrder: 3
         - Name: QA
           Actions:
             - Name: Deploy

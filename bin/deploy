@@ -2,6 +2,7 @@
 
 #echo -n "Enter the AWS Region to use > "
 #read region
+#Default should be sagemaker-us-west-2-722812380636
 echo -n "Enter S3 Bucket to host the templates and scripts > "
 read bucket
 echo -n "Enter CloudFormation stackname to create > "
@@ -12,15 +13,6 @@ echo -n "Enter GitHubToken > "
 read GitHubToken
 echo -n "Enter the e-mail address for Pipeline Approval > "
 read email
-
-echo ""
-echo -n "Building Lambda Deployment Package ..."
-echo ""
-cp lambda/deps.zip deploy/package.zip
-cp lambda/src/*.py deploy/
-cd deploy
-zip -r package.zip *.py
-cd .. 
 
 echo ""
 echo -n "Building CloudFormation Package ..."
@@ -35,11 +27,9 @@ echo ""
 aws s3 mb "s3://${bucket}" --region us-east-1
 aws s3 cp deploy/templates.zip "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read --region us-east-1
-aws s3 cp deploy/package.zip "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp main.yaml "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp --recursive templates/ "s3://${bucket}/templates" --acl public-read --region us-east-1
 aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read --region us-east-1
-aws s3 cp parameters.json "s3://${bucket}/training_input/" --acl public-read --region us-east-1
 aws s3api put-bucket-versioning --bucket "${bucket}" --versioning-configuration Status=Enabled --region us-east-1
 
 echo ""

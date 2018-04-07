@@ -31,16 +31,6 @@ Parameters:
     Description: Email Address for Approval.
     Type: String
 
-  ClusterNodeType:
-    Description: ElastiCache node type.
-    Type: String
-    Default: cache.r4.large
-    AllowedValues:
-      - cache.t2.small
-      - cache.t2.medium
-      - cache.m4.large
-      - cache.r4.large
-
 Metadata:
   AWS::CloudFormation::Interface:
     ParameterLabels:
@@ -67,10 +57,6 @@ Metadata:
           - GitHubUser
           - GitHubToken
       - Label:
-          default: ElastiCache Configuration
-        Parameters:
-          - ClusterNodeType
-      - Label:
           default: Machine Lernning Pipline Configuration
         Parameters:
           - TemplateBucket
@@ -87,29 +73,6 @@ Resources:
         PublicSubnet1CIDR: 10.215.10.0/24
         PublicSubnet2CIDR: 10.215.11.0/24
         PrivateSubnet1CIDR: 10.215.20.0/24
-
-  SNN:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/SNN.yaml
-      Parameters:
-        VPC: !GetAtt VPC.Outputs.VPC
-        EnvironmentName: !Ref AWS::StackName
-        TopicEmail: !Ref EmailAddress
-        S3Bucket: !Ref TemplateBucket
-        PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-        VpcCIDR: 10.215.0.0/16
-  
-  ElastiCache:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/elasticache.yaml
-      Parameters:
-        EnvironmentName: !Ref AWS::StackName
-        PrivateSubnet1: !GetAtt VPC.Outputs.PrivateSubnet1
-        ClusterNodeType: !Ref ClusterNodeType
-        VPC: !GetAtt VPC.Outputs.VPC
-        VpcCIDR: 10.215.0.0/16
 
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
