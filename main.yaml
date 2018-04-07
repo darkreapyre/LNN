@@ -72,7 +72,6 @@ Resources:
         VpcCIDR: 10.215.0.0/16
         PublicSubnet1CIDR: 10.215.10.0/24
         PublicSubnet2CIDR: 10.215.11.0/24
-        PrivateSubnet1CIDR: 10.215.20.0/24
 
   DeploymentPipeline:
     Type: AWS::CloudFormation::Stack
