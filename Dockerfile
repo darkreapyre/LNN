@@ -20,7 +20,7 @@ RUN apt-get update && apt-get -y install \
     rm -rf /var/lib/apt/lists/*
 
 # Symlink /usr/bin/python to the python 2.
-RUN rm /usr/bin/python && ln -s "/usr/bin/python2" /usr/bin/python
+RUN rm /usr/bin/python && ln -s "/usr/bin/python3" /usr/bin/python
 
 # Install pip
 RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
