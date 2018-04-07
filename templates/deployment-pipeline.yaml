@@ -333,7 +333,7 @@ Resources:
               commands:
                 - printenv
                 - ls -ld $(find .)
-                - python ./src/scripts/deployer.py
+                - python deployer.py
           artifacts:
             files: cf_inputs.json
             discard-paths: yes
@@ -370,7 +370,7 @@ Resources:
               commands:
                 - printenv
                 - ls -ld $(find .)
-                - python ./src/scripts/endpoint.py
+                - python ./src/endpoint.py
           artifacts:
             Type: no_artifacts
       Environment:
@@ -416,18 +416,18 @@ Resources:
               Configuration:
                 S3Bucket: !Ref TemplateBucket
                 S3ObjectKey: templates.zip
-#            - Name: Scripts
-#              ActionTypeId:
-#                Category: Source
-#                Owner: AWS
-#                Version: 1
-#                Provider: S3
-#              OutputArtifacts:
-#                - Name: Scripts
-#              RunOrder: 1
-#              Configuration:
-#                S3Bucket: !Ref TemplateBucket
-#                S3ObjectKey: scripts.zip
+            - Name: Scripts
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              OutputArtifacts:
+                - Name: Scripts
+              RunOrder: 1
+              Configuration:
+                S3Bucket: !Ref TemplateBucket
+                S3ObjectKey: scripts.zip
         - Name: Build
           Actions:
             - Name: Deploy_Endpoint
@@ -465,8 +465,7 @@ Resources:
               Configuration:
                 ProjectName: !Ref BlueGreenElbDiscovery
               InputArtifacts:
-#                - Name: Scripts
-                - Name: App
+                - Name: Scripts
               OutputArtifacts:
                 - Name: DiscoveryOutput
               RunOrder: 3

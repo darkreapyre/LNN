@@ -18,18 +18,18 @@ echo ""
 echo -n "Building CloudFormation Package ..."
 echo ""
 zip deploy/templates.zip main.yaml templates/*
-#cd scripts && zip scripts.zip * && cd ..
-#mv scripts/scripts.zip deploy/scripts.zip
+cd scripts && zip scripts.zip * && cd ..
+mv scripts/scripts.zip deploy/scripts.zip
 
 echo ""
 echo -n "Uploading CloudFormation Templates to s3 ..."
 echo ""
 aws s3 mb "s3://${bucket}" --region us-east-1
 aws s3 cp deploy/templates.zip "s3://${bucket}" --acl public-read --region us-east-1
-#aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read --region us-east-1
+aws s3 cp deploy/scripts.zip "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp main.yaml "s3://${bucket}" --acl public-read --region us-east-1
 aws s3 cp --recursive templates/ "s3://${bucket}/templates" --acl public-read --region us-east-1
-#aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read --region us-east-1
+aws s3 cp --recursive scripts/ "s3://${bucket}/scripts" --acl public-read --region us-east-1
 aws s3api put-bucket-versioning --bucket "${bucket}" --versioning-configuration Status=Enabled --region us-east-1
 
 echo ""

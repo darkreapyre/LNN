@@ -20,7 +20,7 @@ from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
 
-build_id = str(os.environ['BUILD_ID'])[-5:]
+build_id = str(os.environ['BUILD_ID'])[:7]
 sagemaker_client = boto3.client('sagemaker')
 list_results = sagemaker_client.list_endpoints(
     SortBy='Name',
