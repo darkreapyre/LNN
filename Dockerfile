@@ -27,7 +27,6 @@ RUN cd /tmp && \
     git clone --recursive https://github.com/apache/incubator-mxnet mxnet && \
     cd /tmp/mxnet && \
     git checkout tags/0.12.1 -b 0.12.1 && git submodule update --init --recursive && \
-    git apply --verbose /patches/*.patch && \
     make -j$(nproc) USE_BLAS=openblas USE_MKL2017=1 USE_DIST_KVSTORE=1 && \
     cd /tmp/mxnet/python && \
     python2 setup.py install && \

@@ -403,7 +403,7 @@ Resources:
                 OAuthToken: !Ref GitHubToken
               OutputArtifacts:
                 - Name: App
-              RunOrder: 3
+              RunOrder: 1
             - Name: Template
               ActionTypeId:
                 Category: Source
@@ -424,7 +424,7 @@ Resources:
                 Provider: S3
               OutputArtifacts:
                 - Name: Scripts
-              RunOrder: 2
+              RunOrder: 1
               Configuration:
                 S3Bucket: !Ref TemplateBucket
                 S3ObjectKey: scripts.zip
@@ -439,6 +439,7 @@ Resources:
               Configuration:
                 ProjectName: !Ref DeployEndpoint
               InputArtifacts:
+                - Name: App
                 - Name: Scripts
               OutputArtifacts:
                 - Name: EndpointOutput
