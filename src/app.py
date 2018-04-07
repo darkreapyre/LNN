@@ -15,7 +15,7 @@ import numpy as np
 from mxnet import gluon, nd
 import matplotlib.pyplot as plt
 from io import BytesIO
-from cStringIO import StringIO
+#from cStringIO import StringIO
 from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
@@ -73,7 +73,7 @@ def process_url(url):
     """
     http = urllib3.PoolManager()
     req = http.request('GET', url)
-    image = np.array(Image.open(StringIO(req.data)))
+    image = np.array(Image.open(BytesIO(req.data)))
     result = transform.resize(image, (64, 64), mode='constant').reshape((1, 64 * 64 * 3))
     return image, result.tolist()
 
