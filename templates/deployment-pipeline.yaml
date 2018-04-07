@@ -372,8 +372,7 @@ Resources:
                 - ls -ld $(find .)
                 - python endpoint.py
           artifacts:
-            files: endpoint.json
-            discard-paths: yes
+            Type: no_artifacts
       Environment:
         ComputeType: "BUILD_GENERAL1_SMALL"
         Image: aws/codebuild/python:2.7.12
@@ -442,7 +441,7 @@ Resources:
               InputArtifacts:
                 - Name: Scripts
               OutputArtifacts:
-                - Name: Endpoint
+                - Name: EndpointOutput
               RunOrder: 1
             - Name: Build_App
               ActionTypeId:
@@ -454,7 +453,6 @@ Resources:
                 ProjectName: !Ref CodeBuildProject
               InputArtifacts:
                 - Name: App
-                - Name: Endpoint
               OutputArtifacts:
                 - Name: BuildOutput
               RunOrder: 2
