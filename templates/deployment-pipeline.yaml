@@ -294,7 +294,7 @@ Resources:
                 - $(aws ecr get-login --no-include-email)
             build:
               commands:
-                - docker build --tag "$(cat /tmp/build_tag.out)" --build-arg ID="$CODEBUILD__RESOLVED_SOURCE_VERSION" .
+                - docker build --tag "$(cat /tmp/build_tag.out)" --build-arg ID="$CODEBUILD_RESOLVED_SOURCE_VERSION" .
             post_build:
               commands:
                 - docker push "$(cat /tmp/build_tag.out)"
