@@ -4,7 +4,7 @@ Description: >
 Parameters:
   EnvironmentName:
     Description: an environment name that will be a prefix to resource names
-    Typ: String
+    Type: String
 
   GitHubUser:
     Type: String
@@ -432,7 +432,7 @@ Resources:
           Actions:
             - Name: Deploy_Endpoint
               ActionTypeId:
-                Catagory: Build
+                Category: Build
                 Owner: AWS
                 Version: 1
                 Provider: CodeBuild
