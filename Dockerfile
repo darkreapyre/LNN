@@ -51,7 +51,7 @@ RUN pip install \
     scipy \
     scikit-image \
     Pillow \
-    boto3 \
+#    boto3 \
     Jinja2 \
     Werkzeug \
     certifi \
@@ -60,11 +60,14 @@ RUN pip install \
     h5py \
     urllib3 \
     sagemaker \
-    mxnet
+    mxnet \
+    awscli
 
-RUN pip uninstall python-dateutil -y
+#RUN pip uninstall python-dateutil -y
 
-RUN pip install python-dateutil==2.6.1
+#RUN pip install python-dateutil==2.6.1
+
+RUN pip install --upgrade boto3
 
 ADD ./src /app
 ADD ./src/config /config
