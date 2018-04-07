@@ -89,7 +89,7 @@ Resources:
         Subnet2: !GetAtt VPC.Outputs.PublicSubnet2
         VpcId: !GetAtt VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
-        TopicEmail: !Ref EmailAdress
+        TopicEmail: !Ref EmailAddress
 
 Outputs:
   PipelineUrl:
