@@ -17,8 +17,8 @@ if training_job == 0:
 # Global Variables
 sagemaker_client = boto3.client('sagemaker')
 iam_client = boto3.client('iam')
-build_id = str(os.environ['CODEBUILD_RESOLVED_SOURCE_VERSION'])
-model_name = build_id[-5:]
+build_id = str(os.environ['CODEBUILD_SOURCE_VERSION'])
+model_name = build_id
 training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
 training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 

@@ -1,7 +1,8 @@
 FROM ubuntu:16.04
 
 ARG ID
-ENV build_id=$ID
+ENV BUILD_ID=$ID
+RUN echo $BUILD_ID
 
 RUN apt-get update && apt-get -y install \
     build-essential \

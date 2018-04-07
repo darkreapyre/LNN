@@ -294,7 +294,7 @@ Resources:
                 - $(aws ecr get-login --no-include-email)
             build:
               commands:
-                - docker build --tag "$(cat /tmp/build_tag.out)" --build-arg ID="$CODEBUILD_RESOLVED_SOURCE_VERSION" .
+                - docker build --tag "$(cat /tmp/build_tag.out)" --build-arg ID="$CODEBUILD_SOURCE_VERSION" .
             post_build:
               commands:
                 - docker push "$(cat /tmp/build_tag.out)"
@@ -302,7 +302,7 @@ Resources:
             files: /tmp/build.json
             discard-paths: yes
       Environment:
-        ComputeType: "BUILD_GENERAL1_SMALL"
+        ComputeType: "BUILD_GENERAL1_LARGE"
         Image: "aws/codebuild/docker:17.09.0"
         Type: "LINUX_CONTAINER"
         EnvironmentVariables:
@@ -333,7 +333,7 @@ Resources:
               commands:
                 - printenv
                 - ls -ld $(find .)
-                - python deployer.py
+                - python scripts/deployer.py
           artifacts:
             files: cf_inputs.json
             discard-paths: yes
@@ -370,7 +370,7 @@ Resources:
               commands:
                 - printenv
                 - ls -ld $(find .)
-                - python endpoint.py
+                - python scripts/endpoint.py
           artifacts:
             Type: no_artifacts
       Environment:
@@ -416,18 +416,18 @@ Resources:
               Configuration:
                 S3Bucket: !Ref TemplateBucket
                 S3ObjectKey: templates.zip
-            - Name: Scripts
-              ActionTypeId:
-                Category: Source
-                Owner: AWS
-                Version: 1
-                Provider: S3
-              OutputArtifacts:
-                - Name: Scripts
-              RunOrder: 1
-              Configuration:
-                S3Bucket: !Ref TemplateBucket
-                S3ObjectKey: scripts.zip
+#            - Name: Scripts
+#              ActionTypeId:
+#                Category: Source
+#                Owner: AWS
+#                Version: 1
+#                Provider: S3
+#              OutputArtifacts:
+#                - Name: Scripts
+#              RunOrder: 1
+#              Configuration:
+#                S3Bucket: !Ref TemplateBucket
+#                S3ObjectKey: scripts.zip
         - Name: Build
           Actions:
             - Name: Deploy_Endpoint
@@ -440,7 +440,6 @@ Resources:
                 ProjectName: !Ref DeployEndpoint
               InputArtifacts:
                 - Name: App
-                - Name: Scripts
               OutputArtifacts:
                 - Name: EndpointOutput
               RunOrder: 1
@@ -466,7 +465,8 @@ Resources:
               Configuration:
                 ProjectName: !Ref BlueGreenElbDiscovery
               InputArtifacts:
-                - Name: Scripts
+#                - Name: Scripts
+                - Name: App
               OutputArtifacts:
                 - Name: DiscoveryOutput
               RunOrder: 3
