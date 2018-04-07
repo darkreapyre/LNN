@@ -430,7 +430,7 @@ Resources:
                 S3ObjectKey: scripts.zip
         - Name: Build
           Actions:
-            - Name: Deploy_Endpoint
+            - Name: Endpoint
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -443,7 +443,7 @@ Resources:
               OutputArtifacts:
                 - Name: EndpointOutput
               RunOrder: 1
-            - Name: Build_App
+            - Name: Build
               ActionTypeId:
                 Category: Build
                 Owner: AWS
@@ -456,7 +456,7 @@ Resources:
               OutputArtifacts:
                 - Name: BuildOutput
               RunOrder: 2
-            - Name: Discover_ALB
+            - Name: Discover
               ActionTypeId:
                 Category: Build
                 Owner: AWS
