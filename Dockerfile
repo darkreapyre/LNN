@@ -28,7 +28,7 @@ RUN pip3 install \
 #  scikit-image \
 #  Pillow \
   boto3 \
-  Jinja2 
+  Jinja2 \
   Werkzeug \
   certifi \
   gunicorn\
