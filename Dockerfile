@@ -59,10 +59,11 @@ RUN pip install \
     h5py \
     urllib3 \
     sagemaker \
-    mxnet \
-    awscli
+    mxnet
 
 RUN pip install --upgrade boto3
+
+RUN pip install --upgrade awscli
 
 RUN mkdir $HOME/.aws
 
