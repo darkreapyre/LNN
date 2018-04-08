@@ -15,7 +15,6 @@ import numpy as np
 from mxnet import gluon, nd
 import matplotlib.pyplot as plt
 from io import BytesIO
-#from cStringIO import StringIO
 from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
