@@ -8,19 +8,11 @@ import sagemaker
 from sagemaker import get_execution_role
 from sagemaker.mxnet import MXNet
 
-# Training job information
-training_job = 0
-if training_job == 0:
-    print("No Training job defined, exiting ...")
-    sys.exit()
-
 # Global Variables
 sagemaker_client = boto3.client('sagemaker')
 iam_client = boto3.client('iam')
 build_id = str(os.environ['CODEBUILD_RESOLVED_SOURCE_VERSION'])
 model_name = build_id[:7]
-training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
-training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 
 # Create IAM Role for SageMaker Session
 role_response = iam_client.create_role(
@@ -41,6 +33,12 @@ time.sleep(5)
 # Create a model using the Session API
 # by attaching to the training job
 print("Attaching estimator to training job: {}".format(training_job_name))
+training_job = 0
+if training_job == 0:
+    print("No Training job defined, exiting ...")
+    sys.exit()
+training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
+training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 sagemaker_role = role_response['Role']['Arn']
 estimator = MXNet.attach(training_job_name)
 session = sagemaker.Session()
