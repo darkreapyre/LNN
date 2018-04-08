@@ -32,7 +32,6 @@ time.sleep(5)
 
 # Create a model using the Session API
 # by attaching to the training job
-print("Attaching estimator to training job: {}".format(training_job_name))
 training_job = 0
 if training_job == 0:
     print("No Training job defined, exiting ...")
@@ -40,6 +39,7 @@ if training_job == 0:
 training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
 training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 sagemaker_role = role_response['Role']['Arn']
+print("Attaching estimator to training job: {}".format(training_job_name))
 estimator = MXNet.attach(training_job_name)
 session = sagemaker.Session()
 time.sleep(5)
