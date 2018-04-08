@@ -97,7 +97,7 @@ Resources:
         {
             "Statement": [{
                 "Effect": "Allow",
-                "Principal": { "Service": [ "ecs-tasks.amazonaws.com", "sagemaker.amazonaws.com" ]},
+                "Principal": { "Service": [ "sagemaker.amazonaws.com", "ecs-tasks.amazonaws.com" ]},
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
