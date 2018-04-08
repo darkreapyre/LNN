@@ -1,45 +1,21 @@
-FROM python:3.6
-ARG ID
-ENV BUILD_ID=$ID
-RUN echo $BUILD_ID
+FROM alpine:edge
+MAINTAINER Xueshan Feng <sfeng@stanford.edu>
 
-# Install build-essential, git, wget and other dependencies
-RUN apt-get update && apt-get install -y \
-  build-essential \
-  git \
-  libopenblas-dev \
-  libatlas-base-dev \
-  gfortran \
-  gcc \
-  wget \
-  curl \
-  nginx \
-  supervisor && \
-  rm -rf /var/lib/apt/lists/*
+RUN apk update && apk add \ 
+      bash \
+      curl \
+      less \
+      groff \
+      jq \
+      python \
+      py-pip \
+      py2-pip && \
+      pip install --upgrade pip awscli s3cmd && \
+      mkdir /root/.aws
 
-# Install Flask API Libraries
-RUN pip3 install --upgrade pip
-RUN pip3 install \
-  uwsgi \
-  Flask \
-#  numpy \
-#  matplotlib \
-#  scipy \
-#  scikit-image \
-#  Pillow \
-  boto3 \
-  Jinja2 \
-  Werkzeug \
-  certifi \
-  gunicorn\
-  requests \
-  sagemaker
-#  h5py
+COPY get-metadata /usr/local/bin/get-metadata
 
-# Configure API Endpoint
-ADD ./src /app
-ADD ./src/config /config
-EXPOSE 80
+# Expose data volume
+VOLUME /app
 
-# Launch Flask App
-CMD ["python", "app/app.py"]
+ENTRYPOINT ["/bin/bash", "aws", "s3", "ls"]
