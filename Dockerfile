@@ -61,7 +61,6 @@ ENV PATH="/usr/local/bin:$PATH" \
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tcl-dev tk-dev \
     && rm -rf /var/lib/apt/lists/* \
-	\
 	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
 	&& wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
 	&& export GNUPGHOME="$(mktemp -d)" \
@@ -81,7 +80,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	&& make -j$(nproc) \
 	&& make install \
 	&& ldconfig \
-	\
 		&& wget -O /tmp/get-pip.py 'https://bootstrap.pypa.io/get-pip.py' \
 		&& python2 /tmp/get-pip.py "pip==$PYTHON_PIP_VERSION" \
 		&& rm /tmp/get-pip.py \
@@ -105,7 +103,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # then we use "pip list" to ensure we don't have more than one pip version installed
 # https://github.com/docker-library/python/pull/100
 	&& [ "$(pip list |tac|tac| awk -F '[ ()]+' '$1 == "pip" { print $2; exit }')" = "$PYTHON_PIP_VERSION" ] \
-	\
 	&& find /usr/local -depth \
 		\( \
 			\( -type d -a -name test -o -name tests \) \
