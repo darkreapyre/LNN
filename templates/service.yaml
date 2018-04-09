@@ -159,6 +159,8 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
+      Family: !Join ['', [!Ref 'AWS::StackName', -prediction-app]]
+      TaskRoleArn: !Ref TaskRole
       ContainerDefinitions:
         - Name: app
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
