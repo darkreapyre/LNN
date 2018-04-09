@@ -15,7 +15,7 @@ Parameters:
 
   GitHubBranch:
     Type: String
-    Default: 1.1
+    Default: 1.1.ecs
     Description: The branch of the repo to continuously deploy.
 
   GitHubToken:

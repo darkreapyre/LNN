@@ -184,6 +184,7 @@ Resources:
                   - sagemaker:*
                   - logs:*
                   - s3:*
+                  - iam:*
                   - ecr:GetAuthorizationToken
                   - cloudformation:Describe*
                   - elasticloadbalancing:Describe*
@@ -193,30 +194,7 @@ Resources:
                   - cloudwatch:PutMetricAlarm
                   - cloudwatch:DescribeAlarms
                   - cloudwatch:DeleteAlarms
-                  - application-autoscaling:DeleteScalingPolicy
-                  - application-autoscaling:DeleteScheduledAction
-                  - application-autoscaling:DeregisterScalableTarget
-                  - application-autoscaling:DescribeScalableTargets
-                  - application-autoscaling:DescribeScalingActivities
-                  - application-autoscaling:DescribeScalingPolicies
-                  - application-autoscaling:DescribeScheduledActions
-                  - application-autoscaling:PutScalingPolicy
-                  - application-autoscaling:PutScheduledAction
-                  - application-autoscaling:RegisterScalableTarget
-              - Resource: "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint"
-                Effect: Allow
-                Action:
-                  - iam:CreateServiceLinkedRole
-                Condition:
-                  StringLike:
-                    iam:AWSServiceName: "sagemaker.application-autoscaling.amazonaws.com"
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - iam:PassRole
-                Condition:
-                  StringLike:
-                    iam:PassedToService: "sagemaker.amazonaws.com"
+                  - application-autoscaling:*
 
   CodePipelineServiceRole:
     Type: AWS::IAM::Role

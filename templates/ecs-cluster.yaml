@@ -39,13 +39,146 @@ Parameters:
   TemplateBucket:
     Type: String
     Description: >
-      S3 Bucket used for nested templates.
+      S3 Bucket used for nested templates
+
+Mappings:
+  AWSRegionToAMI:
+    us-east-1:
+      AMI: ami-cb17d8b6
+    us-east-2:
+      AMI: ami-1b90a67e
+    us-west-1:
+      AMI: ami-9cbbaffc
+    us-west-2:
+      AMI: ami-05b5277d
+    eu-west-1:
+      AMI: ami-bfb5fec6
+    eu-west-2:
+      AMI: ami-a48d6bc3
+    eu-west-3:
+      AMI: ami-914afcec
+    eu-central-1:
+      AMI: ami-ac055447
+    ap-northeast-1:
+      AMI: ami-5add893c
+    ap-northeast-2:
+      AMI: ami-ba74d8d4
+    ap-southeast-1:
+      AMI: ami-acbcefd0
+    ap-southeast-2:
+      AMI: ami-4cc5072e
+    ca-central-1:
+      AMI: ami-a535b2c1
+    ap-south-1:
+      AMI: ami-2149114e
+    sa-east-1:
+      AMI: ami-d3bce9bf
 
 Resources:
+  ECSRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      #RoleName: !Sub ecs-${AWS::StackName}
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ec2.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /
+      Roles:
+        - !Ref ECSRole
+
+  SecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: !Sub ${AWS::StackName}-hosts
+      SecurityGroupIngress:
+        - SourceSecurityGroupId: !GetAtt LoadBalancer.Outputs.SecurityGroup
+          IpProtocol: -1
+      VpcId: !Ref VpcId
+
   Cluster:
     Type: AWS::ECS::Cluster
     Properties:
       ClusterName: !Ref AWS::StackName
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref Subnet1
+        - !Ref Subnet2
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      MinSize: !Ref ClusterSize
+      MaxSize: !Ref ClusterSize
+      DesiredCapacity: !Ref ClusterSize
+      Tags: 
+        - Key: Name
+          Value: !Sub ${AWS::StackName} - ECS Host
+          PropagateAtLaunch: true
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
+        PauseTime: PT15M
+        WaitOnResourceSignals: true
+
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Metadata:
+      AWS::CloudFormation::Init:
+        config:
+          commands:
+            01_add_instance_to_cluster:
+                command: !Sub echo ECS_CLUSTER=${Cluster} > /etc/ecs/ecs.config
+          files:
+            "/etc/cfn/cfn-hup.conf":
+              mode: 000400
+              owner: root
+              group: root
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region=${AWS::Region}
+            "/etc/cfn/hooks.d/cfn-auto-reloader.conf":
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.ContainerInstances.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+    Properties:
+      ImageId: !FindInMap [ AWSRegionToAMI, !Ref "AWS::Region", AMI ]
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref InstanceProfile
+      SecurityGroups:
+        - !Ref SecurityGroup
+      UserData:
+        "Fn::Base64": !Sub |
+          #!/bin/bash
+          yum install -y aws-cfn-bootstrap
+          /opt/aws/bin/cfn-init -v --region ${AWS::Region} --stack ${AWS::StackName} --resource LaunchConfiguration
+          /opt/aws/bin/cfn-signal -e $? --region ${AWS::Region} --stack ${AWS::StackName} --resource AutoScalingGroup
 
   LoadBalancer:
     Type: AWS::CloudFormation::Stack
@@ -72,9 +205,6 @@ Resources:
         Repository: !Ref Repository
         Identifier: "Code2"
         IsProduction: False
-        Subnet1 : !Ref Subnet1
-        Subnet2 : !Ref Subnet2
-        ALBSg : !GetAtt LoadBalancer.Outputs.SecurityGroup
 
   BlueService:
     Type: AWS::CloudFormation::Stack
@@ -90,9 +220,6 @@ Resources:
         Repository: !Ref Repository
         Identifier: "Code1"
         IsProduction: True
-        Subnet1 : !Ref Subnet1
-        Subnet2 : !Ref Subnet2
-        ALBSg : !GetAtt LoadBalancer.Outputs.SecurityGroup
 
 Outputs:
   ClusterName:

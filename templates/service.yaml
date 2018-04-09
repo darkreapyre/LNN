@@ -31,15 +31,6 @@ Parameters:
   IsProduction:
     Type: String
 
-  Subnet1:
-    Type: String
-
-  Subnet2:
-    Type: String
-
-  ALBSg:
-    Type: String
-
 Resources:
   LoadBalancerListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -89,15 +80,16 @@ Resources:
       ListenerArn: !Ref LoadBalancerListener
       Priority: 1
 
-  TaskRole:
+  ECSServiceRole:
     Type: AWS::IAM::Role
     Properties:
+      #RoleName: !Sub ecs-service-${AWS::StackName}
       Path: /
       AssumeRolePolicyDocument: |
         {
             "Statement": [{
                 "Effect": "Allow",
-                "Principal": { "Service": [ "ecs-tasks.amazonaws.com", "sagemaker.amazonaws.com" ]},
+                "Principal": { "Service": [ "ecs.amazonaws.com" ]},
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
@@ -109,92 +101,64 @@ Resources:
               - Resource: "*"
                 Effect: Allow
                 Action:
-                  - iam:CreateRole
-                  - iam:GetRole
-                  - iam:CreatePolicy
-                  - iam:AttachRolePolicy
-              - Resource: "*"
-                Effect: Allow
-                Action:
+                  - iam:*
                   - sagemaker:*
                   - logs:*
                   - s3:*
                   - ecr:*
-                  - cloudformation:Describe*
-                  - elasticloadbalancing:Describe*
-                  - codepipeline:Get*
-                  - codebuild:BatchGetBuilds
-                  - cloudwatch:PutMetricData
-                  - cloudwatch:PutMetricAlarm
-                  - cloudwatch:DescribeAlarms
-                  - cloudwatch:DeleteAlarms
-                  - application-autoscaling:DeleteScalingPolicy
-                  - application-autoscaling:DeleteScheduledAction
-                  - application-autoscaling:DeregisterScalableTarget
-                  - application-autoscaling:DescribeScalableTargets
-                  - application-autoscaling:DescribeScalingActivities
-                  - application-autoscaling:DescribeScalingPolicies
-                  - application-autoscaling:DescribeScheduledActions
-                  - application-autoscaling:PutScalingPolicy
-                  - application-autoscaling:PutScheduledAction
-                  - application-autoscaling:RegisterScalableTarget
-              - Resource: "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint"
-                Effect: Allow
-                Action:
-                  - iam:CreateServiceLinkedRole
-                Condition:
-                  StringLike:
-                    iam:AWSServiceName: "sagemaker.application-autoscaling.amazonaws.com"
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - iam:PassRole
-                Condition:
-                  StringLike:
-                    iam:PassedToService: "sagemaker.amazonaws.com"
-#      ManagedPolicyArns:
-#        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-#        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
-#        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+                  - cloudwatch:*
+                  - application-autoscaling:*
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
 
-  SecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+  TaskRole:
+    Type: AWS::IAM::Role
     Properties:
-      GroupDescription: !Sub ${AWS::StackName}
-      SecurityGroupIngress:
-        - SourceSecurityGroupId: !Ref ALBSg
-          IpProtocol: -1
-      VpcId: !Ref VpcId
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+    
+    RolePolicy:
+      Type: AWS::IAM::Policy
+      Properties:
+        PolicyName: root
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+            - Resource: "*"
+              Effect: Allow
+              Action:
+                - iam:*
+                - sagemaker:*
+                - logs:*
+                - s3:*
+                - ecr:*
+                - cloudwatch:*
+                - application-autoscaling:*
+        Roles:
+          - !Ref TaskRole
   
   Service:
     Type: AWS::ECS::Service
     Properties:
       Cluster: !Ref Cluster
+      Role: !Ref ECSServiceRole
       DesiredCount: !Ref DesiredCount
-      LaunchType: FARGATE
       TaskDefinition: !Ref TaskDefinition
       LoadBalancers:
         - ContainerName: app
           ContainerPort: 80
           TargetGroupArn: !Ref TargetGroup
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: ENABLED #MENTION DISABLED if in private subnet with NAT gateway
-          SecurityGroups:
-             - !GetAtt SecurityGroup.GroupId
-          Subnets:
-          - !Ref Subnet1
-          - !Ref Subnet2
 
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Cpu: 256
-      Memory: 512
-      NetworkMode: awsvpc
-      RequiresCompatibilities:
-       - FARGATE
-      ExecutionRoleArn: !GetAtt TaskRole.Arn
       ContainerDefinitions:
         - Name: app
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
