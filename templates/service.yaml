@@ -101,74 +101,74 @@ Resources:
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
-        Policies:
-          - PolicyName: root
-            PolicyDocument:
-              Version: 2012-10-17
-              Statement:
-                - Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
-                  Effect: Allow
-                  Action:
-                    - s3:*
-                - Resource: !Sub arn:aws:s3:::${TemplateBucket}/*
-                  Effect: Allow
-                  Action:
-                    - s3:*
-                - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Repository}
-                  Effect: Allow
-                  Action:
-                    - ecr:GetDownloadUrlForLayer
-                    - ecr:BatchGetImage
-                    - ecr:BatchCheckLayerAvailability
-                    - ecr:PutImage
-                    - ecr:InitiateLayerUpload
-                    - ecr:UploadLayerPart
-                    - ecr:CompleteLayerUpload
-                - Resource: "*"
-                  Effect: Allow
-                  Action:
-                    - iam:CreateRole
-                    - iam:CreatePolicy
-                    - iam:AttachRolePolicy
-                - Resource: "*"
-                  Effect: Allow
-                  Action:
-                    - sagemaker:*
-                    - logs:*
-                    - s3:*
-                    - ecr:GetAuthorizationToken
-                    - cloudformation:Describe*
-                    - elasticloadbalancing:Describe*
-                    - codepipeline:Get*
-                    - codebuild:BatchGetBuilds
-                    - cloudwatch:PutMetricData
-                    - cloudwatch:PutMetricAlarm
-                    - cloudwatch:DescribeAlarms
-                    - cloudwatch:DeleteAlarms
-                    - application-autoscaling:DeleteScalingPolicy
-                    - application-autoscaling:DeleteScheduledAction
-                    - application-autoscaling:DeregisterScalableTarget
-                    - application-autoscaling:DescribeScalableTargets
-                    - application-autoscaling:DescribeScalingActivities
-                    - application-autoscaling:DescribeScalingPolicies
-                    - application-autoscaling:DescribeScheduledActions
-                    - application-autoscaling:PutScalingPolicy
-                    - application-autoscaling:PutScheduledAction
-                    - application-autoscaling:RegisterScalableTarget
-                - Resource: "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint"
-                  Effect: Allow
-                  Action:
-                    - iam:CreateServiceLinkedRole
-                  Condition:
-                    StringLike:
-                      iam:AWSServiceName: "sagemaker.application-autoscaling.amazonaws.com"
-                - Resource: "*"
-                  Effect: Allow
-                  Action:
-                    - iam:PassRole
-                  Condition:
-                    StringLike:
-                      iam:PassedToService: "sagemaker.amazonaws.com"
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
+                Effect: Allow
+                Action:
+                  - s3:*
+              - Resource: !Sub arn:aws:s3:::${TemplateBucket}/*
+                Effect: Allow
+                Action:
+                  - s3:*
+              - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Repository}
+                Effect: Allow
+                Action:
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:BatchGetImage
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:PutImage
+                  - ecr:InitiateLayerUpload
+                  - ecr:UploadLayerPart
+                  - ecr:CompleteLayerUpload
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - iam:CreateRole
+                  - iam:CreatePolicy
+                  - iam:AttachRolePolicy
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - sagemaker:*
+                  - logs:*
+                  - s3:*
+                  - ecr:GetAuthorizationToken
+                  - cloudformation:Describe*
+                  - elasticloadbalancing:Describe*
+                  - codepipeline:Get*
+                  - codebuild:BatchGetBuilds
+                  - cloudwatch:PutMetricData
+                  - cloudwatch:PutMetricAlarm
+                  - cloudwatch:DescribeAlarms
+                  - cloudwatch:DeleteAlarms
+                  - application-autoscaling:DeleteScalingPolicy
+                  - application-autoscaling:DeleteScheduledAction
+                  - application-autoscaling:DeregisterScalableTarget
+                  - application-autoscaling:DescribeScalableTargets
+                  - application-autoscaling:DescribeScalingActivities
+                  - application-autoscaling:DescribeScalingPolicies
+                  - application-autoscaling:DescribeScheduledActions
+                  - application-autoscaling:PutScalingPolicy
+                  - application-autoscaling:PutScheduledAction
+                  - application-autoscaling:RegisterScalableTarget
+              - Resource: "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint"
+                Effect: Allow
+                Action:
+                  - iam:CreateServiceLinkedRole
+                Condition:
+                  StringLike:
+                    iam:AWSServiceName: "sagemaker.application-autoscaling.amazonaws.com"
+              - Resource: "*"
+                Effect: Allow
+                Action:
+                  - iam:PassRole
+                Condition:
+                  StringLike:
+                    iam:PassedToService: "sagemaker.amazonaws.com"
 #      ManagedPolicyArns:
 #        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
 #        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
