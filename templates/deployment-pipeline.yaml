@@ -145,7 +145,7 @@ Resources:
         {
             "Statement": [{
                 "Effect": "Allow",
-                "Principal": { "Service": [ "codebuild.amazonaws.com" ]},
+                "Principal": { "Service": [ "codebuild.amazonaws.com", "sagemaker.amazonaws.com" ]},
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
@@ -161,6 +161,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                   - logs:DescribeLogStreams
+                  - logs:GetLogEvents
                   - ecr:GetAuthorizationToken
                   - cloudformation:Describe*
                   - elasticloadbalancing:Describe*
