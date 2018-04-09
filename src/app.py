@@ -1,11 +1,10 @@
 #!/usr/bin/python
 import os
+import io
 import json
 import boto3
 import tempfile
 import urllib3
-#import scipy
-#import botocore
 import base64
 import sagemaker
 import json
@@ -13,7 +12,6 @@ import json
 #import numpy as np
 #from mxnet import gluon, nd
 import matplotlib.pyplot as plt
-from cStringIO import StringIO
 from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
@@ -34,7 +32,7 @@ def process_url(url):
     """
     http = urllib3.PoolManager()
     req = http.request('GET', url)
-    image = np.array(Image.open(StringIO(req.data)))
+    image = np.array(Image.open(io.BytesIO(req.data)))
     result = transform.resize(image, (64, 64), mode='constant').reshape((1, 64 * 64 * 3))
     return image, result.tolist()
 
@@ -79,7 +77,7 @@ def image():
     prediction = classes[int(json.loads(response['Body'].read().decode('utf-8')))]
 
     # Return prediction and image
-    figfile = StringIO()
+    figfile = io.BytesIO()
     plt.imsave(figfile, image, format='png')
     figfile.seek(0)
     figfile_png = base64.b64encode(figfile.getvalue()).decode('ascii')
