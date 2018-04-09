@@ -32,7 +32,9 @@ time.sleep(5)
 
 # Create a model using the Session API
 # by attaching to the training job
-training_job = 'sagemaker-mxnet-2018-04-08-23-34-10-271'
+# Default: training_job = 0
+training_job = 0
+#training_job = 'sagemaker-mxnet-2018-04-08-23-34-10-271'
 if training_job == 0:
     print("No Training job defined, exiting ...")
     sys.exit()
