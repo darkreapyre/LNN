@@ -106,28 +106,11 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
-                Effect: Allow
-                Action:
-                  - s3:*
-              - Resource: !Sub arn:aws:s3:::${TemplateBucket}/*
-                Effect: Allow
-                Action:
-                  - s3:*
-              - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Repository}
-                Effect: Allow
-                Action:
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:BatchGetImage
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:PutImage
-                  - ecr:InitiateLayerUpload
-                  - ecr:UploadLayerPart
-                  - ecr:CompleteLayerUpload
               - Resource: "*"
                 Effect: Allow
                 Action:
                   - iam:CreateRole
+                  - iam:GetRole
                   - iam:CreatePolicy
                   - iam:AttachRolePolicy
               - Resource: "*"
@@ -136,7 +119,7 @@ Resources:
                   - sagemaker:*
                   - logs:*
                   - s3:*
-                  - ecr:GetAuthorizationToken
+                  - ecr:*
                   - cloudformation:Describe*
                   - elasticloadbalancing:Describe*
                   - codepipeline:Get*
