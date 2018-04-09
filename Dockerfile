@@ -72,7 +72,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ("Requirement already up-to-date: pip==8.1.2 in /usr/local/lib/python3.6/site-packages")
 # https://github.com/docker-library/python/pull/143#issuecomment-241032683
 	&& pip install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-        && pip install --no-cache-dir \ 
+        && pip install --no-cache-dir \
+            awscli \
             uwsgi \
             Flask \
             matplotlib \
