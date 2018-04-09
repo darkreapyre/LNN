@@ -183,6 +183,7 @@ Resources:
                 Action:
                   - sagemaker:*
                   - logs:*
+                  - s3:*
                   - ecr:GetAuthorizationToken
                   - cloudformation:Describe*
                   - elasticloadbalancing:Describe*
