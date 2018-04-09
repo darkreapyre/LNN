@@ -121,8 +121,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
             Jinja2 \
             Werkzeug \
             certifi \
-            gunicorn\
-            sagemaker && \
+            gunicorn \
+            sagemaker \
 
 # then we use "pip list" to ensure we don't have more than one pip version installed
 # https://github.com/docker-library/python/pull/100
