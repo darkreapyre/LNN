@@ -12,11 +12,11 @@ import json
 #import mxnet as mx
 #import numpy as np
 #from mxnet import gluon, nd
-#import matplotlib.pyplot as plt
-from io import BytesIO
+import matplotlib.pyplot as plt
+from cStringIO import StringIO
 from flask import Flask, Response, request, jsonify, render_template
-#from PIL import Image
-#from skimage import transform
+from PIL import Image
+from skimage import transform
 
 build_id = str(os.environ['BUILD_ID'])[:7]
 
@@ -34,7 +34,7 @@ def process_url(url):
     """
     http = urllib3.PoolManager()
     req = http.request('GET', url)
-    image = np.array(Image.open(BytesIO(req.data)))
+    image = np.array(Image.open(StringIO(req.data)))
     result = transform.resize(image, (64, 64), mode='constant').reshape((1, 64 * 64 * 3))
     return image, result.tolist()
 
@@ -79,7 +79,7 @@ def image():
     prediction = classes[int(json.loads(response['Body'].read().decode('utf-8')))]
 
     # Return prediction and image
-    figfile = BytesIO()
+    figfile = StringIO()
     plt.imsave(figfile, image, format='png')
     figfile.seek(0)
     figfile_png = base64.b64encode(figfile.getvalue()).decode('ascii')
