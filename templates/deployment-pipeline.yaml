@@ -154,20 +154,6 @@ Resources:
           PolicyDocument:
             Version: 2012-10-17
             Statement:
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - logs:DescribeLogStreams
-                  - logs:GetLogEvents
-                  - ecr:GetAuthorizationToken
-                  - cloudformation:Describe*
-                  - elasticloadbalancing:Describe*
-                  - codepipeline:Get*
-                  - codebuild:BatchGetBuilds
-                  - s3:CreateBucket
               - Resource: !Sub arn:aws:s3:::${ArtifactBucket}/*
                 Effect: Allow
                 Action:
@@ -201,6 +187,13 @@ Resources:
                 Effect: Allow
                 Action:
                   - sagemaker:*
+                  - s3:*
+                  - logs:*
+                  - ecr:GetAuthorizationToken
+                  - cloudformation:Describe*
+                  - elasticloadbalancing:Describe*
+                  - codepipeline:Get*
+                  - codebuild:BatchGetBuilds
                   - cloudwatch:PutMetricData
                   - cloudwatch:PutMetricAlarm
                   - cloudwatch:DescribeAlarms
