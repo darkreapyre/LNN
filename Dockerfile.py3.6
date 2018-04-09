@@ -22,17 +22,13 @@ RUN pip3 install --upgrade pip
 RUN pip3 install \
   uwsgi \
   Flask \
-#  numpy \
   matplotlib \
-#  scipy \
   scikit-image \
   Pillow \
-#  boto3 \
   Jinja2 \
   Werkzeug \
   certifi \
   gunicorn\
-#  requests \
   sagemaker && \
   mkdir /root/.aws
 

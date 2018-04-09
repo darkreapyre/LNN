@@ -19,26 +19,11 @@ RUN echo $BUILD_ID
 #ENV LANG="C.UTF-8"
 
 # Building git from source code:
-#   Ubuntu's default git package is built with broken gnutls. Rebuild git with openssl.
 ##########################################################################
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         wget=1.15-* fakeroot=1.20-* ca-certificates \
-    && apt-get -qy build-dep git=1:1.9.1 \
-    && apt-get -qy install libcurl4-openssl-dev=7.35.0-* git-man=1:1.9.1-* liberror-perl=0.17-* \
-    && mkdir -p /usr/src/git-openssl \
-    && cd /usr/src/git-openssl \
-    && apt-get source git=1:1.9.1 \
-    && cd $(find -mindepth 1 -maxdepth 1 -type d -name "git-*") \
-    && sed -i -- 's/libcurl4-gnutls-dev/libcurl4-openssl-dev/' ./debian/control \
-    && sed -i -- '/TEST\s*=\s*test/d' ./debian/rules \
-    && dpkg-buildpackage -rfakeroot -b \
-    && find .. -type f -name "git_*ubuntu*.deb" -exec dpkg -i \{\} \; \
-    && rm -rf /usr/src/git-openssl \
-    && rm -rf /var/lib/apt/lists/* \
-# Install dependencies by all python images equivalent to buildpack-deps:jessie
-# on the public repos.
-    && apt-get update && apt-get install -y --no-install-recommends autoconf=2.69-* automake=1:1.14.1-* \
+        autoconf=2.69-* automake=1:1.14.1-* \
         bzip2=1.0.6-* file=1:5.14-* g++=4:4.8.2-* gcc=4:4.8.2-* imagemagick=8:6.7.7.10-* \
         libbz2-dev=1.0.6-* libc6-dev=2.19-* libcurl4-openssl-dev=7.35.0-* curl=7.35.0-* \
         libdb-dev=1:5.3.21~* libevent-dev=2.0.21-stable-* libffi-dev=3.1~rc1+r3.0.13-* \
@@ -87,7 +72,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # ("Requirement already up-to-date: pip==8.1.2 in /usr/local/lib/python3.6/site-packages")
 # https://github.com/docker-library/python/pull/143#issuecomment-241032683
 	&& pip install --no-cache-dir --upgrade --force-reinstall "pip==$PYTHON_PIP_VERSION" \
-        && pip install awscli --no-cache-dir \
         && pip install --no-cache-dir \ 
             uwsgi \
             Flask \
