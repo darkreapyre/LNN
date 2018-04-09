@@ -12,11 +12,11 @@ import json
 #import mxnet as mx
 #import numpy as np
 #from mxnet import gluon, nd
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 from io import BytesIO
 from flask import Flask, Response, request, jsonify, render_template
-#from PIL import Image
-#from skimage import transform
+from PIL import Image
+from skimage import transform
 
 build_id = str(os.environ['BUILD_ID'])[:7]
 

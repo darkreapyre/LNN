@@ -12,6 +12,10 @@
 
 FROM ubuntu:14.04.5
 
+ARG ID
+ENV BUILD_ID=$ID
+RUN echo $BUILD_ID
+
 ENV LANG="C.UTF-8"
 
 ENV DOCKER_BUCKET="download.docker.com" \
