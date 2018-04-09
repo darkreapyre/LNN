@@ -10,7 +10,7 @@ import base64
 import sagemaker
 import json
 #import mxnet as mx
-#import numpy as np
+import numpy as np
 #from mxnet import gluon, nd
 import matplotlib.pyplot as plt
 from io import BytesIO
