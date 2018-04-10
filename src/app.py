@@ -90,6 +90,9 @@ def image():
     url = request.args.get('image')
     print(url)
 
+    # Prediciotn classes
+    classes = ['non-cat', 'cat']
+
     # Process the URL
     image, payload = process_url(url)
 
@@ -103,14 +106,12 @@ def image():
             ContentType='application/json',
             Body=json.dumps(payload)
         )
+        prediction = classes[int(json.loads(response['Body'].read().decode('utf-8')))]
     else:
         # Invoke local model
         print("Invoking local mode ...")
         response = local_predict(data=json.dumps(payload))
-
-    # Format the prediction from SgeMaker Endpoint
-    classes = ['non-cat', 'cat']
-    prediction = classes[int(json.loads(response['Body'].read().decode('utf-8')))]
+        prediction = classes[int(json.loads(response_body))]
     print("prediction: {}".format(prediction))
 
     # Return prediction and image
