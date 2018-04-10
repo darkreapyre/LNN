@@ -84,15 +84,18 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
         val_accuracy = eval_acc(test_data, net, ctx)
         train_accuracy = eval_acc(train_data, net, ctx)
         results['epoch'+str(epoch)] = {}
-        results['epoch'+str(epoch)]['cost'] = cumulative_loss/num_examples
-        results['epoch'+str(epoch)]['val_acc'] = val_accuracy
-        results['epoch'+str(epoch)]['train_acc'] = train_accuracy
         if epoch % 100 == 0:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
             .format(epoch,cumulative_loss/num_examples,train_accuracy,val_accuracy))
+            results['epoch'+str(epoch)]['cost'] = cumulative_loss/num_examples
+            results['epoch'+str(epoch)]['val_acc'] = val_accuracy
+            results['epoch'+str(epoch)]['train_acc'] = train_accuracy
         elif epoch == epochs-1:
             print("Epoch: {}; Loss: {}; Train-accuracy = {}; Validation-accuracy = {}"\
             .format(epoch,cumulative_loss/num_examples,train_accuracy,val_accuracy))
+            results['epoch'+str(epoch)]['cost'] = cumulative_loss/num_examples
+            results['epoch'+str(epoch)]['val_acc'] = val_accuracy
+            results['epoch'+str(epoch)]['train_acc'] = train_accuracy
             results['End'] = str(datetime.datetime.now())
     # Save the results
     print("Saving the training results ...")

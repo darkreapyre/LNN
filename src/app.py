@@ -1,8 +1,6 @@
 #!/usr/bin/python
 import os
-import json
 import boto3
-import tempfile
 import urllib3
 import base64
 import sagemaker
