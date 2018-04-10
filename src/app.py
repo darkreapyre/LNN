@@ -111,7 +111,7 @@ def image():
         # Invoke local model
         print("Invoking local mode ...")
         response = local_predict(data=json.dumps(payload))
-        prediction = classes[int(json.loads(response_body))]
+        prediction = classes[int(json.loads(response))]
     print("prediction: {}".format(prediction))
 
     # Return prediction and image
