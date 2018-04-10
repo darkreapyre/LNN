@@ -19,6 +19,7 @@ from PIL import Image
 from skimage import transform
 
 build_id = str(os.environ['BUILD_ID'])[:7]
+print("Build ID: {}".format(build_id))
 
 def process_url(url):
     """
@@ -58,6 +59,7 @@ def image():
         StatusEquals='InService'
     )
     endpoint_name = str(list_results.get('Endpoints')[0]['EndpointName'])
+    print("Endpoint Name: {}".format(endpoint_name))
 
     print('api')
     url = request.args.get('image')
