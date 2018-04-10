@@ -97,28 +97,30 @@ Resources:
         {
             "Statement": [{
                 "Effect": "Allow",
-                "Principal": { "Service": [ "sagemaker.amazonaws.com" ]},
+                "Principal": { "Service": [ "sagemaker.amazonaws.com", "ecs-tasks.amazonaws.com" ]},
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
-
-  TaskExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Path: /
-      AssumeRolePolicyDocument: |
-        {
-            "Statement": [{
-                "Effect": "Allow",
-                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
-                "Action": [ "sts:AssumeRole" ]
-            }]
-        }
-      ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
+
+#  TaskExecutionRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      Path: /
+#      AssumeRolePolicyDocument: |
+#        {
+#            "Statement": [{
+#                "Effect": "Allow",
+#                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+#                "Action": [ "sts:AssumeRole" ]
+#            }]
+#        }
+#      ManagedPolicyArns:
+#        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+#        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -157,7 +159,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
        - FARGATE
-      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+#      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      ExecutionRoleArn: !GetAtt TaskRole.Arn
       TaskRoleArn: !GetAtt TaskRole.Arn
       ContainerDefinitions:
         - Name: app
