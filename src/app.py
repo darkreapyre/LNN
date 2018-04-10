@@ -7,6 +7,7 @@ import urllib3
 import base64
 import sagemaker
 import json
+import logging
 import mxnet as mx
 import numpy as np
 from mxnet import gluon, nd
@@ -16,6 +17,8 @@ from flask import Flask, Response, request, jsonify, render_template
 from PIL import Image
 from skimage import transform
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.INFO)
 build_id = str(os.environ['BUILD_ID'])[:7]
 print("Build ID: {}".format(build_id))
 print("Determining Endpoint config ...")
@@ -26,8 +29,35 @@ list_results = sagemaker_client.list_endpoints(
     MaxResults=1,
     StatusEquals='InService'
 )
-endpoint_name = str(list_results.get('Endpoints')[0]['EndpointName'])
+if not list_results['Endpoints']:
+    endpoint_name = 0
+else:
+    endpoint_name = str(list_results.get('Endpoints')[0]['EndpointName'])
 print("Endpoint Name: {}".format(endpoint_name))
+
+def local_predict(data):
+    """
+    Runs the Gluon network if SageMaker Endpoint is not available
+    Arguments:
+    data -- Input image data as string.
+    Returns:
+    response_body -- Predition respons as string.
+    """
+    # Load the saved Gluon model
+    symbol = mx.sym.load('model.json')
+    outputs = mx.sym.sigmoid(data=symbol, name='sigmoid_label')
+    inputs = mx.sym.var('data')
+    param_dict = gluon.ParameterDict('model_')
+    net = gluon.SymbolBlock(outputs, inputs, param_dict)
+    net.load_params('model.params', ctx=mx.cpu())
+    # Parse the data
+    parsed = json.loads(data)
+    # Convert input to MXNet NDArray
+    nda = mx.nd.array(parsed)
+    output = net(nda)
+    prediction = nd.argmax(output, axis=1)
+    response_body = json.dumps(prediction.asnumpy().tolist()[0])
+    return response_body
 
 def process_url(url):
     """
@@ -65,14 +95,20 @@ def image():
     # Process the URL
     image, payload = process_url(url)
 
-    # Invoke the SageMaker endpoint
-    print("Invoking Endpoint ...")
-    runtime_client = boto3.client('sagemaker-runtime')
-    response = runtime_client.invoke_endpoint(
+    # Determine if Endpoint or local model is used
+    if endpoint_name != 0:
+        # Invoke the SageMaker endpoint
+        print("Invoking SageMaker Endpoint ...")
+        runtime_client = boto3.client('sagemaker-runtime')
+        response = runtime_client.invoke_endpoint(
             EndpointName=endpoint_name,
             ContentType='application/json',
             Body=json.dumps(payload)
         )
+    else:
+        # Invoke local model
+        print("Invoking local mode ...")
+        response = local_predict(data=json.dumps(payload))
 
     # Format the prediction from SgeMaker Endpoint
     classes = ['non-cat', 'cat']
