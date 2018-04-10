@@ -74,6 +74,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
             certifi \
             gunicorn \
             sagemaker \
+        # NOTE: Include this line if not installing awscli
+        #&& pip install "python-dateutil<2.7.0,>=2.1" \
 
 # then we use "pip list" to ensure we don't have more than one pip version installed
 # https://github.com/docker-library/python/pull/100

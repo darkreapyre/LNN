@@ -108,7 +108,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Path: /
-      AssumRolePolicyDocument: |
+      AssumeRolePolicyDocument: |
         {
             "Statement": [{
                 "Effect": "Allow",
