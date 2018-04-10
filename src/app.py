@@ -4,8 +4,6 @@ import json
 import boto3
 import tempfile
 import urllib3
-#import scipy
-#import botocore
 import base64
 import sagemaker
 import json
@@ -20,7 +18,7 @@ from skimage import transform
 
 build_id = str(os.environ['BUILD_ID'])[:7]
 print("Build ID: {}".format(build_id))
-print("Finding Endpoint config ...")
+print("Determining Endpoint config ...")
 sagemaker_client = boto3.client('sagemaker')
 list_results = sagemaker_client.list_endpoints(
     SortBy='Name',
@@ -69,10 +67,8 @@ def image():
 
     # Invoke the SageMaker endpoint
     print("Invoking Endpoint ...")
-    #runtime = boto3.client(service_name='runtime.sagemaker')
     runtime_client = boto3.client('sagemaker-runtime')
     response = runtime_client.invoke_endpoint(
-    #response = runtime.invoke_endpoint(
             EndpointName=endpoint_name,
             ContentType='application/json',
             Body=json.dumps(payload)
