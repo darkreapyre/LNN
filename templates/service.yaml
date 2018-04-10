@@ -97,65 +97,28 @@ Resources:
         {
             "Statement": [{
                 "Effect": "Allow",
-                "Principal": { "Service": [ "ecs-tasks.amazonaws.com", "sagemaker.amazonaws.com" ]},
+                "Principal": { "Service": [ "sagemaker.amazonaws.com" ]},
                 "Action": [ "sts:AssumeRole" ]
             }]
         }
-      Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - iam:CreateRole
-                  - iam:GetRole
-                  - iam:CreatePolicy
-                  - iam:AttachRolePolicy
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - sagemaker:*
-                  - logs:*
-                  - s3:*
-                  - ecr:*
-                  - cloudformation:Describe*
-                  - elasticloadbalancing:Describe*
-                  - codepipeline:Get*
-                  - codebuild:BatchGetBuilds
-                  - cloudwatch:PutMetricData
-                  - cloudwatch:PutMetricAlarm
-                  - cloudwatch:DescribeAlarms
-                  - cloudwatch:DeleteAlarms
-                  - application-autoscaling:DeleteScalingPolicy
-                  - application-autoscaling:DeleteScheduledAction
-                  - application-autoscaling:DeregisterScalableTarget
-                  - application-autoscaling:DescribeScalableTargets
-                  - application-autoscaling:DescribeScalingActivities
-                  - application-autoscaling:DescribeScalingPolicies
-                  - application-autoscaling:DescribeScheduledActions
-                  - application-autoscaling:PutScalingPolicy
-                  - application-autoscaling:PutScheduledAction
-                  - application-autoscaling:RegisterScalableTarget
-              - Resource: "arn:aws:iam::*:role/aws-service-role/sagemaker.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_SageMakerEndpoint"
-                Effect: Allow
-                Action:
-                  - iam:CreateServiceLinkedRole
-                Condition:
-                  StringLike:
-                    iam:AWSServiceName: "sagemaker.application-autoscaling.amazonaws.com"
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - iam:PassRole
-                Condition:
-                  StringLike:
-                    iam:PassedToService: "sagemaker.amazonaws.com"
-#      ManagedPolicyArns:
-#        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-#        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
-#        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -194,7 +157,8 @@ Resources:
       NetworkMode: awsvpc
       RequiresCompatibilities:
        - FARGATE
-      ExecutionRoleArn: !GetAtt TaskRole.Arn
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !Ref TaskRole.Arn
       ContainerDefinitions:
         - Name: app
           Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}:${Tag}
