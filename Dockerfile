@@ -28,10 +28,11 @@ RUN pip3 install \
   Jinja2 \
   Werkzeug \
   certifi \
-  gunicorn\
-  sagemaker
+  gunicorn \
+  sagemaker \
+  mxnet
 
-# Attemmpt to resolve issues with python-dateutil
+# Resolve issues with python-dateutil and botocore
 RUN pip install "python-dateutil<2.7.0,>=2.1"
 
 # Configure API Endpoint
