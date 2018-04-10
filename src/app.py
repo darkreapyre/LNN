@@ -44,12 +44,12 @@ def local_predict(data):
     response_body -- Predition respons as string.
     """
     # Load the saved Gluon model
-    symbol = mx.sym.load('model.json')
+    symbol = mx.sym.load('app/model.json')
     outputs = mx.sym.sigmoid(data=symbol, name='sigmoid_label')
     inputs = mx.sym.var('data')
     param_dict = gluon.ParameterDict('model_')
     net = gluon.SymbolBlock(outputs, inputs, param_dict)
-    net.load_params('model.params', ctx=mx.cpu())
+    net.load_params('app/model.params', ctx=mx.cpu())
     # Parse the data
     parsed = json.loads(data)
     # Convert input to MXNet NDArray

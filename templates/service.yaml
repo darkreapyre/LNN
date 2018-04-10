@@ -65,6 +65,7 @@ Resources:
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 2
       TargetGroupAttributes:
         - Key: deregistration_delay.timeout_seconds
           Value: 30
@@ -105,22 +106,6 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
         - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
-
-#  TaskExecutionRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      Path: /
-#      AssumeRolePolicyDocument: |
-#        {
-#            "Statement": [{
-#                "Effect": "Allow",
-#                "Principal": { "Service": [ "ecs-tasks.amazonaws.com" ]},
-#                "Action": [ "sts:AssumeRole" ]
-#            }]
-#        }
-#      ManagedPolicyArns:
-#        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
-#        - arn:aws:iam::aws:policy/CloudWatchLogsFullAccess
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
