@@ -31,6 +31,9 @@ RUN pip3 install \
   gunicorn\
   sagemaker
 
+# Attemmpt to resolve issues with python-dateutil
+RUN pip install "python-dateutil<2.7.0,>=2.1"
+
 # Configure API Endpoint
 ADD ./src /app
 ADD ./src/config /config
