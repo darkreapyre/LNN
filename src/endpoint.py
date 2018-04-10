@@ -8,6 +8,14 @@ import sagemaker
 from sagemaker import get_execution_role
 from sagemaker.mxnet import MXNet
 
+# Specify the Traiing Job to build against
+# Default: training_job = 0
+training_job = 0
+#training_job = 'sagemaker-mxnet-2018-04-08-23-34-10-271'
+if training_job == 0:
+    print("No Training job defined, exiting ...")
+    sys.exit()
+
 # Global Variables
 sagemaker_client = boto3.client('sagemaker')
 iam_client = boto3.client('iam')
@@ -32,12 +40,6 @@ time.sleep(5)
 
 # Create a model using the Session API
 # by attaching to the training job
-# Default: training_job = 0
-training_job = 0
-#training_job = 'sagemaker-mxnet-2018-04-08-23-34-10-271'
-if training_job == 0:
-    print("No Training job defined, exiting ...")
-    sys.exit()
 training_job_info = sagemaker_client.describe_training_job(TrainingJobName=training_job)
 training_job_name = str(training_job_info['HyperParameters']['sagemaker_job_name'].split('"')[1])
 sagemaker_role = role_response['Role']['Arn']
