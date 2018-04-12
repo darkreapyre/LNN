@@ -1,5 +1,4 @@
 # Import necessary libraries
-from __future__ import print_function
 import boto3
 import os
 import io
@@ -29,6 +28,7 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
         kvstore = 'device' if num_gpus > 0 else 'local'
     else:
         kvstore = 'dist_device_sync' if num_gpus > 0 else 'dist_sync'
+
     # Set Context based on provided parameters
     ctx = mx.gpu() if num_gpus > 0 else mx.cpu()
     # Load Training/Testing Data
@@ -54,12 +54,15 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
         batch_size=batch_size
     )
     
-    # Initialize the network
+    # Initialize the neural network structure
     net = create_graph()
+    
     # Parameter Initialization (Xavier)
     net.collect_params().initialize(mx.init.Xavier(magnitude=2.34))
+    
     # Optimizer
     trainer = gluon.Trainer(net.collect_params(), optmizer, {'learning_rate': lr})
+    
     # Cross Entropy Loss Function
     softmax_ce = gluon.loss.SoftmaxCrossEntropyLoss()
     
@@ -97,10 +100,12 @@ def train(channel_input_dirs, hyperparameters, hosts, num_gpus, output_data_dir,
             results['epoch'+str(epoch)]['val_acc'] = val_accuracy
             results['epoch'+str(epoch)]['train_acc'] = train_accuracy
             results['End'] = str(datetime.datetime.now())
+            
     # Save the results
     print("Saving the training results ...")
     with open(str(output_data_dir)+'/results.json', 'w') as f:
         json.dump(results, f)
+
     # Return the model for saving
     return net
                 
