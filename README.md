@@ -1,1 +1,1 @@
-# Amazon SageMaker Image Classification - Training/Prediction Pipeline Demo
+# Amazon SageMaker Image Classification - Hyperparameter Optiomization
