@@ -116,6 +116,8 @@ def create_graph():
     net = gluon.nn.HybridSequential()
     with net.name_scope():
         net.add(gluon.nn.Dense(20, activation='relu'))
+        net.add(gluon.nn.Dense(16, activation='relu'))
+        net.add(gluon.nn.Dense(12, activation='relu'))
         net.add(gluon.nn.Dense(7, activation='relu'))
         net.add(gluon.nn.Dense(5, activation='relu'))
         net.add(gluon.nn.Dense(2, activation='relu'))
