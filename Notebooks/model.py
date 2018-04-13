@@ -115,9 +115,8 @@ def create_graph():
     """
     net = gluon.nn.HybridSequential()
     with net.name_scope():
+        net.add(gluon.nn.Dense(56, activation='relu'))
         net.add(gluon.nn.Dense(20, activation='relu'))
-        net.add(gluon.nn.Dense(16, activation='relu'))
-        net.add(gluon.nn.Dense(12, activation='relu'))
         net.add(gluon.nn.Dense(7, activation='relu'))
         net.add(gluon.nn.Dense(5, activation='relu'))
         net.add(gluon.nn.Dense(2, activation='relu'))
@@ -223,10 +222,10 @@ def transform_fn(net, data, input_content_type, output_content_type):
     net -- Gluon model loaded from `model_fn()` function.
     data -- Input data from the `InvokeEndpoint` request.
     input_content_type -- Content type of the request (JSON).
-    output_content_type -- Disired content type (JSON) of the repsonse.
+    output_content_type -- Desired content type (JSON) of the repsonse.
     
     Returns:
-    JSON paylod of the prediction result and content type.
+    JSON payload of the prediction result and content type.
     """
     # Parse the data
     parsed = loads(data)
