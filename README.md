@@ -107,7 +107,7 @@ Once the stack has been deployed, integrate [Amazon SageMaker](https://aws.amazo
         $ git checkout 1.0
         $ exit
     ```
-    - Go back to the "Files" tab -> click "`<<Repository Nane>>`" -> click "artifacts" -> select `Introduction.ipynb`
+    - Go back to the "Files" tab -> click "`<<Repository Nane>>`" -> click "Notebooks" -> select `Introduction.ipynb`
 
 ## Demo Process Flow
 To follow the Machine Learning Pipeline process flow the four steps listed below:
