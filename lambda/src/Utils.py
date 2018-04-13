@@ -127,7 +127,7 @@ def to_cache(db, obj, name):
     
     Returns:
     key -- For each type the key is made up of {name}|{type} and for
-           the case of Numpy Arrays, the Length and Widtch of the 
+           the case of Numpy Arrays, the Length and Width of the 
            array are added to the Key.
     """
     # Test if the object to Serialize is a Numpy Array
@@ -337,8 +337,8 @@ def inv_counter(name, invID, task):
    
     Arguments:
     name -- The Name of the function being invoked
-    invID -- The unique invocation ID created for the specific invokation
-    task -- Task to perfoirm: set | get | update
+    invID -- The unique invocation ID created for the specific invocation
+    task -- Task to perform: set | get | update
     """
     table = dynamo_resource.Table(name)
     if task == 'set':
@@ -377,7 +377,7 @@ def propogate(direction, batch, layer, parameter_key):
     OR the gradients depending on the direction.
 
     Arguments:
-    direction -- The current direction of the propogation, either `forward` or `backward`.
+    direction -- The current direction of the propagation, either `forward` or `backward`.
     epoch -- Integer representing the "current" epoch to close out.
     layer -- Integer representing the current hidden layer.
 
@@ -447,7 +447,7 @@ def propogate(direction, batch, layer, parameter_key):
             print(response)
     
     elif direction == 'backward':
-        # Launch Lambdas to propogate backward        
+        # Launch Lambdas to propagate backward        
         # Prepare the payload for `NeuronLambda`
         # Update parameters with this functions updates
         parameters['layer'] = layer
@@ -579,7 +579,7 @@ def update_parameters_with_gd(W, b, dW, db, learning_rate, batch, layer, paramet
     W -- Matrix of the Weights for the layer
     b -- Vector of the Bias for the layer
     dW -- Matrix of the Derivatives of  Weights for the layer
-    db -- Vector of the Derivatives of theBias for the layer
+    db -- Vector of the Derivatives of the Bias for the layer
     learning_rate -- Learning rate for the network, scalar
     batch -- Current mini-batch
     layer -- Current layer being optimized

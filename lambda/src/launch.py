@@ -197,7 +197,7 @@ def lambda_handler(event, context):
             #print("\n"+"\n"+"Batch {} Parameters: ".format(current_batch))
             #print(dumps(batch_parameters, indent=4, sort_keys=True))
             
-            # Upload Batch parameters to respecitve ElastiCache database
+            # Upload Batch parameters to respective ElastiCache database
             batch_parameter_key = to_cache(
                 db=current_batch,
                 obj=batch_parameters,
@@ -292,7 +292,7 @@ def lambda_handler(event, context):
 
             # Step 2: Get the optimized Weights and Bias (by layer) from
             # the mini-batch with the lowest error and upload these as
-            # the Weights and Bias for the prediciton app.
+            # the Weights and Bias for the prediction app.
             for l in range(1, parameters['layers']+1):
                 # Get the weights from ElastiCache
                 W = from_cache(db=best_batch, key=parameters['data_keys']['W'+str(l)])
@@ -358,7 +358,7 @@ def lambda_handler(event, context):
 
             # Step 2: Get the optimized Weights and Bias (by layer) from
             # the mini-batch with the lowest error and upload these as
-            # the Weights and Bias for the prediciton app.
+            # the Weights and Bias for the prediction app.
             for l in range(1, parameters['layers']+1):
                 # Get the weights from ElastiCache
                 W = from_cache(db=best_batch, key=parameters['data_keys']['W'+str(l)])
@@ -477,7 +477,7 @@ def lambda_handler(event, context):
                 #print("\n"+"\n"+"Batch {} Parameters: ".format(current_batch))
                 #print(dumps(batch_parameters, indent=4, sort_keys=True))
 
-                # Upload Batch parameters to respecitve ElastiCache database
+                # Upload Batch parameters to respective ElastiCache database
                 batch_parameter_key = to_cache(
                     db=current_batch,
                     obj=batch_parameters,
