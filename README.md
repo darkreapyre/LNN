@@ -1,6 +1,6 @@
 # Amazon SageMaker Image Classification - Training/Prediction Pipeline Demo
 <!-- Note to Self: Change the picture and text below to reflect when adding to CodeCommit Repository -->
-![alt text](https://github.com/darkreapyre/LNN/blob/1.0/artifacts/images/Prediction_Architecture-2.png "Architecture")
+![alt text](https://github.com/darkreapyre/LNN/blob/1.1/Notebooks/images/Architecture.png "Architecture")
 
 ## Pre-Requisites
 >**Note:** This Demo must be run the **us-east-1** AWS Region as it leverages the **AWS Fargate** Service.
