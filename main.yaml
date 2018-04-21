@@ -43,6 +43,8 @@ Parameters:
 
   LogBucketName:
     Description: Destination Bucket for Central Logging
+    Type: String
+    Default: ''
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -150,7 +152,7 @@ Resources:
       TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/central-logging-subscription.yaml
       Parameters:
         DestinationARN: !GetAtt CentralLoggingDestination.Outputs.Destination
-        LogGroupName: !Gett VPC.Outputs.LogGroupName
+        LogGroupName: !GetAtt VPC.Outputs.LogGroupName
 
 Outputs:
   PipelineUrl:

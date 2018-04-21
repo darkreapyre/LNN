@@ -154,10 +154,10 @@ Resources:
                 Version: '2012-10-17'
                 Statement:
                 - Effect: Allow
-                Principal:
+                  Principal:
                     Service:
                     - 'vpc-flow-logs.amazonaws.com'
-                Action: 'sts:AssumeRole'
+                  Action: 'sts:AssumeRole'
             Policies:
             - PolicyName: 'flowlogs-policy'
               PolicyDocument:
@@ -175,7 +175,7 @@ Resources:
     LogGroup:
         Type: AWS::Logs::LogGroup
         Properties:
-            RetentionInDays: 10
+            RetentionInDays: 1
 
     FlowLog:
         Type: AWS::EC2::FlowLog

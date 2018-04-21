@@ -115,10 +115,7 @@ Resources:
       - S3deliveryPolicy
     Type: 'AWS::KinesisFirehose::DeliveryStream'
     Properties:
-      DeliveryStreamName: !Join 
-        - ''
-        - - !Ref 'AWS::StackName'
-          - '-DeliveryStream'
+      DeliveryStreamName: 'CentralLogging-DeliveryStream'
       DeliveryStreamType: KinesisStreamAsSource
       KinesisStreamSourceConfiguration:
         KinesisStreamARN: !GetAtt 
