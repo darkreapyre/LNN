@@ -15,7 +15,7 @@ Parameters:
 
   GitHubBranch:
     Type: String
-    Default: 1.0
+    Default: 1.3
     Description: The branch of the repo to continuously deploy.
 
   GitHubToken:
@@ -40,6 +40,9 @@ Parameters:
       - cache.t2.medium
       - cache.m4.large
       - cache.r4.large
+
+  LogBucketName:
+    Description: Destination Bucket for Central Logging
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -126,6 +129,28 @@ Resources:
         VpcId: !GetAtt VPC.Outputs.VPC
         VpcCIDR: 10.215.0.0/16
         SNSTopic: !GetAtt SNN.Outputs.SNSTopicArn
+  
+  CentralLoggingLambda:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/central-logging-lambda.yaml
+  
+  CentralLoggingDestination:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/central-logging-destination.yaml
+      Parameters:
+        LogBucketName: !Ref LogBucketName
+        ProcessingLambdaARN: !GetAtt CentralLoggingLambda.Outputs.Function
+        SourceAccount: !Ref AWS::AccountId
+
+  CentralLoggingSubscription:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://s3.amazonaws.com/${TemplateBucket}/templates/central-logging-subscription.yaml
+      Parameters:
+        DestinationARN: !GetAtt CentralLoggingDestination.Outputs.Destination
+        LogGroupName: !Gett VPC.Outputs.LogGroupName
 
 Outputs:
   PipelineUrl:
