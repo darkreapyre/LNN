@@ -1,4 +1,4 @@
-# Serverless Neural Network for Image Classification - Training/Prediction Pipeline with Logging Demo
+# Serverless Neural Network for Image Classification - Training/Prediction Pipeline with Central Logging Demo
 <!-- Note to Self: Change the picture and text below to reflect when adding to CodeCommit Repository -->
 ![alt text](https://github.com/darkreapyre/LNN/blob/1.0/artifacts/images/Prediction_Architecture-2.png "Architecture")
 
