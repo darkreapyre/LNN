@@ -10,7 +10,7 @@ from sagemaker.mxnet import MXNet
 
 # Specify the Traiing Job to build against
 # Default: training_job = 0
-training_job = 'sagemaker-mxnet-2018-04-27-15-40-39-062'
+training_job = 0
 if training_job == 0:
     print("No Training job defined, exiting ...")
     sys.exit()
