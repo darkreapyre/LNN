@@ -9,7 +9,7 @@
 ```
 2. Clone the repo.
 ```console
-    $ git checout 0.3.0
+    $ git checkout 0.3.0
 ``` 
 
 ## Deployment
